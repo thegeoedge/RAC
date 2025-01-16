@@ -101,6 +101,10 @@ task integrationTestReport(type: TestReport) {
     testResults.from(integrationTest)
 }
 
+tasks.matching { it.name == 'npmInstall' }.configureEach {
+    doNotTrackState("This task installs Node.js modules and its outputs are not tracked by Gradle.")
+}
+
 gitProperties {
     failOnNoGitDirectory = false
     keys = ["git.branch", "git.commit.id.abbrev", "git.commit.id.describe"]
