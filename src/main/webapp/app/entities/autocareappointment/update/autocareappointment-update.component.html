@@ -337,84 +337,93 @@
             />
           </div>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_isconformed">Isconformed</label>
-          <input
-            type="checkbox"
-            class="form-check"
-            name="isconformed"
-            id="field_isconformed"
-            data-cy="isconformed"
-            formControlName="isconformed"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_conformedby">Conformedby</label>
-          <input
-            type="number"
-            class="form-control"
-            name="conformedby"
-            id="field_conformedby"
-            data-cy="conformedby"
-            formControlName="conformedby"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_lmd">Lmd</label>
-          <div class="d-flex">
+        <div class="form-container d-flex align-items-center flex-wrap gap-4">
+          <div class="form-group d-flex align-items-center gap-3 mb-3">
+            <label class="form-label" for="field_isconformed">Isconformed</label>
             <input
-              id="field_lmd"
-              data-cy="lmd"
-              type="datetime-local"
-              class="form-control"
-              name="lmd"
-              formControlName="lmd"
-              placeholder="YYYY-MM-DD HH:mm"
+              type="checkbox"
+              class="form-check"
+              name="isconformed"
+              id="field_isconformed"
+              data-cy="isconformed"
+              formControlName="isconformed"
+              (change)="onclickconfirmed()"
             />
+          </div>
+
+          <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
+            <label class="form-label" for="field_conformedby">Conformedby</label>
+            <input
+              type="number"
+              class="form-control"
+              name="conformedby"
+              id="field_conformedby"
+              data-cy="conformedby"
+              formControlName="conformedby"
+            />
+          </div>
+
+          <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
+            <label class="form-label" for="field_lmd">Lmd</label>
+            <div class="d-flex">
+              <input
+                id="field_lmd"
+                data-cy="lmd"
+                type="datetime-local"
+                class="form-control"
+                name="lmd"
+                formControlName="lmd"
+                placeholder="YYYY-MM-DD HH:mm"
+              />
+            </div>
+          </div>
+
+          <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
+            <label class="form-label" for="field_lmu">Lmu</label>
+            <input type="number" class="form-control" name="lmu" id="field_lmu" data-cy="lmu" formControlName="lmu" />
+          </div>
+
+          <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
+            <label class="form-label" for="field_customerid">Customerid</label>
+            <input
+              type="number"
+              class="form-control"
+              name="customerid"
+              id="field_customerid"
+              data-cy="customerid"
+              formControlName="customerid"
+            />
+          </div>
+
+          <div class="form-group d-flex align-items-center gap-3 mb-3">
+            <label class="form-label" for="field_issued">Issued</label>
+            <input type="checkbox" class="form-check" name="issued" id="field_issued" data-cy="issued" formControlName="issued" />
+          </div>
+
+          <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
+            <label class="form-label" for="field_hoistid">Hoistid</label>
+            <input type="number" class="form-control" name="hoistid" id="field_hoistid" data-cy="hoistid" formControlName="hoistid" />
+          </div>
+
+          <div class="form-group d-flex align-items-center gap-3 mb-3">
+            <label class="form-label" for="field_isarrived">Isarrived</label>
+            <input
+              type="checkbox"
+              class="form-check"
+              name="isarrived"
+              id="field_isarrived"
+              data-cy="isarrived"
+              formControlName="isarrived"
+            />
+          </div>
+
+          <div class="form-group d-flex align-items-center gap-3 mb-3">
+            <label class="form-label" for="field_iscancel">Iscancel</label>
+            <input type="checkbox" class="form-check" name="iscancel" id="field_iscancel" data-cy="iscancel" formControlName="iscancel" />
           </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_lmu">Lmu</label>
-          <input type="number" class="form-control" name="lmu" id="field_lmu" data-cy="lmu" formControlName="lmu" />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_customerid">Customerid</label>
-          <input
-            type="number"
-            class="form-control"
-            name="customerid"
-            id="field_customerid"
-            data-cy="customerid"
-            formControlName="customerid"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_issued">Issued</label>
-          <input type="checkbox" class="form-check" name="issued" id="field_issued" data-cy="issued" formControlName="issued" />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_hoistid">Hoistid</label>
-          <input type="number" class="form-control" name="hoistid" id="field_hoistid" data-cy="hoistid" formControlName="hoistid" />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_isarrived">Isarrived</label>
-          <input type="checkbox" class="form-check" name="isarrived" id="field_isarrived" data-cy="isarrived" formControlName="isarrived" />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_iscancel">Iscancel</label>
-          <input type="checkbox" class="form-check" name="iscancel" id="field_iscancel" data-cy="iscancel" formControlName="iscancel" />
-        </div>
-
-        <div class="mb-3">
+        <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
           <label class="form-label" for="field_isnoanswer">Isnoanswer</label>
           <input
             type="checkbox"
@@ -438,7 +447,7 @@
           />
         </div>
 
-        <div class="mb-3">
+        <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
           <label class="form-label" for="field_customermobileid">Customermobileid</label>
           <input
             type="number"
@@ -450,7 +459,7 @@
           />
         </div>
 
-        <div class="mb-3">
+        <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
           <label class="form-label" for="field_customermobilevehicleid">Customermobilevehicleid</label>
           <input
             type="number"
@@ -462,7 +471,7 @@
           />
         </div>
 
-        <div class="mb-3">
+        <div [style.display]="hideIsNoAnswer ? 'none' : 'block'" class="mb-3">
           <label class="form-label" for="field_vehicleid">Vehicleid</label>
           <input type="number" class="form-control" name="vehicleid" id="field_vehicleid" data-cy="vehicleid" formControlName="vehicleid" />
         </div>
