@@ -5,7 +5,7 @@ import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IAutocareappointment } from '../autocareappointment.model';
 import { AutocareappointmentService } from '../service/autocareappointment.service';
@@ -23,6 +23,9 @@ import { AutocaretimetableService } from 'app/entities/autocaretimetable/service
 import { NgbAccordionCollapse, NgbAccordionHeader, NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 import utc from 'dayjs/esm/plugin/utc';
 
+import timezone from 'dayjs/esm/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.extend(utc);
 
 @Component({
@@ -33,6 +36,24 @@ dayjs.extend(utc);
   imports: [SharedModule, FormsModule, ReactiveFormsModule, NgbAccordionHeader, NgbAccordionCollapse],
   styles: [
     `
+      .form-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem; /* Adjust spacing between label and input */
+      }
+
+      label {
+        margin-bottom: 0; /* Remove bottom margin to align labels vertically */
+      }
+
+      input[type='checkbox'] {
+        margin: 0; /* Remove default margin from checkboxes */
+      }
+
+      .mb-3 {
+        margin-bottom: 1rem; /* Adjust spacing between groups */
+      }
+
       table {
         border-collapse: collapse;
         width: 100%;
@@ -48,6 +69,7 @@ dayjs.extend(utc);
   ],
 })
 export class AutocareappointmentUpdateComponent implements OnInit {
+  hideIsNoAnswer: boolean = true;
   isSaving = false;
   autocareappointment: IAutocareappointment | null = null;
   autocareappointmenttypes: IAutocareappointmenttype[] = [];
@@ -60,7 +82,9 @@ export class AutocareappointmentUpdateComponent implements OnInit {
   timetableData: any[] = [];
 
   hoists: { id: number; name: string; times: string[] }[] = [];
-
+  constructor(private fb: FormBuilder) {
+    this.editForm = this.autocareappointmentFormService.createAutocareappointmentFormGroup();
+  }
   protected autocareappointmentService = inject(AutocareappointmentService);
   protected autocareappointmentFormService = inject(AutocareappointmentFormService);
   protected activatedRoute = inject(ActivatedRoute);
@@ -127,14 +151,16 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       // Convert hoisttime to UTC and combine with the appointment date
       const hoistTimeInUTC = dayjs(timetable.hoisttime, 'HH:mm:ss').utc();
       console.log('timatable.hoisttime before attachment : ', hoistTimeInUTC);
+
+      // Convert the appointment date to Asia/Colombo timezone
       const appointmentDateTime = dayjs(appointmentDate)
         .hour(hoistTimeInUTC.hour())
         .minute(hoistTimeInUTC.minute())
         .second(0)
-        .utc() // Ensure the final result is also in UTC
+        .tz('Asia/Colombo', true) // Convert the time to the Asia/Colombo timezone
         .format('YYYY-MM-DDTHH:mm');
 
-      console.log('new appointment time (UTC) : ', appointmentDateTime);
+      console.log('new appointment time (Asia/Colombo) : ', appointmentDateTime);
 
       // Update the appointmenttime in the form
       this.editForm.get('appointmenttime')?.patchValue(appointmentDateTime);
@@ -174,6 +200,10 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       // Use the new service method to fetch matching results
       this.customervehicleService.findByVehicleNumber(searchTerm).subscribe(response => {
         this.filteredVehicles = response.body || [];
+        // Update the vehicle ID field if there's any vehicle found
+        if (this.filteredVehicles.length > 0) {
+          this.editForm.get('vehicleid')?.patchValue(this.filteredVehicles[0].id); // Patching vehicle ID
+        }
       });
     } else {
       // Clear the suggestions if input is too short
@@ -187,17 +217,46 @@ export class AutocareappointmentUpdateComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const selectedVehicleNumber = input.value;
 
+    // Find the selected vehicle from the filtered list
     const selectedVehicle = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
 
     if (selectedVehicle && selectedVehicle.customerid != null) {
+      // Fetch the customer details if the vehicle has a valid customer ID
       this.customerService.find(selectedVehicle.customerid).subscribe(res => {
         this.searchedCustomer = res.body;
         console.log(this.searchedCustomer?.fullname);
+        const storedUserId = localStorage.getItem('userId');
+        const userIdNumber = parseInt(storedUserId!, 10); // Parse userId to number
+        this.editForm.get('lmu')?.patchValue(userIdNumber);
+        // Patch the form with the customer's details
         this.editForm.get('customername')?.patchValue(this.searchedCustomer?.fullname);
         this.editForm.get('contactnumber')?.patchValue(this.searchedCustomer?.residencephone);
+        this.editForm.get('customerid')?.patchValue(this.searchedCustomer?.id);
       });
     } else {
-      console.error('Invalid customer ID:', selectedVehicle);
+      console.error('Invalid customer ID or vehicle not found:', selectedVehicle);
+    }
+  }
+
+  onclickconfirmed(): void {
+    console.log('onclickconfirmed method called'); // Log function call
+    const isConfirmed = this.editForm.get('isconformed')?.value; // Access checkbox value
+    console.log('isConfirmed value:', isConfirmed); // Log current value of isconformed
+
+    if (isConfirmed) {
+      const storedUserId = localStorage.getItem('userId'); // Retrieve userId from localStorage
+      console.log('storedUserId value:', storedUserId); // Log userId value
+
+      if (storedUserId) {
+        const userIdNumber = parseInt(storedUserId, 10); // Parse userId to number
+        this.editForm.get('conformedby')?.patchValue(userIdNumber); // Update form control
+        console.log('Confirmed by user ID:', userIdNumber); // Log confirmation
+      } else {
+        console.error('No user ID found in local storage');
+      }
+    } else {
+      console.log('isconformed is not ticked');
+      this.editForm.get('conformedby')?.patchValue(null); // Clear the conformedby field if unchecked
     }
   }
 
