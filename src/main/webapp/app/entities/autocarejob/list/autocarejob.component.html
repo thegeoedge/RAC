@@ -308,7 +308,7 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="frontimage">
+            <!--<th scope="col" jhiSortBy="frontimage">
               <div class="d-flex">
                 <span>Frontimage</span>
 
@@ -342,8 +342,8 @@
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
-            </th>
-            <th scope="col"></th>
+            </th> -->
+            <!-- <th scope="col"></th> -->
           </tr>
         </thead>
         <tbody>
@@ -390,11 +390,11 @@
               <td>{{ autocarejob.iswaiting }}</td>
               <td>{{ autocarejob.iscustomercomment }}</td>
               <td>{{ autocarejob.imagefolder }}</td>
-              <td>{{ autocarejob.frontimage }}</td>
+              <!--  <td>{{ autocarejob.frontimage }}</td>
               <td>{{ autocarejob.leftimage }}</td>
               <td>{{ autocarejob.rightimage }}</td>
-              <td>{{ autocarejob.backimage }}</td>
-              <td>{{ autocarejob.dashboardimage }}</td>
+              <td>{{ autocarejob.backimage }}</td> -->
+
               <td class="text-end">
                 <div class="btn-group">
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
@@ -405,6 +405,15 @@
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt"></fa-icon>
                     <span class="d-none d-md-inline">Edit</span>
+                  </a>
+
+                  <a
+                    [routerLink]="['/autocarejob', autocarejob.id, 'instructions']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
+                    <fa-icon icon="tasks"></fa-icon>
+                    <span class="d-none d-md-inline">instruction</span>
                   </a>
 
                   <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">

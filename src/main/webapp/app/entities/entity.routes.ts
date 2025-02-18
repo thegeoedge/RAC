@@ -221,6 +221,26 @@ const routes: Routes = [
     data: { pageTitle: 'Autocaretimetables' },
     loadChildren: () => import('./autocaretimetable/autocaretimetable.routes'),
   },
+  {
+    path: 'autojobsalesinvoiceservicechargeline',
+    data: { pageTitle: 'Autojobsalesinvoiceservicechargelines' },
+    loadChildren: () => import('./autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.routes'),
+  },
+  {
+    path: 'autojobsaleinvoicecommonservicecharge',
+    data: { pageTitle: 'Autojobsaleinvoicecommonservicecharges' },
+    loadChildren: () => import('./autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.routes'),
+  },
+  {
+    path: 'autojobsinvoicelines',
+    data: { pageTitle: 'Autojobsinvoicelines' },
+    loadChildren: () => import('./autojobsinvoicelines/autojobsinvoicelines.routes'),
+  },
+  {
+    path: 'workshop-vehicle-work-list',
+    data: { pageTitle: 'WorkshopVehicleWorkLists' },
+    loadChildren: () => import('./workshop-vehicle-work-list/workshop-vehicle-work-list.routes'),
+  },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];
 

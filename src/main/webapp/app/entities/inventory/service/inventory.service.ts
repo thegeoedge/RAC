@@ -58,6 +58,13 @@ export class InventoryService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  findByItem(name: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ 'name.contains': name, page: '0', size: '1000' });
+    return this.http
+      .get<RestInventory[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   query(req?: any): Observable<EntityArrayResponseType> {
     const options = createRequestOption(req);
     return this.http
