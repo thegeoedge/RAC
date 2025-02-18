@@ -69,6 +69,13 @@ export class AutocareappointmentService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  findByVehicleNumber(vehiclenumber: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ 'vehiclenumber.contains': vehiclenumber });
+    return this.http
+      .get<RestAutocareappointment[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   query(req?: any): Observable<EntityArrayResponseType> {
     const options = createRequestOption(req);
     return this.http

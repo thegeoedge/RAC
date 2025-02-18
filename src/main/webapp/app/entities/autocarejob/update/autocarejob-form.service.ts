@@ -113,7 +113,7 @@ export class AutocarejobFormService {
           validators: [Validators.required],
         },
       ),
-      jobnumber: new FormControl(autocarejobRawValue.jobnumber),
+      jobnumber: new FormControl(autocarejobRawValue.jobnumber ?? 1),
       vehicleid: new FormControl(autocarejobRawValue.vehicleid),
       vehiclenumber: new FormControl(autocarejobRawValue.vehiclenumber),
       millage: new FormControl(autocarejobRawValue.millage),

@@ -54,6 +54,10 @@
     <include file="config/liquibase/changelog/20241021080814_added_entity_Autocarehoist.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20241021092648_added_entity_Hoisttype.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20241029105625_added_entity_Autocaretimetable.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250212115930_added_entity_Autojobsalesinvoiceservicechargeline.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250212122528_added_entity_Autojobsaleinvoicecommonservicecharge.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250212125615_added_entity_Autojobsinvoicelines.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250217063812_added_entity_WorkshopVehicleWorkList.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
