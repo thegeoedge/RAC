@@ -3,25 +3,26 @@ import dayjs from 'dayjs/esm';
 import { IServicesubcategory, NewServicesubcategory } from './servicesubcategory.model';
 
 export const sampleWithRequiredData: IServicesubcategory = {
-  id: 23643,
+  id: 29667,
 };
 
 export const sampleWithPartialData: IServicesubcategory = {
-  id: 30351,
-  description: 'ick',
-  mainname: 'tan where',
-  lmu: 8392,
-  lmd: dayjs('2024-08-20T21:07'),
+  id: 15926,
+  name: 'vice opposite deeply',
+  description: 'ew',
+  mainid: 4183,
+  mainname: 'admired brightly garage',
+  isactive: true,
 };
 
 export const sampleWithFullData: IServicesubcategory = {
-  id: 16972,
-  name: 'apropos',
-  description: 'praise meanwhile',
-  mainid: 17204,
-  mainname: 'engorge moan',
-  lmu: 26758,
-  lmd: dayjs('2024-08-20T09:38'),
+  id: 6851,
+  name: 'for hospitable fishery',
+  description: 'ditch',
+  mainid: 9927,
+  mainname: 'ack good cultivated',
+  lmu: 13781,
+  lmd: dayjs('2024-08-21T04:02'),
   isactive: false,
 };
 

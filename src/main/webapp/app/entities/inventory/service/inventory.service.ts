@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -56,6 +56,13 @@ export class InventoryService {
     return this.http
       .get<RestInventory>(`${this.resourceUrl}/${id}`, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  findByItem(name: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ 'name.contains': name, page: '0', size: '1000' });
+    return this.http
+      .get<RestInventory[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
   query(req?: any): Observable<EntityArrayResponseType> {

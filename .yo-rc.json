@@ -61,19 +61,31 @@
       "Autocarehoist",
       "Hoisttype",
       "Autocaretimetable",
-      "SalesInvoiceDummy",
+<
+        "SalesInvoiceDummy",
       "SalesInvoiceLinesDummy",
       "SalesInvoiceServiceChargeLineDummy",
       "SaleInvoiceCommonServiceChargeDummy",
       "Voucher",
       "VoucherLines",
       "VoucherPaymentsDetails"
+         "SalesInvoiceLines",
+      "InvoiceServiceCharge",
+      "InvoiceServiceCommon",
+      "SaleInvoiceCommonServiceCharge",
+      "SalesInvoiceServiceChargeLine"
+
+      "Autojobsalesinvoiceservicechargeline",
+      "Autojobsaleinvoicecommonservicecharge",
+      "Autojobsinvoicelines",
+      "WorkshopVehicleWorkList"
     ],
     "feignClient": null,
     "gradleEnterpriseHost": null,
     "jhipsterVersion": "8.7.1",
     "jwtSecretKey": "YjUwYWYwNzkzMTE5YmE3ZWJjYmUxNDMxYzAxZDEzNWNlYTUwMTVkMmRmMDM1MDQyZTRmZWRhNzJiMTQ1YWVlYjMyNDIxZmVhNDM0ZjY4NjU0YjU0MDJhZDk0NmJiNjQ3MmJjMDJmZWU5N2RlYjBkMjhmNDJlOGRhZDRhZjM1MDQ=",
-    "lastLiquibaseTimestamp": 1739249112000,
+
+    "lastLiquibaseTimestamp": 1739774292000,
     "messageBroker": false,
     "microfrontend": null,
     "microfrontends": [],

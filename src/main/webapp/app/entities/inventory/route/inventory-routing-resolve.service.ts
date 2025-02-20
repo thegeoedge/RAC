@@ -1,14 +1,14 @@
 import { inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { of, EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 import { IInventory } from '../inventory.model';
 import { InventoryService } from '../service/inventory.service';
 
 const inventoryResolve = (route: ActivatedRouteSnapshot): Observable<null | IInventory> => {
-  const id = route.params['id'];
+  const id = route.params.id;
   if (id) {
     return inject(InventoryService)
       .find(id)
@@ -16,10 +16,9 @@ const inventoryResolve = (route: ActivatedRouteSnapshot): Observable<null | IInv
         mergeMap((inventory: HttpResponse<IInventory>) => {
           if (inventory.body) {
             return of(inventory.body);
-          } else {
-            inject(Router).navigate(['404']);
-            return EMPTY;
           }
+          inject(Router).navigate(['404']);
+          return EMPTY;
         }),
       );
   }

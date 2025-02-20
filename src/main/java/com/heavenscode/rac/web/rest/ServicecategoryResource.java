@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Servicecategory;
 import com.heavenscode.rac.repository.ServicecategoryRepository;
+import com.heavenscode.rac.service.ServicecategoryQueryService;
+import com.heavenscode.rac.service.ServicecategoryService;
+import com.heavenscode.rac.service.criteria.ServicecategoryCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/servicecategories")
-@Transactional
 public class ServicecategoryResource {
 
-    private final Logger log = LoggerFactory.getLogger(ServicecategoryResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServicecategoryResource.class);
 
     private static final String ENTITY_NAME = "servicecategory";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ServicecategoryService servicecategoryService;
+
     private final ServicecategoryRepository servicecategoryRepository;
 
-    public ServicecategoryResource(ServicecategoryRepository servicecategoryRepository) {
+    private final ServicecategoryQueryService servicecategoryQueryService;
+
+    public ServicecategoryResource(
+        ServicecategoryService servicecategoryService,
+        ServicecategoryRepository servicecategoryRepository,
+        ServicecategoryQueryService servicecategoryQueryService
+    ) {
+        this.servicecategoryService = servicecategoryService;
         this.servicecategoryRepository = servicecategoryRepository;
+        this.servicecategoryQueryService = servicecategoryQueryService;
     }
 
     /**
@@ -52,11 +63,11 @@ public class ServicecategoryResource {
      */
     @PostMapping("")
     public ResponseEntity<Servicecategory> createServicecategory(@RequestBody Servicecategory servicecategory) throws URISyntaxException {
-        log.debug("REST request to save Servicecategory : {}", servicecategory);
+        LOG.debug("REST request to save Servicecategory : {}", servicecategory);
         if (servicecategory.getId() != null) {
             throw new BadRequestAlertException("A new servicecategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        servicecategory = servicecategoryRepository.save(servicecategory);
+        servicecategory = servicecategoryService.save(servicecategory);
         return ResponseEntity.created(new URI("/api/servicecategories/" + servicecategory.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, servicecategory.getId().toString()))
             .body(servicecategory);
@@ -77,7 +88,7 @@ public class ServicecategoryResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Servicecategory servicecategory
     ) throws URISyntaxException {
-        log.debug("REST request to update Servicecategory : {}, {}", id, servicecategory);
+        LOG.debug("REST request to update Servicecategory : {}, {}", id, servicecategory);
         if (servicecategory.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -89,7 +100,7 @@ public class ServicecategoryResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        servicecategory = servicecategoryRepository.save(servicecategory);
+        servicecategory = servicecategoryService.update(servicecategory);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, servicecategory.getId().toString()))
             .body(servicecategory);
@@ -111,7 +122,7 @@ public class ServicecategoryResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Servicecategory servicecategory
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Servicecategory partially : {}, {}", id, servicecategory);
+        LOG.debug("REST request to partial update Servicecategory partially : {}, {}", id, servicecategory);
         if (servicecategory.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -123,34 +134,7 @@ public class ServicecategoryResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Servicecategory> result = servicecategoryRepository
-            .findById(servicecategory.getId())
-            .map(existingServicecategory -> {
-                if (servicecategory.getName() != null) {
-                    existingServicecategory.setName(servicecategory.getName());
-                }
-                if (servicecategory.getDescription() != null) {
-                    existingServicecategory.setDescription(servicecategory.getDescription());
-                }
-                if (servicecategory.getLmu() != null) {
-                    existingServicecategory.setLmu(servicecategory.getLmu());
-                }
-                if (servicecategory.getLmd() != null) {
-                    existingServicecategory.setLmd(servicecategory.getLmd());
-                }
-                if (servicecategory.getShowsecurity() != null) {
-                    existingServicecategory.setShowsecurity(servicecategory.getShowsecurity());
-                }
-                if (servicecategory.getSortorder() != null) {
-                    existingServicecategory.setSortorder(servicecategory.getSortorder());
-                }
-                if (servicecategory.getIsactive() != null) {
-                    existingServicecategory.setIsactive(servicecategory.getIsactive());
-                }
-
-                return existingServicecategory;
-            })
-            .map(servicecategoryRepository::save);
+        Optional<Servicecategory> result = servicecategoryService.partialUpdate(servicecategory);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -162,16 +146,31 @@ public class ServicecategoryResource {
      * {@code GET  /servicecategories} : get all the servicecategories.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of servicecategories in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Servicecategory>> getAllServicecategories(
+        ServicecategoryCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of Servicecategories");
-        Page<Servicecategory> page = servicecategoryRepository.findAll(pageable);
+        LOG.debug("REST request to get Servicecategories by criteria: {}", criteria);
+
+        Page<Servicecategory> page = servicecategoryQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /servicecategories/count} : count all the servicecategories.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countServicecategories(ServicecategoryCriteria criteria) {
+        LOG.debug("REST request to count Servicecategories by criteria: {}", criteria);
+        return ResponseEntity.ok().body(servicecategoryQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -182,8 +181,8 @@ public class ServicecategoryResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Servicecategory> getServicecategory(@PathVariable("id") Long id) {
-        log.debug("REST request to get Servicecategory : {}", id);
-        Optional<Servicecategory> servicecategory = servicecategoryRepository.findById(id);
+        LOG.debug("REST request to get Servicecategory : {}", id);
+        Optional<Servicecategory> servicecategory = servicecategoryService.findOne(id);
         return ResponseUtil.wrapOrNotFound(servicecategory);
     }
 
@@ -195,8 +194,8 @@ public class ServicecategoryResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteServicecategory(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Servicecategory : {}", id);
-        servicecategoryRepository.deleteById(id);
+        LOG.debug("REST request to delete Servicecategory : {}", id);
+        servicecategoryService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

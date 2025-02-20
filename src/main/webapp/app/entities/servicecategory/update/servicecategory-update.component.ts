@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IServicecategory } from '../servicecategory.model';
 import { ServicecategoryService } from '../service/servicecategory.service';
-import { ServicecategoryFormService, ServicecategoryFormGroup } from './servicecategory-form.service';
+import { ServicecategoryFormGroup, ServicecategoryFormService } from './servicecategory-form.service';
 
 @Component({
   standalone: true,

@@ -223,7 +223,7 @@ const routes: Routes = [
     loadChildren: () => import('./autocaretimetable/autocaretimetable.routes'),
   },
   {
-    path: 'sales-invoice-dummy',
+      path: 'sales-invoice-dummy',
     data: { pageTitle: 'SalesInvoiceDummies' },
     loadChildren: () => import('./sales-invoice-dummy/sales-invoice-dummy.routes'),
   },
@@ -256,6 +256,49 @@ const routes: Routes = [
     path: 'voucher-payments-details',
     data: { pageTitle: 'VoucherPaymentsDetails' },
     loadChildren: () => import('./voucher-payments-details/voucher-payments-details.routes'),
+    {
+     path: 'sales-invoice-lines',
+    data: { pageTitle: 'SalesInvoiceLines' },
+    loadChildren: () => import('./sales-invoice-lines/sales-invoice-lines.routes'),
+  },
+  {
+    path: 'invoice-service-charge',
+    data: { pageTitle: 'InvoiceServiceCharges' },
+    loadChildren: () => import('./invoice-service-charge/invoice-service-charge.routes'),
+  },
+  {
+    path: 'invoice-service-common',
+    data: { pageTitle: 'InvoiceServiceCommons' },
+    loadChildren: () => import('./invoice-service-common/invoice-service-common.routes'),
+  },
+  {
+    path: 'sale-invoice-common-service-charge',
+    data: { pageTitle: 'SaleInvoiceCommonServiceCharges' },
+    loadChildren: () => import('./sale-invoice-common-service-charge/sale-invoice-common-service-charge.routes'),
+  },
+  {
+    path: 'sales-invoice-service-charge-line',
+    data: { pageTitle: 'SalesInvoiceServiceChargeLines' },
+    loadChildren: () => import('./sales-invoice-service-charge-line/sales-invoice-service-charge-line.routes'),{
+        path: 'autojobsalesinvoiceservicechargeline',
+    data: { pageTitle: 'Autojobsalesinvoiceservicechargelines' },
+    loadChildren: () => import('./autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.routes'),
+  },
+  {
+    path: 'autojobsaleinvoicecommonservicecharge',
+    data: { pageTitle: 'Autojobsaleinvoicecommonservicecharges' },
+    loadChildren: () => import('./autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.routes'),
+  },
+  {
+    path: 'autojobsinvoicelines',
+    data: { pageTitle: 'Autojobsinvoicelines' },
+    loadChildren: () => import('./autojobsinvoicelines/autojobsinvoicelines.routes'),
+  },
+  {
+    path: 'workshop-vehicle-work-list',
+    data: { pageTitle: 'WorkshopVehicleWorkLists' },
+    loadChildren: () => import('./workshop-vehicle-work-list/workshop-vehicle-work-list.routes'),
+
   },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];

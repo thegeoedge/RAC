@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Servicesubcategory;
 import com.heavenscode.rac.repository.ServicesubcategoryRepository;
+import com.heavenscode.rac.service.ServicesubcategoryQueryService;
+import com.heavenscode.rac.service.ServicesubcategoryService;
+import com.heavenscode.rac.service.criteria.ServicesubcategoryCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/servicesubcategories")
-@Transactional
 public class ServicesubcategoryResource {
 
-    private final Logger log = LoggerFactory.getLogger(ServicesubcategoryResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServicesubcategoryResource.class);
 
     private static final String ENTITY_NAME = "servicesubcategory";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ServicesubcategoryService servicesubcategoryService;
+
     private final ServicesubcategoryRepository servicesubcategoryRepository;
 
-    public ServicesubcategoryResource(ServicesubcategoryRepository servicesubcategoryRepository) {
+    private final ServicesubcategoryQueryService servicesubcategoryQueryService;
+
+    public ServicesubcategoryResource(
+        ServicesubcategoryService servicesubcategoryService,
+        ServicesubcategoryRepository servicesubcategoryRepository,
+        ServicesubcategoryQueryService servicesubcategoryQueryService
+    ) {
+        this.servicesubcategoryService = servicesubcategoryService;
         this.servicesubcategoryRepository = servicesubcategoryRepository;
+        this.servicesubcategoryQueryService = servicesubcategoryQueryService;
     }
 
     /**
@@ -53,11 +64,11 @@ public class ServicesubcategoryResource {
     @PostMapping("")
     public ResponseEntity<Servicesubcategory> createServicesubcategory(@RequestBody Servicesubcategory servicesubcategory)
         throws URISyntaxException {
-        log.debug("REST request to save Servicesubcategory : {}", servicesubcategory);
+        LOG.debug("REST request to save Servicesubcategory : {}", servicesubcategory);
         if (servicesubcategory.getId() != null) {
             throw new BadRequestAlertException("A new servicesubcategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        servicesubcategory = servicesubcategoryRepository.save(servicesubcategory);
+        servicesubcategory = servicesubcategoryService.save(servicesubcategory);
         return ResponseEntity.created(new URI("/api/servicesubcategories/" + servicesubcategory.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, servicesubcategory.getId().toString()))
             .body(servicesubcategory);
@@ -78,7 +89,7 @@ public class ServicesubcategoryResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Servicesubcategory servicesubcategory
     ) throws URISyntaxException {
-        log.debug("REST request to update Servicesubcategory : {}, {}", id, servicesubcategory);
+        LOG.debug("REST request to update Servicesubcategory : {}, {}", id, servicesubcategory);
         if (servicesubcategory.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -90,7 +101,7 @@ public class ServicesubcategoryResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        servicesubcategory = servicesubcategoryRepository.save(servicesubcategory);
+        servicesubcategory = servicesubcategoryService.update(servicesubcategory);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, servicesubcategory.getId().toString()))
             .body(servicesubcategory);
@@ -112,7 +123,7 @@ public class ServicesubcategoryResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Servicesubcategory servicesubcategory
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Servicesubcategory partially : {}, {}", id, servicesubcategory);
+        LOG.debug("REST request to partial update Servicesubcategory partially : {}, {}", id, servicesubcategory);
         if (servicesubcategory.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -124,34 +135,7 @@ public class ServicesubcategoryResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Servicesubcategory> result = servicesubcategoryRepository
-            .findById(servicesubcategory.getId())
-            .map(existingServicesubcategory -> {
-                if (servicesubcategory.getName() != null) {
-                    existingServicesubcategory.setName(servicesubcategory.getName());
-                }
-                if (servicesubcategory.getDescription() != null) {
-                    existingServicesubcategory.setDescription(servicesubcategory.getDescription());
-                }
-                if (servicesubcategory.getMainid() != null) {
-                    existingServicesubcategory.setMainid(servicesubcategory.getMainid());
-                }
-                if (servicesubcategory.getMainname() != null) {
-                    existingServicesubcategory.setMainname(servicesubcategory.getMainname());
-                }
-                if (servicesubcategory.getLmu() != null) {
-                    existingServicesubcategory.setLmu(servicesubcategory.getLmu());
-                }
-                if (servicesubcategory.getLmd() != null) {
-                    existingServicesubcategory.setLmd(servicesubcategory.getLmd());
-                }
-                if (servicesubcategory.getIsactive() != null) {
-                    existingServicesubcategory.setIsactive(servicesubcategory.getIsactive());
-                }
-
-                return existingServicesubcategory;
-            })
-            .map(servicesubcategoryRepository::save);
+        Optional<Servicesubcategory> result = servicesubcategoryService.partialUpdate(servicesubcategory);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -163,16 +147,31 @@ public class ServicesubcategoryResource {
      * {@code GET  /servicesubcategories} : get all the servicesubcategories.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of servicesubcategories in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Servicesubcategory>> getAllServicesubcategories(
+        ServicesubcategoryCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of Servicesubcategories");
-        Page<Servicesubcategory> page = servicesubcategoryRepository.findAll(pageable);
+        LOG.debug("REST request to get Servicesubcategories by criteria: {}", criteria);
+
+        Page<Servicesubcategory> page = servicesubcategoryQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /servicesubcategories/count} : count all the servicesubcategories.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countServicesubcategories(ServicesubcategoryCriteria criteria) {
+        LOG.debug("REST request to count Servicesubcategories by criteria: {}", criteria);
+        return ResponseEntity.ok().body(servicesubcategoryQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -183,8 +182,8 @@ public class ServicesubcategoryResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Servicesubcategory> getServicesubcategory(@PathVariable("id") Long id) {
-        log.debug("REST request to get Servicesubcategory : {}", id);
-        Optional<Servicesubcategory> servicesubcategory = servicesubcategoryRepository.findById(id);
+        LOG.debug("REST request to get Servicesubcategory : {}", id);
+        Optional<Servicesubcategory> servicesubcategory = servicesubcategoryService.findOne(id);
         return ResponseUtil.wrapOrNotFound(servicesubcategory);
     }
 
@@ -196,8 +195,8 @@ public class ServicesubcategoryResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteServicesubcategory(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Servicesubcategory : {}", id);
-        servicesubcategoryRepository.deleteById(id);
+        LOG.debug("REST request to delete Servicesubcategory : {}", id);
+        servicesubcategoryService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject, from } from 'rxjs';
+import { Subject, from, of } from 'rxjs';
 
 import { InventoryService } from '../service/inventory.service';
 import { IInventory } from '../inventory.model';
@@ -20,8 +19,9 @@ describe('Inventory Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, InventoryUpdateComponent],
+      imports: [InventoryUpdateComponent],
       providers: [
+        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,

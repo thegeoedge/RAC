@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { ServicecategoryComponent } from './list/servicecategory.component';
-import { ServicecategoryDetailComponent } from './detail/servicecategory-detail.component';
-import { ServicecategoryUpdateComponent } from './update/servicecategory-update.component';
 import ServicecategoryResolve from './route/servicecategory-routing-resolve.service';
 
 const servicecategoryRoute: Routes = [
   {
     path: '',
-    component: ServicecategoryComponent,
+    loadComponent: () => import('./list/servicecategory.component').then(m => m.ServicecategoryComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: ServicecategoryDetailComponent,
+    loadComponent: () => import('./detail/servicecategory-detail.component').then(m => m.ServicecategoryDetailComponent),
     resolve: {
       servicecategory: ServicecategoryResolve,
     },
@@ -26,7 +23,7 @@ const servicecategoryRoute: Routes = [
   },
   {
     path: 'new',
-    component: ServicecategoryUpdateComponent,
+    loadComponent: () => import('./update/servicecategory-update.component').then(m => m.ServicecategoryUpdateComponent),
     resolve: {
       servicecategory: ServicecategoryResolve,
     },
@@ -34,7 +31,7 @@ const servicecategoryRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: ServicecategoryUpdateComponent,
+    loadComponent: () => import('./update/servicecategory-update.component').then(m => m.ServicecategoryUpdateComponent),
     resolve: {
       servicecategory: ServicecategoryResolve,
     },

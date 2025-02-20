@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { InventoryComponent } from './list/inventory.component';
-import { InventoryDetailComponent } from './detail/inventory-detail.component';
-import { InventoryUpdateComponent } from './update/inventory-update.component';
 import InventoryResolve from './route/inventory-routing-resolve.service';
 
 const inventoryRoute: Routes = [
   {
     path: '',
-    component: InventoryComponent,
+    loadComponent: () => import('./list/inventory.component').then(m => m.InventoryComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: InventoryDetailComponent,
+    loadComponent: () => import('./detail/inventory-detail.component').then(m => m.InventoryDetailComponent),
     resolve: {
       inventory: InventoryResolve,
     },
@@ -26,7 +23,7 @@ const inventoryRoute: Routes = [
   },
   {
     path: 'new',
-    component: InventoryUpdateComponent,
+    loadComponent: () => import('./update/inventory-update.component').then(m => m.InventoryUpdateComponent),
     resolve: {
       inventory: InventoryResolve,
     },
@@ -34,7 +31,7 @@ const inventoryRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: InventoryUpdateComponent,
+    loadComponent: () => import('./update/inventory-update.component').then(m => m.InventoryUpdateComponent),
     resolve: {
       inventory: InventoryResolve,
     },

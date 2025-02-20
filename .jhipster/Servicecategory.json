@@ -33,8 +33,10 @@
       "fieldType": "Boolean"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Servicecategory",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no"
+  "searchEngine": "no",
+  "service": "serviceClass"
 }

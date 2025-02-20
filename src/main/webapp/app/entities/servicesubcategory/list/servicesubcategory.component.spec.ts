@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, inject, tick } from '@angular/core/testing';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpHeaders, HttpResponse, provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { sampleWithRequiredData } from '../servicesubcategory.test-samples';
@@ -19,8 +18,9 @@ describe('Servicesubcategory Management Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, ServicesubcategoryComponent],
+      imports: [ServicesubcategoryComponent],
       providers: [
+        provideHttpClient(),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -32,6 +32,7 @@ describe('Servicesubcategory Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
+                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             ),
             snapshot: {
@@ -40,6 +41,7 @@ describe('Servicesubcategory Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
+                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
           },
@@ -91,7 +93,7 @@ describe('Servicesubcategory Management Component', () => {
     it('Should forward to servicesubcategoryService', () => {
       const entity = { id: 123 };
       jest.spyOn(service, 'getServicesubcategoryIdentifier');
-      const id = comp.trackId(0, entity);
+      const id = comp.trackId(entity);
       expect(service.getServicesubcategoryIdentifier).toHaveBeenCalledWith(entity);
       expect(id).toBe(entity.id);
     });
@@ -126,6 +128,14 @@ describe('Servicesubcategory Management Component', () => {
 
     // THEN
     expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ sort: ['id,desc'] }));
+  });
+
+  it('should calculate the filter attribute', () => {
+    // WHEN
+    comp.ngOnInit();
+
+    // THEN
+    expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] }));
   });
 
   describe('delete', () => {
