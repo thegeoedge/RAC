@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
@@ -12,20 +12,20 @@ import { SalesInvoiceLinesService } from '../service/sales-invoice-lines.service
 import { SalesInvoiceLinesFormGroup, SalesInvoiceLinesFormService } from './sales-invoice-lines-form.service';
 import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
+import CommonModule from 'app/shared/shared.module';
 
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-update',
   templateUrl: './sales-invoice-lines-update.component.html',
-  styleUrls: ['./sales-invoice-lines.component.css'],
   imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class SalesInvoiceLinesUpdateComponent implements OnInit {
   isSaving = false;
+  @Output() totalUpdated = new EventEmitter<number>();
   salesInvoiceLines: ISalesInvoiceLines[] = []; // Now an array of sales invoice lines
-
   filteredItems: IInventory[][] = []; // Array of arrays to store filtered items for each row
-
+  showCodeField: boolean = false;
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   protected salesInvoiceLinesFormService = inject(SalesInvoiceLinesFormService);
   protected activatedRoute = inject(ActivatedRoute);
@@ -35,16 +35,30 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
   });
+  toggleShowCodeField(): void {
+    this.showCodeField = !this.showCodeField;
+  }
+  get salesInvoiceLinesDummyArray(): FormArray {
+    return this.editForm.get('salesInvoiceLines') as FormArray;
+  }
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ salesInvoiceLines }) => {
       // Ensure salesInvoiceLines is always an array
       this.salesInvoiceLines = Array.isArray(salesInvoiceLines) ? salesInvoiceLines : [salesInvoiceLines];
 
+      if (salesInvoiceLines && salesInvoiceLines.length > 0) {
+        this.salesInvoiceLines = salesInvoiceLines;
+        this.updateForm(salesInvoiceLines);
+      } else {
+        this.addInvoiceLine(); // Ensure at least one row is added
+      }
+
       console.log('Sales Invoice Lines:', this.salesInvoiceLines); // Add this line to see if the data is correct
       this.updateForm(this.salesInvoiceLines);
     });
   }
+
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)
     const inputElement = <HTMLInputElement>event.target;
@@ -135,6 +149,22 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       });
   }
 
+  onQuantityChange(index: number): void {
+    const salesInvoiceLineGroup = this.salesInvoiceLinesDummyArray.at(index) as FormGroup;
+
+    const quantity = salesInvoiceLineGroup.get('quantity')?.value || 0;
+    const itemPrice = salesInvoiceLineGroup.get('sellingPrice')?.value || 0; // Fixed price per unit
+
+    // Ensure quantity is never negative
+    const validQuantity = Math.max(0, quantity);
+
+    // Calculate selling price
+    const newSellingPrice = validQuantity * itemPrice;
+
+    // Update selling price in the form
+    salesInvoiceLineGroup.patchValue({ lineTotal: newSellingPrice });
+    this.calculateTotal();
+  }
   onItemNameInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement
     const inputElement = <HTMLInputElement>event.target;
@@ -169,9 +199,19 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         },
       });
   }
+  calculateTotal(): void {
+    const total = this.salesInvoiceLinesDummyArray.controls
+      .map(control => control.get('lineTotal')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    console.log('Total Selling Price:', total);
+    this.totalUpdated.emit(total);
+  }
 
   // Add a new line to the form
   addSalesInvoiceLine(): void {
+    const newRow = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup();
+    console.log('Adding row:', newRow.value);
     this.salesInvoiceLinesArray.push(this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup());
   }
 
@@ -290,5 +330,15 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       console.log('Created form group:', formGroup.value); // Log the form group values
       this.salesInvoiceLinesArray.push(formGroup);
     });
+  }
+
+  addInvoiceLine(): void {
+    const newRow = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup();
+    console.log('Adding row:', newRow.value);
+    this.salesInvoiceLinesDummyArray.push(newRow);
+  }
+
+  removeInvoiceLine(index: number): void {
+    this.salesInvoiceLinesDummyArray.removeAt(index);
   }
 }
