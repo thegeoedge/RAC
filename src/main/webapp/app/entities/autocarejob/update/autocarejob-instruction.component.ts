@@ -535,18 +535,18 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (this.autojobsinvoiceComponent) {
       this.autojobsinvoiceComponent.save();
     }
-    if (this.workshopVehicleWorkListComponent) {
-      this.workshopVehicleWorkListComponent.save();
-    }
-    if (this.autojobsaleinvoicecommonservicechargeComponent) {
-      this.autojobsaleinvoicecommonservicechargeComponent.save();
-    }
-    if (this.autojobsinvoicelinesComponent) {
-      this.autojobsinvoicelinesComponent.save();
-    }
-    if (this.autojobsalesinvoiceservicechargelineComponent) {
-      this.autojobsalesinvoiceservicechargelineComponent.save();
-    }
+    // if (this.workshopVehicleWorkListComponent) {
+    //   this.workshopVehicleWorkListComponent.save();
+    // }
+    // if (this.autojobsaleinvoicecommonservicechargeComponent) {
+    //   this.autojobsaleinvoicecommonservicechargeComponent.save();
+    // }
+    // if (this.autojobsinvoicelinesComponent) {
+    //   this.autojobsinvoicelinesComponent.save();
+    // }
+    // if (this.autojobsalesinvoiceservicechargelineComponent) {
+    //   this.autojobsalesinvoiceservicechargelineComponent.save();
+    // }
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {

@@ -433,6 +433,19 @@
                       />
                     </div>
                   </fieldset>
+
+                  <div class="mb-3" *ngIf="false">
+                    <label class="form-label" for="field_isjobclose">Isjobclose</label>
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      name="isjobclose"
+                      id="field_isjobclose"
+                      data-cy="isjobclose"
+                      formControlName="isjobclose"
+                      [checked]="true"
+                    />
+                  </div>
                 </div>
               </form>
             </div>

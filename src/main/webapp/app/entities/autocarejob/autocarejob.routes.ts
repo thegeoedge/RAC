@@ -6,6 +6,7 @@ import { AutocarejobComponent } from './list/autocarejob.component';
 import { AutocarejobDetailComponent } from './detail/autocarejob-detail.component';
 import { AutocarejobUpdateComponent } from './update/autocarejob-update.component';
 import { AutocarejobInstructionComponent } from './update/autocarejob-instruction.component';
+import { AutocareopenjobComponent } from './list/autocareopenjob.component';
 import AutocarejobResolve from './route/autocarejob-routing-resolve.service';
 
 const autocarejobRoute: Routes = [
@@ -17,6 +18,15 @@ const autocarejobRoute: Routes = [
     },
     canActivate: [UserRouteAccessService],
   },
+  {
+    path: 'autocareopenjob',
+    component: AutocareopenjobComponent,
+    data: {
+      defaultSort: 'id,' + ASC,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+
   {
     path: ':id/view',
     component: AutocarejobDetailComponent,
