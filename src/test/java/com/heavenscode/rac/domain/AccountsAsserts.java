@@ -80,5 +80,7 @@ public class AccountsAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertAccountsUpdatableRelationshipsEquals(Accounts expected, Accounts actual) {}
+    public static void assertAccountsUpdatableRelationshipsEquals(Accounts expected, Accounts actual) {
+        // empty method
+    }
 }

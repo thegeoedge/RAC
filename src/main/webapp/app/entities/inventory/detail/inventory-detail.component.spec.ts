@@ -20,7 +20,7 @@ describe('Inventory Management Detail Component', () => {
           [
             {
               path: '**',
-              component: InventoryDetailComponent,
+              loadComponent: () => import('./inventory-detail.component').then(m => m.InventoryDetailComponent),
               resolve: { inventory: () => of({ id: 123 }) },
             },
           ],
@@ -67,7 +67,7 @@ describe('Inventory Management Detail Component', () => {
       comp.byteSize(fakeBase64);
 
       // THEN
-      expect(dataUtils.byteSize).toBeCalledWith(fakeBase64);
+      expect(dataUtils.byteSize).toHaveBeenCalledWith(fakeBase64);
     });
   });
 
@@ -87,7 +87,7 @@ describe('Inventory Management Detail Component', () => {
       comp.openFile(fakeBase64, fakeContentType);
 
       // THEN
-      expect(dataUtils.openFile).toBeCalledWith(fakeBase64, fakeContentType);
+      expect(dataUtils.openFile).toHaveBeenCalledWith(fakeBase64, fakeContentType);
     });
   });
 });

@@ -54,11 +54,25 @@
     <include file="config/liquibase/changelog/20241021080814_added_entity_Autocarehoist.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20241021092648_added_entity_Hoisttype.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20241029105625_added_entity_Autocaretimetable.xml" relativeToChangelogFile="false"/>
+   <include file="config/liquibase/changelog/20250130065825_added_entity_SalesInvoiceDummy.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250130072225_added_entity_SalesInvoiceLinesDummy.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250130074148_added_entity_SalesInvoiceServiceChargeLineDummy.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250131043339_added_entity_SaleInvoiceCommonServiceChargeDummy.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250211041743_added_entity_Voucher.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250211043043_added_entity_VoucherLines.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250211044512_added_entity_VoucherPaymentsDetails.xml" relativeToChangelogFile="false"/>
+
+      <include file="config/liquibase/changelog/20250129143706_added_entity_SalesInvoiceLines.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250129191518_added_entity_InvoiceServiceCharge.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250129192241_added_entity_InvoiceServiceCommon.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250212111155_added_entity_SaleInvoiceCommonServiceCharge.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250212111835_added_entity_SalesInvoiceServiceChargeLine.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250212115930_added_entity_Autojobsalesinvoiceservicechargeline.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250212122528_added_entity_Autojobsaleinvoicecommonservicecharge.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250212125615_added_entity_Autojobsinvoicelines.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250217063812_added_entity_WorkshopVehicleWorkList.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250218134225_added_entity_Receiptpaymentsdetails.xml" relativeToChangelogFile="false"/>
+
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

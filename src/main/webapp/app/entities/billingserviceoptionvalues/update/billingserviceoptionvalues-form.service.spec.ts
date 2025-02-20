@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithRequiredData, sampleWithNewData } from '../billingserviceoptionvalues.test-samples';
+import { sampleWithNewData, sampleWithRequiredData } from '../billingserviceoptionvalues.test-samples';
 
 import { BillingserviceoptionvaluesFormService } from './billingserviceoptionvalues-form.service';
 

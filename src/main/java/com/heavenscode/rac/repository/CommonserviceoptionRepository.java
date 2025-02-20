@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface CommonserviceoptionRepository extends JpaRepository<Commonserviceoption, Long> {}
+public interface CommonserviceoptionRepository
+    extends JpaRepository<Commonserviceoption, Long>, JpaSpecificationExecutor<Commonserviceoption> {}

@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Billingserviceoption;
 import com.heavenscode.rac.repository.BillingserviceoptionRepository;
+import com.heavenscode.rac.service.BillingserviceoptionQueryService;
+import com.heavenscode.rac.service.BillingserviceoptionService;
+import com.heavenscode.rac.service.criteria.BillingserviceoptionCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/billingserviceoptions")
-@Transactional
 public class BillingserviceoptionResource {
 
-    private final Logger log = LoggerFactory.getLogger(BillingserviceoptionResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BillingserviceoptionResource.class);
 
     private static final String ENTITY_NAME = "billingserviceoption";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final BillingserviceoptionService billingserviceoptionService;
+
     private final BillingserviceoptionRepository billingserviceoptionRepository;
 
-    public BillingserviceoptionResource(BillingserviceoptionRepository billingserviceoptionRepository) {
+    private final BillingserviceoptionQueryService billingserviceoptionQueryService;
+
+    public BillingserviceoptionResource(
+        BillingserviceoptionService billingserviceoptionService,
+        BillingserviceoptionRepository billingserviceoptionRepository,
+        BillingserviceoptionQueryService billingserviceoptionQueryService
+    ) {
+        this.billingserviceoptionService = billingserviceoptionService;
         this.billingserviceoptionRepository = billingserviceoptionRepository;
+        this.billingserviceoptionQueryService = billingserviceoptionQueryService;
     }
 
     /**
@@ -53,11 +64,11 @@ public class BillingserviceoptionResource {
     @PostMapping("")
     public ResponseEntity<Billingserviceoption> createBillingserviceoption(@RequestBody Billingserviceoption billingserviceoption)
         throws URISyntaxException {
-        log.debug("REST request to save Billingserviceoption : {}", billingserviceoption);
+        LOG.debug("REST request to save Billingserviceoption : {}", billingserviceoption);
         if (billingserviceoption.getId() != null) {
             throw new BadRequestAlertException("A new billingserviceoption cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        billingserviceoption = billingserviceoptionRepository.save(billingserviceoption);
+        billingserviceoption = billingserviceoptionService.save(billingserviceoption);
         return ResponseEntity.created(new URI("/api/billingserviceoptions/" + billingserviceoption.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, billingserviceoption.getId().toString()))
             .body(billingserviceoption);
@@ -78,7 +89,7 @@ public class BillingserviceoptionResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Billingserviceoption billingserviceoption
     ) throws URISyntaxException {
-        log.debug("REST request to update Billingserviceoption : {}, {}", id, billingserviceoption);
+        LOG.debug("REST request to update Billingserviceoption : {}, {}", id, billingserviceoption);
         if (billingserviceoption.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -90,7 +101,7 @@ public class BillingserviceoptionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        billingserviceoption = billingserviceoptionRepository.save(billingserviceoption);
+        billingserviceoption = billingserviceoptionService.update(billingserviceoption);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, billingserviceoption.getId().toString()))
             .body(billingserviceoption);
@@ -112,7 +123,7 @@ public class BillingserviceoptionResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Billingserviceoption billingserviceoption
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Billingserviceoption partially : {}, {}", id, billingserviceoption);
+        LOG.debug("REST request to partial update Billingserviceoption partially : {}, {}", id, billingserviceoption);
         if (billingserviceoption.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -124,34 +135,7 @@ public class BillingserviceoptionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Billingserviceoption> result = billingserviceoptionRepository
-            .findById(billingserviceoption.getId())
-            .map(existingBillingserviceoption -> {
-                if (billingserviceoption.getServicename() != null) {
-                    existingBillingserviceoption.setServicename(billingserviceoption.getServicename());
-                }
-                if (billingserviceoption.getServicediscription() != null) {
-                    existingBillingserviceoption.setServicediscription(billingserviceoption.getServicediscription());
-                }
-                if (billingserviceoption.getIsactive() != null) {
-                    existingBillingserviceoption.setIsactive(billingserviceoption.getIsactive());
-                }
-                if (billingserviceoption.getLmd() != null) {
-                    existingBillingserviceoption.setLmd(billingserviceoption.getLmd());
-                }
-                if (billingserviceoption.getLmu() != null) {
-                    existingBillingserviceoption.setLmu(billingserviceoption.getLmu());
-                }
-                if (billingserviceoption.getOrderby() != null) {
-                    existingBillingserviceoption.setOrderby(billingserviceoption.getOrderby());
-                }
-                if (billingserviceoption.getBilltocustomer() != null) {
-                    existingBillingserviceoption.setBilltocustomer(billingserviceoption.getBilltocustomer());
-                }
-
-                return existingBillingserviceoption;
-            })
-            .map(billingserviceoptionRepository::save);
+        Optional<Billingserviceoption> result = billingserviceoptionService.partialUpdate(billingserviceoption);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -163,16 +147,31 @@ public class BillingserviceoptionResource {
      * {@code GET  /billingserviceoptions} : get all the billingserviceoptions.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of billingserviceoptions in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Billingserviceoption>> getAllBillingserviceoptions(
+        BillingserviceoptionCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of Billingserviceoptions");
-        Page<Billingserviceoption> page = billingserviceoptionRepository.findAll(pageable);
+        LOG.debug("REST request to get Billingserviceoptions by criteria: {}", criteria);
+
+        Page<Billingserviceoption> page = billingserviceoptionQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /billingserviceoptions/count} : count all the billingserviceoptions.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countBillingserviceoptions(BillingserviceoptionCriteria criteria) {
+        LOG.debug("REST request to count Billingserviceoptions by criteria: {}", criteria);
+        return ResponseEntity.ok().body(billingserviceoptionQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -183,8 +182,8 @@ public class BillingserviceoptionResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Billingserviceoption> getBillingserviceoption(@PathVariable("id") Long id) {
-        log.debug("REST request to get Billingserviceoption : {}", id);
-        Optional<Billingserviceoption> billingserviceoption = billingserviceoptionRepository.findById(id);
+        LOG.debug("REST request to get Billingserviceoption : {}", id);
+        Optional<Billingserviceoption> billingserviceoption = billingserviceoptionService.findOne(id);
         return ResponseUtil.wrapOrNotFound(billingserviceoption);
     }
 
@@ -196,8 +195,8 @@ public class BillingserviceoptionResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBillingserviceoption(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Billingserviceoption : {}", id);
-        billingserviceoptionRepository.deleteById(id);
+        LOG.debug("REST request to delete Billingserviceoption : {}", id);
+        billingserviceoptionService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

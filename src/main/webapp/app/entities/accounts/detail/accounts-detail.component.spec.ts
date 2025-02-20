@@ -17,7 +17,7 @@ describe('Accounts Management Detail Component', () => {
           [
             {
               path: '**',
-              component: AccountsDetailComponent,
+              loadComponent: () => import('./accounts-detail.component').then(m => m.AccountsDetailComponent),
               resolve: { accounts: () => of({ id: 123 }) },
             },
           ],

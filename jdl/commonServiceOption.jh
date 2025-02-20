@@ -9,3 +9,4 @@ entity Commonserviceoption {
     lmu Integer // LMU
 }
 paginate * with pagination
+filter all

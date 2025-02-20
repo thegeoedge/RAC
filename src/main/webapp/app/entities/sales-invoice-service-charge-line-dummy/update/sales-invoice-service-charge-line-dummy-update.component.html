@@ -1,0 +1,105 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate [formGroup]="editForm">
+      <h2
+        id="jhi-sales-invoice-service-charge-line-dummy-heading"
+        data-cy="SalesInvoiceServiceChargeLineDummyCreateUpdateHeading"
+        *ngIf="showCodeField"
+      ></h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+        <div>
+          <select class="form-select" (change)="onDropdownChange($event)">
+            <option *ngFor="let vehicletype of vehicletypes" [value]="vehicletype.id">
+              {{ vehicletype.vehicletype }}
+            </option>
+          </select>
+          <br />
+        </div>
+        <div *ngIf="allBillingServiceOptions.length > 0">
+          <div *ngFor="let optionsGroup of allBillingServiceOptions">
+            <div *ngFor="let option of optionsGroup">
+              {{ option.servicename }}
+              <input type="checkbox" [value]="option.servicename" (change)="onCheckboxChange($event, option.servicename, option.id)" />
+            </div>
+            <br />
+          </div>
+        </div>
+        <button (click)="addToTable()">Add to Table</button>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th *ngIf="false">ID</th>
+              <th *ngIf="false">Invoice Id</th>
+              <th *ngIf="false">Line Id</th>
+              <th *ngIf="false">Option Id</th>
+              <th>Service Name</th>
+              <th *ngIf="false">Service Description</th>
+              <th>Value</th>
+              <th>Is Customer Service</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="serviceChargeLines">
+            <tr *ngFor="let line of serviceChargeLinesArray.controls; let i = index" [formGroupName]="i">
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="id" [readonly]="true" *ngIf="line.get('id')?.value" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="invoiceId" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="lineId" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="optionId" />
+              </td>
+              <td>
+                <input formControlName="serviceName" type="text" (input)="onItemCodeInput($event, i)" [attr.list]="'autocomplete_' + i" />
+
+                <datalist [id]="'autocomplete_' + i">
+                  <option *ngFor="let item of filteredItems[i]" [value]="item.servicename">
+                    {{ item.servicename }}
+                  </option>
+                </datalist>
+              </td>
+              <td *ngIf="false">
+                <input type="text" class="form-control" formControlName="serviceDescription" />
+              </td>
+              <td>
+                <input type="number" class="form-control" formControlName="value" />
+              </td>
+              <td>
+                <input type="checkbox" class="form-check" formControlName="isCustomerService" />
+              </td>
+              <td>
+                <button type="button" class="btn btn-danger" (click)="removeServiceChargeLine(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button type="button" class="btn btn-secondary" (click)="addServiceChargeLine()">Add Line</button>
+      </div>
+
+      <div class="mt-3" *ngIf="false">
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+          *ngIf="false"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

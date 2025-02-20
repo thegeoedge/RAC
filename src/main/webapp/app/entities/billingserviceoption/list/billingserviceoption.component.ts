@@ -1,19 +1,20 @@
-import { Component, NgZone, inject, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, inject } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router, RouterModule } from '@angular/router';
-import { combineLatest, filter, Observable, Subscription, tap } from 'rxjs';
+import { Observable, Subscription, combineLatest, filter, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import SharedModule from 'app/shared/shared.module';
-import { sortStateSignal, SortDirective, SortByDirective, type SortState, SortService } from 'app/shared/sort';
-import { DurationPipe, FormatMediumDatetimePipe, FormatMediumDatePipe } from 'app/shared/date';
+import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { DurationPipe, FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { ItemCountComponent } from 'app/shared/pagination';
 import { FormsModule } from '@angular/forms';
-
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { FilterComponent, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import { IBillingserviceoption } from '../billingserviceoption.model';
-import { EntityArrayResponseType, BillingserviceoptionService } from '../service/billingserviceoption.service';
+
+import { BillingserviceoptionService, EntityArrayResponseType } from '../service/billingserviceoption.service';
 import { BillingserviceoptionDeleteDialogComponent } from '../delete/billingserviceoption-delete-dialog.component';
 
 @Component({
@@ -29,6 +30,7 @@ import { BillingserviceoptionDeleteDialogComponent } from '../delete/billingserv
     DurationPipe,
     FormatMediumDatetimePipe,
     FormatMediumDatePipe,
+    FilterComponent,
     ItemCountComponent,
   ],
 })
@@ -38,6 +40,7 @@ export class BillingserviceoptionComponent implements OnInit {
   isLoading = false;
 
   sortState = sortStateSignal({});
+  filters: IFilterOptions = new FilterOptions();
 
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
@@ -50,8 +53,7 @@ export class BillingserviceoptionComponent implements OnInit {
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
 
-  trackId = (_index: number, item: IBillingserviceoption): number =>
-    this.billingserviceoptionService.getBillingserviceoptionIdentifier(item);
+  trackId = (item: IBillingserviceoption): number => this.billingserviceoptionService.getBillingserviceoptionIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
@@ -60,6 +62,8 @@ export class BillingserviceoptionComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+
+    this.filters.filterChanges.subscribe(filterOptions => this.handleNavigation(1, this.sortState(), filterOptions));
   }
 
   delete(billingserviceoption: IBillingserviceoption): void {
@@ -83,17 +87,18 @@ export class BillingserviceoptionComponent implements OnInit {
   }
 
   navigateToWithComponentValues(event: SortState): void {
-    this.handleNavigation(this.page, event);
+    this.handleNavigation(this.page, event, this.filters.filterOptions);
   }
 
   navigateToPage(page: number): void {
-    this.handleNavigation(page, this.sortState());
+    this.handleNavigation(page, this.sortState(), this.filters.filterOptions);
   }
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
     this.page = +(page ?? 1);
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+    this.filters.initializeFromParams(params);
   }
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
@@ -111,7 +116,7 @@ export class BillingserviceoptionComponent implements OnInit {
   }
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
-    const { page } = this;
+    const { page, filters } = this;
 
     this.isLoading = true;
     const pageToLoad: number = page;
@@ -120,15 +125,22 @@ export class BillingserviceoptionComponent implements OnInit {
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+    filters.filterOptions.forEach(filterOption => {
+      queryObject[filterOption.name] = filterOption.values;
+    });
     return this.billingserviceoptionService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
-  protected handleNavigation(page: number, sortState: SortState): void {
-    const queryParamsObj = {
+  protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {
+    const queryParamsObj: any = {
       page,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(sortState),
     };
+
+    filterOptions?.forEach(filterOption => {
+      queryParamsObj[filterOption.nameAsQueryParam()] = filterOption.values;
+    });
 
     this.ngZone.run(() => {
       this.router.navigate(['./'], {

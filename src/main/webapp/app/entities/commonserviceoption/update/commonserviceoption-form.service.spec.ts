@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithRequiredData, sampleWithNewData } from '../commonserviceoption.test-samples';
+import { sampleWithNewData, sampleWithRequiredData } from '../commonserviceoption.test-samples';
 
 import { CommonserviceoptionFormService } from './commonserviceoption-form.service';
 

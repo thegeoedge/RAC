@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { BillingserviceoptionComponent } from './list/billingserviceoption.component';
-import { BillingserviceoptionDetailComponent } from './detail/billingserviceoption-detail.component';
-import { BillingserviceoptionUpdateComponent } from './update/billingserviceoption-update.component';
 import BillingserviceoptionResolve from './route/billingserviceoption-routing-resolve.service';
 
 const billingserviceoptionRoute: Routes = [
   {
     path: '',
-    component: BillingserviceoptionComponent,
+    loadComponent: () => import('./list/billingserviceoption.component').then(m => m.BillingserviceoptionComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: BillingserviceoptionDetailComponent,
+    loadComponent: () => import('./detail/billingserviceoption-detail.component').then(m => m.BillingserviceoptionDetailComponent),
     resolve: {
       billingserviceoption: BillingserviceoptionResolve,
     },
@@ -26,7 +23,7 @@ const billingserviceoptionRoute: Routes = [
   },
   {
     path: 'new',
-    component: BillingserviceoptionUpdateComponent,
+    loadComponent: () => import('./update/billingserviceoption-update.component').then(m => m.BillingserviceoptionUpdateComponent),
     resolve: {
       billingserviceoption: BillingserviceoptionResolve,
     },
@@ -34,7 +31,7 @@ const billingserviceoptionRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: BillingserviceoptionUpdateComponent,
+    loadComponent: () => import('./update/billingserviceoption-update.component').then(m => m.BillingserviceoptionUpdateComponent),
     resolve: {
       billingserviceoption: BillingserviceoptionResolve,
     },

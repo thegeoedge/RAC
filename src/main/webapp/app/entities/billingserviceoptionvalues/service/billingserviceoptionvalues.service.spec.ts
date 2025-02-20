@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { IBillingserviceoptionvalues } from '../billingserviceoptionvalues.model';
 import {
-  sampleWithRequiredData,
+  sampleWithFullData,
   sampleWithNewData,
   sampleWithPartialData,
-  sampleWithFullData,
+  sampleWithRequiredData,
 } from '../billingserviceoptionvalues.test-samples';
 
 import { BillingserviceoptionvaluesService, RestBillingserviceoptionvalues } from './billingserviceoptionvalues.service';
@@ -23,7 +24,7 @@ describe('Billingserviceoptionvalues Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     expectedResult = null;
     service = TestBed.inject(BillingserviceoptionvaluesService);

@@ -107,5 +107,6 @@
     },
     "packageManager": "npm",
     "analytics": false
-  }
+  },
+  "assets": ["src/favicon.ico", "src/assets"]
 }

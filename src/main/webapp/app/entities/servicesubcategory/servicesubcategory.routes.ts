@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { ServicesubcategoryComponent } from './list/servicesubcategory.component';
-import { ServicesubcategoryDetailComponent } from './detail/servicesubcategory-detail.component';
-import { ServicesubcategoryUpdateComponent } from './update/servicesubcategory-update.component';
 import ServicesubcategoryResolve from './route/servicesubcategory-routing-resolve.service';
 
 const servicesubcategoryRoute: Routes = [
   {
     path: '',
-    component: ServicesubcategoryComponent,
+    loadComponent: () => import('./list/servicesubcategory.component').then(m => m.ServicesubcategoryComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: ServicesubcategoryDetailComponent,
+    loadComponent: () => import('./detail/servicesubcategory-detail.component').then(m => m.ServicesubcategoryDetailComponent),
     resolve: {
       servicesubcategory: ServicesubcategoryResolve,
     },
@@ -26,7 +23,7 @@ const servicesubcategoryRoute: Routes = [
   },
   {
     path: 'new',
-    component: ServicesubcategoryUpdateComponent,
+    loadComponent: () => import('./update/servicesubcategory-update.component').then(m => m.ServicesubcategoryUpdateComponent),
     resolve: {
       servicesubcategory: ServicesubcategoryResolve,
     },
@@ -34,7 +31,7 @@ const servicesubcategoryRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: ServicesubcategoryUpdateComponent,
+    loadComponent: () => import('./update/servicesubcategory-update.component').then(m => m.ServicesubcategoryUpdateComponent),
     resolve: {
       servicesubcategory: ServicesubcategoryResolve,
     },

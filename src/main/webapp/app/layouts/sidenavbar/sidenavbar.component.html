@@ -55,7 +55,7 @@
               <fa-icon icon="asterisk" [fixedWidth]="true"></fa-icon> Autocareappointment
             </a>
           </li>
-          <div *ngIf="false">
+             <div *ngIf="false">
             <li>
               <a
                 class="sidenav-link"
@@ -330,6 +330,18 @@
               </a>
             </li>
           </div>
+
+           <li>
+            <a
+              class="dropdown-item"
+              routerLink="/sales-invoice-dummy"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              <fa-icon icon="asterisk" [fixedWidth]="true"></fa-icon>
+              <span>Sales Invoice Dummy</span>
+            </a>
+          </li>
         </ul>
       </li>
     }

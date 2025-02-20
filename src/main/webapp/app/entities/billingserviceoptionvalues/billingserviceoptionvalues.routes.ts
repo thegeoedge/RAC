@@ -2,23 +2,21 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { BillingserviceoptionvaluesComponent } from './list/billingserviceoptionvalues.component';
-import { BillingserviceoptionvaluesDetailComponent } from './detail/billingserviceoptionvalues-detail.component';
-import { BillingserviceoptionvaluesUpdateComponent } from './update/billingserviceoptionvalues-update.component';
 import BillingserviceoptionvaluesResolve from './route/billingserviceoptionvalues-routing-resolve.service';
 
 const billingserviceoptionvaluesRoute: Routes = [
   {
     path: '',
-    component: BillingserviceoptionvaluesComponent,
+    loadComponent: () => import('./list/billingserviceoptionvalues.component').then(m => m.BillingserviceoptionvaluesComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: BillingserviceoptionvaluesDetailComponent,
+    loadComponent: () =>
+      import('./detail/billingserviceoptionvalues-detail.component').then(m => m.BillingserviceoptionvaluesDetailComponent),
     resolve: {
       billingserviceoptionvalues: BillingserviceoptionvaluesResolve,
     },
@@ -26,7 +24,8 @@ const billingserviceoptionvaluesRoute: Routes = [
   },
   {
     path: 'new',
-    component: BillingserviceoptionvaluesUpdateComponent,
+    loadComponent: () =>
+      import('./update/billingserviceoptionvalues-update.component').then(m => m.BillingserviceoptionvaluesUpdateComponent),
     resolve: {
       billingserviceoptionvalues: BillingserviceoptionvaluesResolve,
     },
@@ -34,7 +33,8 @@ const billingserviceoptionvaluesRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: BillingserviceoptionvaluesUpdateComponent,
+    loadComponent: () =>
+      import('./update/billingserviceoptionvalues-update.component').then(m => m.BillingserviceoptionvaluesUpdateComponent),
     resolve: {
       billingserviceoptionvalues: BillingserviceoptionvaluesResolve,
     },

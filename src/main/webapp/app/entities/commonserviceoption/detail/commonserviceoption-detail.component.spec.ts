@@ -17,7 +17,7 @@ describe('Commonserviceoption Management Detail Component', () => {
           [
             {
               path: '**',
-              component: CommonserviceoptionDetailComponent,
+              loadComponent: () => import('./commonserviceoption-detail.component').then(m => m.CommonserviceoptionDetailComponent),
               resolve: { commonserviceoption: () => of({ id: 123 }) },
             },
           ],

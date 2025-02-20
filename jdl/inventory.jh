@@ -45,3 +45,4 @@ entity Inventory {
     notininvoice Boolean // NotInInvoice
 }
 paginate * with pagination
+filter all

@@ -1,0 +1,107 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate [formGroup]="editForm">
+      <h2
+        id="jhi-sale-invoice-common-service-charge-dummy-heading"
+        data-cy="SaleInvoiceCommonServiceChargeDummyCreateUpdateHeading"
+        *ngIf="showCodeField"
+      ></h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+        <div *ngFor="let option of commonServiceOptions" class="flex items-center space-x-3 mb-4">
+          <label class="text-lg font-medium">{{ option.name }}</label>
+          <input
+            type="checkbox"
+            [value]="option.name"
+            (change)="onCheckboxChange($event, option)"
+            class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+          />
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th *ngIf="false">ID</th>
+              <th *ngIf="false">Invoice ID</th>
+              <th *ngIf="false">Line ID</th>
+              <th *ngIf="false">Option ID</th>
+              <th *ngIf="false">Main ID</th>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Value</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="serviceChargeDummies">
+            <tr *ngFor="let dummy of serviceChargeDummiesArray.controls; let i = index" [formGroupName]="i">
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="id" [readonly]="true" *ngIf="dummy.get('id')?.value" />
+              </td>
+
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="invoiceid" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="lineid" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="optionid" />
+              </td>
+              <td *ngIf="false">
+                <input type="number" class="form-control" formControlName="mainid" />
+              </td>
+
+              <td>
+                <input formControlName="code" type="text" class="form-control" />
+              </td>
+              <td>
+                <input
+                  formControlName="name"
+                  type="text"
+                  (input)="onItemCodeInput($event, i)"
+                  (change)="onItemCodeSelect($event, i)"
+                  [attr.list]="'autocomplete__' + i"
+                />
+
+                <datalist [id]="'autocomplete__' + i">
+                  <option *ngFor="let item of filteredItems[i]" [value]="item.name">
+                    {{ item.name }}
+                  </option>
+                </datalist>
+              </td>
+              <td>
+                <input type="text" class="form-control" formControlName="description" />
+              </td>
+              <td>
+                <input type="number" class="form-control" formControlName="value" />
+              </td>
+              <td>
+                <button type="button" class="btn btn-danger" (click)="removeServiceChargeDummy(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button type="button" class="btn btn-secondary" (click)="addServiceChargeDummy()">Add Line</button>
+      </div>
+
+      <div *ngIf="false">
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

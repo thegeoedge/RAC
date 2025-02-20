@@ -62,5 +62,7 @@ public class ServicesubcategoryAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertServicesubcategoryUpdatableRelationshipsEquals(Servicesubcategory expected, Servicesubcategory actual) {}
+    public static void assertServicesubcategoryUpdatableRelationshipsEquals(Servicesubcategory expected, Servicesubcategory actual) {
+        // empty method
+    }
 }

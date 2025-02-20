@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ElementRef } from '@angular/core';
+import { Component, ElementRef, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -12,7 +12,7 @@ import { EventManager, EventWithContent } from 'app/core/util/event-manager.serv
 import { DataUtils, FileLoadError } from 'app/core/util/data-util.service';
 import { InventoryService } from '../service/inventory.service';
 import { IInventory } from '../inventory.model';
-import { InventoryFormService, InventoryFormGroup } from './inventory-form.service';
+import { InventoryFormGroup, InventoryFormService } from './inventory-form.service';
 
 @Component({
   standalone: true,
@@ -63,8 +63,8 @@ export class InventoryUpdateComponent implements OnInit {
       [field]: null,
       [fieldContentType]: null,
     });
-    if (idInput && this.elementRef.nativeElement.querySelector('#' + idInput)) {
-      this.elementRef.nativeElement.querySelector('#' + idInput).value = null;
+    if (idInput && this.elementRef.nativeElement.querySelector(`#${idInput}`)) {
+      this.elementRef.nativeElement.querySelector(`#${idInput}`).value = null;
     }
   }
 

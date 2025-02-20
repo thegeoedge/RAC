@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Commonserviceoption;
 import com.heavenscode.rac.repository.CommonserviceoptionRepository;
+import com.heavenscode.rac.service.CommonserviceoptionQueryService;
+import com.heavenscode.rac.service.CommonserviceoptionService;
+import com.heavenscode.rac.service.criteria.CommonserviceoptionCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/commonserviceoptions")
-@Transactional
 public class CommonserviceoptionResource {
 
-    private final Logger log = LoggerFactory.getLogger(CommonserviceoptionResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CommonserviceoptionResource.class);
 
     private static final String ENTITY_NAME = "commonserviceoption";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final CommonserviceoptionService commonserviceoptionService;
+
     private final CommonserviceoptionRepository commonserviceoptionRepository;
 
-    public CommonserviceoptionResource(CommonserviceoptionRepository commonserviceoptionRepository) {
+    private final CommonserviceoptionQueryService commonserviceoptionQueryService;
+
+    public CommonserviceoptionResource(
+        CommonserviceoptionService commonserviceoptionService,
+        CommonserviceoptionRepository commonserviceoptionRepository,
+        CommonserviceoptionQueryService commonserviceoptionQueryService
+    ) {
+        this.commonserviceoptionService = commonserviceoptionService;
         this.commonserviceoptionRepository = commonserviceoptionRepository;
+        this.commonserviceoptionQueryService = commonserviceoptionQueryService;
     }
 
     /**
@@ -53,11 +64,11 @@ public class CommonserviceoptionResource {
     @PostMapping("")
     public ResponseEntity<Commonserviceoption> createCommonserviceoption(@RequestBody Commonserviceoption commonserviceoption)
         throws URISyntaxException {
-        log.debug("REST request to save Commonserviceoption : {}", commonserviceoption);
+        LOG.debug("REST request to save Commonserviceoption : {}", commonserviceoption);
         if (commonserviceoption.getId() != null) {
             throw new BadRequestAlertException("A new commonserviceoption cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        commonserviceoption = commonserviceoptionRepository.save(commonserviceoption);
+        commonserviceoption = commonserviceoptionService.save(commonserviceoption);
         return ResponseEntity.created(new URI("/api/commonserviceoptions/" + commonserviceoption.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, commonserviceoption.getId().toString()))
             .body(commonserviceoption);
@@ -78,7 +89,7 @@ public class CommonserviceoptionResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Commonserviceoption commonserviceoption
     ) throws URISyntaxException {
-        log.debug("REST request to update Commonserviceoption : {}, {}", id, commonserviceoption);
+        LOG.debug("REST request to update Commonserviceoption : {}, {}", id, commonserviceoption);
         if (commonserviceoption.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -90,7 +101,7 @@ public class CommonserviceoptionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        commonserviceoption = commonserviceoptionRepository.save(commonserviceoption);
+        commonserviceoption = commonserviceoptionService.update(commonserviceoption);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, commonserviceoption.getId().toString()))
             .body(commonserviceoption);
@@ -112,7 +123,7 @@ public class CommonserviceoptionResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Commonserviceoption commonserviceoption
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Commonserviceoption partially : {}, {}", id, commonserviceoption);
+        LOG.debug("REST request to partial update Commonserviceoption partially : {}, {}", id, commonserviceoption);
         if (commonserviceoption.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -124,37 +135,7 @@ public class CommonserviceoptionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Commonserviceoption> result = commonserviceoptionRepository
-            .findById(commonserviceoption.getId())
-            .map(existingCommonserviceoption -> {
-                if (commonserviceoption.getMainid() != null) {
-                    existingCommonserviceoption.setMainid(commonserviceoption.getMainid());
-                }
-                if (commonserviceoption.getCode() != null) {
-                    existingCommonserviceoption.setCode(commonserviceoption.getCode());
-                }
-                if (commonserviceoption.getName() != null) {
-                    existingCommonserviceoption.setName(commonserviceoption.getName());
-                }
-                if (commonserviceoption.getDescription() != null) {
-                    existingCommonserviceoption.setDescription(commonserviceoption.getDescription());
-                }
-                if (commonserviceoption.getValue() != null) {
-                    existingCommonserviceoption.setValue(commonserviceoption.getValue());
-                }
-                if (commonserviceoption.getIsactive() != null) {
-                    existingCommonserviceoption.setIsactive(commonserviceoption.getIsactive());
-                }
-                if (commonserviceoption.getLmd() != null) {
-                    existingCommonserviceoption.setLmd(commonserviceoption.getLmd());
-                }
-                if (commonserviceoption.getLmu() != null) {
-                    existingCommonserviceoption.setLmu(commonserviceoption.getLmu());
-                }
-
-                return existingCommonserviceoption;
-            })
-            .map(commonserviceoptionRepository::save);
+        Optional<Commonserviceoption> result = commonserviceoptionService.partialUpdate(commonserviceoption);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -166,16 +147,31 @@ public class CommonserviceoptionResource {
      * {@code GET  /commonserviceoptions} : get all the commonserviceoptions.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of commonserviceoptions in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Commonserviceoption>> getAllCommonserviceoptions(
+        CommonserviceoptionCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of Commonserviceoptions");
-        Page<Commonserviceoption> page = commonserviceoptionRepository.findAll(pageable);
+        LOG.debug("REST request to get Commonserviceoptions by criteria: {}", criteria);
+
+        Page<Commonserviceoption> page = commonserviceoptionQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /commonserviceoptions/count} : count all the commonserviceoptions.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countCommonserviceoptions(CommonserviceoptionCriteria criteria) {
+        LOG.debug("REST request to count Commonserviceoptions by criteria: {}", criteria);
+        return ResponseEntity.ok().body(commonserviceoptionQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -186,8 +182,8 @@ public class CommonserviceoptionResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Commonserviceoption> getCommonserviceoption(@PathVariable("id") Long id) {
-        log.debug("REST request to get Commonserviceoption : {}", id);
-        Optional<Commonserviceoption> commonserviceoption = commonserviceoptionRepository.findById(id);
+        LOG.debug("REST request to get Commonserviceoption : {}", id);
+        Optional<Commonserviceoption> commonserviceoption = commonserviceoptionService.findOne(id);
         return ResponseUtil.wrapOrNotFound(commonserviceoption);
     }
 
@@ -199,8 +195,8 @@ public class CommonserviceoptionResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCommonserviceoption(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Commonserviceoption : {}", id);
-        commonserviceoptionRepository.deleteById(id);
+        LOG.debug("REST request to delete Commonserviceoption : {}", id);
+        commonserviceoptionService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
