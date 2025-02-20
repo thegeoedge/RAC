@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    @if (servicecategory()) {
+    @if (servicecategory(); as servicecategoryRef) {
       <div>
         <h2 data-cy="servicecategoryDetailsHeading"><span>Servicecategory</span></h2>
 
@@ -13,35 +13,35 @@
         <dl class="row-md jh-entity-details">
           <dt><span>ID</span></dt>
           <dd>
-            <span>{{ servicecategory()!.id }}</span>
+            <span>{{ servicecategoryRef.id }}</span>
           </dd>
           <dt><span>Name</span></dt>
           <dd>
-            <span>{{ servicecategory()!.name }}</span>
+            <span>{{ servicecategoryRef.name }}</span>
           </dd>
           <dt><span>Description</span></dt>
           <dd>
-            <span>{{ servicecategory()!.description }}</span>
+            <span>{{ servicecategoryRef.description }}</span>
           </dd>
           <dt><span>Lmu</span></dt>
           <dd>
-            <span>{{ servicecategory()!.lmu }}</span>
+            <span>{{ servicecategoryRef.lmu }}</span>
           </dd>
           <dt><span>Lmd</span></dt>
           <dd>
-            <span>{{ servicecategory()!.lmd | formatMediumDatetime }}</span>
+            <span>{{ servicecategoryRef.lmd | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Showsecurity</span></dt>
           <dd>
-            <span>{{ servicecategory()!.showsecurity }}</span>
+            <span>{{ servicecategoryRef.showsecurity }}</span>
           </dd>
           <dt><span>Sortorder</span></dt>
           <dd>
-            <span>{{ servicecategory()!.sortorder }}</span>
+            <span>{{ servicecategoryRef.sortorder }}</span>
           </dd>
           <dt><span>Isactive</span></dt>
           <dd>
-            <span>{{ servicecategory()!.isactive }}</span>
+            <span>{{ servicecategoryRef.isactive }}</span>
           </dd>
         </dl>
 
@@ -49,7 +49,7 @@
           <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
         </button>
 
-        <button type="button" [routerLink]="['/servicecategory', servicecategory()!.id, 'edit']" class="btn btn-primary">
+        <button type="button" [routerLink]="['/servicecategory', servicecategoryRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
         </button>
       </div>

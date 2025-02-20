@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithRequiredData, sampleWithNewData } from '../servicesubcategory.test-samples';
+import { sampleWithNewData, sampleWithRequiredData } from '../servicesubcategory.test-samples';
 
 import { ServicesubcategoryFormService } from './servicesubcategory-form.service';
 

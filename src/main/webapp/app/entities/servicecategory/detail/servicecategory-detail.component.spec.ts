@@ -17,7 +17,7 @@ describe('Servicecategory Management Detail Component', () => {
           [
             {
               path: '**',
-              component: ServicecategoryDetailComponent,
+              loadComponent: () => import('./servicecategory-detail.component').then(m => m.ServicecategoryDetailComponent),
               resolve: { servicecategory: () => of({ id: 123 }) },
             },
           ],

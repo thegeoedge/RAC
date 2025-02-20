@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithRequiredData, sampleWithNewData } from '../inventory.test-samples';
+import { sampleWithNewData, sampleWithRequiredData } from '../inventory.test-samples';
 
 import { InventoryFormService } from './inventory-form.service';
 
