@@ -51,3 +51,4 @@ entity Salesinvoice {
     discountcode String // DiscountCode
 }
 paginate * with pagination
+filter all

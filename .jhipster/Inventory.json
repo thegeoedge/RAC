@@ -181,8 +181,10 @@
       "fieldType": "Boolean"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Inventory",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no"
+  "searchEngine": "no",
+  "service": "serviceClass"
 }

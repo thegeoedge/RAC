@@ -110,5 +110,7 @@ public class InventoryAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertInventoryUpdatableRelationshipsEquals(Inventory expected, Inventory actual) {}
+    public static void assertInventoryUpdatableRelationshipsEquals(Inventory expected, Inventory actual) {
+        // empty method
+    }
 }

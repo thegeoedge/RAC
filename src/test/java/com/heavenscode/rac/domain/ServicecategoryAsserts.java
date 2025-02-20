@@ -62,5 +62,7 @@ public class ServicecategoryAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertServicecategoryUpdatableRelationshipsEquals(Servicecategory expected, Servicecategory actual) {}
+    public static void assertServicecategoryUpdatableRelationshipsEquals(Servicecategory expected, Servicecategory actual) {
+        // empty method
+    }
 }

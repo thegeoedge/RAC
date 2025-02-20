@@ -8,3 +8,4 @@ entity Servicesubcategory {
     isactive Boolean // IsActive
 }
 paginate * with pagination
+filter all

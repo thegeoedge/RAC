@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { IServicecategory } from '../servicecategory.model';
-import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../servicecategory.test-samples';
+import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../servicecategory.test-samples';
 
-import { ServicecategoryService, RestServicecategory } from './servicecategory.service';
+import { RestServicecategory, ServicecategoryService } from './servicecategory.service';
 
 const requireRestSample: RestServicecategory = {
   ...sampleWithRequiredData,
@@ -18,7 +19,7 @@ describe('Servicecategory Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     expectedResult = null;
     service = TestBed.inject(ServicecategoryService);
