@@ -223,7 +223,7 @@ const routes: Routes = [
     loadChildren: () => import('./autocaretimetable/autocaretimetable.routes'),
   },
   {
-      path: 'sales-invoice-dummy',
+    path: 'sales-invoice-dummy',
     data: { pageTitle: 'SalesInvoiceDummies' },
     loadChildren: () => import('./sales-invoice-dummy/sales-invoice-dummy.routes'),
   },
@@ -256,8 +256,9 @@ const routes: Routes = [
     path: 'voucher-payments-details',
     data: { pageTitle: 'VoucherPaymentsDetails' },
     loadChildren: () => import('./voucher-payments-details/voucher-payments-details.routes'),
-    {
-     path: 'sales-invoice-lines',
+  },
+  {
+    path: 'sales-invoice-lines',
     data: { pageTitle: 'SalesInvoiceLines' },
     loadChildren: () => import('./sales-invoice-lines/sales-invoice-lines.routes'),
   },
@@ -279,8 +280,10 @@ const routes: Routes = [
   {
     path: 'sales-invoice-service-charge-line',
     data: { pageTitle: 'SalesInvoiceServiceChargeLines' },
-    loadChildren: () => import('./sales-invoice-service-charge-line/sales-invoice-service-charge-line.routes'),{
-        path: 'autojobsalesinvoiceservicechargeline',
+    loadChildren: () => import('./sales-invoice-service-charge-line/sales-invoice-service-charge-line.routes'),
+  },
+  {
+    path: 'autojobsalesinvoiceservicechargeline',
     data: { pageTitle: 'Autojobsalesinvoiceservicechargelines' },
     loadChildren: () => import('./autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.routes'),
   },
@@ -298,7 +301,6 @@ const routes: Routes = [
     path: 'workshop-vehicle-work-list',
     data: { pageTitle: 'WorkshopVehicleWorkLists' },
     loadChildren: () => import('./workshop-vehicle-work-list/workshop-vehicle-work-list.routes'),
-
   },
   {
     path: 'receiptpaymentsdetails',
