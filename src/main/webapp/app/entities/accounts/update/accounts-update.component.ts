@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IAccounts } from '../accounts.model';
 import { AccountsService } from '../service/accounts.service';
-import { AccountsFormService, AccountsFormGroup } from './accounts-form.service';
+import { AccountsFormGroup, AccountsFormService } from './accounts-form.service';
 
 @Component({
   standalone: true,

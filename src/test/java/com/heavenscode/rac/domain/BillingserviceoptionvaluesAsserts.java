@@ -80,5 +80,7 @@ public class BillingserviceoptionvaluesAsserts {
     public static void assertBillingserviceoptionvaluesUpdatableRelationshipsEquals(
         Billingserviceoptionvalues expected,
         Billingserviceoptionvalues actual
-    ) {}
+    ) {
+        // empty method
+    }
 }

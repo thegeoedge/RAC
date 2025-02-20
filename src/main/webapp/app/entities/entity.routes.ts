@@ -66,6 +66,7 @@ const routes: Routes = [
     data: { pageTitle: 'Stocklocations' },
     loadChildren: () => import('./stocklocations/stocklocations.routes'),
   },
+
   {
     path: 'inventorybatches',
     data: { pageTitle: 'Inventorybatches' },
@@ -222,6 +223,40 @@ const routes: Routes = [
     loadChildren: () => import('./autocaretimetable/autocaretimetable.routes'),
   },
   {
+      path: 'sales-invoice-dummy',
+    data: { pageTitle: 'SalesInvoiceDummies' },
+    loadChildren: () => import('./sales-invoice-dummy/sales-invoice-dummy.routes'),
+  },
+  {
+    path: 'sales-invoice-lines-dummy',
+    data: { pageTitle: 'SalesInvoiceLinesDummies' },
+    loadChildren: () => import('./sales-invoice-lines-dummy/sales-invoice-lines-dummy.routes'),
+  },
+  {
+    path: 'sales-invoice-service-charge-line-dummy',
+    data: { pageTitle: 'SalesInvoiceServiceChargeLineDummies' },
+    loadChildren: () => import('./sales-invoice-service-charge-line-dummy/sales-invoice-service-charge-line-dummy.routes'),
+  },
+  {
+    path: 'sale-invoice-common-service-charge-dummy',
+    data: { pageTitle: 'SaleInvoiceCommonServiceChargeDummies' },
+    loadChildren: () => import('./sale-invoice-common-service-charge-dummy/sale-invoice-common-service-charge-dummy.routes'),
+  },
+  {
+    path: 'voucher',
+    data: { pageTitle: 'Vouchers' },
+    loadChildren: () => import('./voucher/voucher.routes'),
+  },
+  {
+    path: 'voucher-lines',
+    data: { pageTitle: 'VoucherLines' },
+    loadChildren: () => import('./voucher-lines/voucher-lines.routes'),
+  },
+  {
+    path: 'voucher-payments-details',
+    data: { pageTitle: 'VoucherPaymentsDetails' },
+    loadChildren: () => import('./voucher-payments-details/voucher-payments-details.routes'),
+    {
      path: 'sales-invoice-lines',
     data: { pageTitle: 'SalesInvoiceLines' },
     loadChildren: () => import('./sales-invoice-lines/sales-invoice-lines.routes'),
@@ -244,7 +279,7 @@ const routes: Routes = [
   {
     path: 'sales-invoice-service-charge-line',
     data: { pageTitle: 'SalesInvoiceServiceChargeLines' },
-    loadChildren: () => import('./sales-invoice-service-charge-line/sales-invoice-service-charge-line.routes'),
+    loadChildren: () => import('./sales-invoice-service-charge-line/sales-invoice-service-charge-line.routes'),{
         path: 'autojobsalesinvoiceservicechargeline',
     data: { pageTitle: 'Autojobsalesinvoiceservicechargelines' },
     loadChildren: () => import('./autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.routes'),

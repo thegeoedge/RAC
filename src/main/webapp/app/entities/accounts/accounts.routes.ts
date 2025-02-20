@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { AccountsComponent } from './list/accounts.component';
-import { AccountsDetailComponent } from './detail/accounts-detail.component';
-import { AccountsUpdateComponent } from './update/accounts-update.component';
 import AccountsResolve from './route/accounts-routing-resolve.service';
 
 const accountsRoute: Routes = [
   {
     path: '',
-    component: AccountsComponent,
+    loadComponent: () => import('./list/accounts.component').then(m => m.AccountsComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: AccountsDetailComponent,
+    loadComponent: () => import('./detail/accounts-detail.component').then(m => m.AccountsDetailComponent),
     resolve: {
       accounts: AccountsResolve,
     },
@@ -26,7 +23,7 @@ const accountsRoute: Routes = [
   },
   {
     path: 'new',
-    component: AccountsUpdateComponent,
+    loadComponent: () => import('./update/accounts-update.component').then(m => m.AccountsUpdateComponent),
     resolve: {
       accounts: AccountsResolve,
     },
@@ -34,7 +31,7 @@ const accountsRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: AccountsUpdateComponent,
+    loadComponent: () => import('./update/accounts-update.component').then(m => m.AccountsUpdateComponent),
     resolve: {
       accounts: AccountsResolve,
     },

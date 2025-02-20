@@ -61,8 +61,15 @@
       "Autocarehoist",
       "Hoisttype",
       "Autocaretimetable",
-
-        "SalesInvoiceLines",
+<
+        "SalesInvoiceDummy",
+      "SalesInvoiceLinesDummy",
+      "SalesInvoiceServiceChargeLineDummy",
+      "SaleInvoiceCommonServiceChargeDummy",
+      "Voucher",
+      "VoucherLines",
+      "VoucherPaymentsDetails"
+         "SalesInvoiceLines",
       "InvoiceServiceCharge",
       "InvoiceServiceCommon",
       "SaleInvoiceCommonServiceCharge",

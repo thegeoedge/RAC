@@ -3,23 +3,23 @@ import dayjs from 'dayjs/esm';
 import { IBillingserviceoptionvalues, NewBillingserviceoptionvalues } from './billingserviceoptionvalues.model';
 
 export const sampleWithRequiredData: IBillingserviceoptionvalues = {
-  id: 13898,
+  id: 11988,
 };
 
 export const sampleWithPartialData: IBillingserviceoptionvalues = {
-  id: 15584,
-  billingserviceoptionid: 21102,
-  value: 4957.55,
-  lmd: dayjs('2024-10-04T03:56'),
+  id: 4667,
+  vehicletypeid: 30690,
+  value: 15629.44,
+  lmd: dayjs('2024-10-03T15:39'),
 };
 
 export const sampleWithFullData: IBillingserviceoptionvalues = {
-  id: 17173,
-  vehicletypeid: 9466,
-  billingserviceoptionid: 27102,
-  value: 7211.5,
-  lmd: dayjs('2024-10-03T21:13'),
-  lmu: 10770,
+  id: 7964,
+  vehicletypeid: 4748,
+  billingserviceoptionid: 16367,
+  value: 30140.89,
+  lmd: dayjs('2024-10-04T00:40'),
+  lmu: 3676,
 };
 
 export const sampleWithNewData: NewBillingserviceoptionvalues = {

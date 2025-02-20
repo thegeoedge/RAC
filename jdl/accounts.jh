@@ -21,3 +21,4 @@ entity Accounts {
     reporttype Integer // ReportType
 }
 paginate * with pagination
+filter all

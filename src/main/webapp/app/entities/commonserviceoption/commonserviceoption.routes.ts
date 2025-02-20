@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { CommonserviceoptionComponent } from './list/commonserviceoption.component';
-import { CommonserviceoptionDetailComponent } from './detail/commonserviceoption-detail.component';
-import { CommonserviceoptionUpdateComponent } from './update/commonserviceoption-update.component';
 import CommonserviceoptionResolve from './route/commonserviceoption-routing-resolve.service';
 
 const commonserviceoptionRoute: Routes = [
   {
     path: '',
-    component: CommonserviceoptionComponent,
+    loadComponent: () => import('./list/commonserviceoption.component').then(m => m.CommonserviceoptionComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: CommonserviceoptionDetailComponent,
+    loadComponent: () => import('./detail/commonserviceoption-detail.component').then(m => m.CommonserviceoptionDetailComponent),
     resolve: {
       commonserviceoption: CommonserviceoptionResolve,
     },
@@ -26,7 +23,7 @@ const commonserviceoptionRoute: Routes = [
   },
   {
     path: 'new',
-    component: CommonserviceoptionUpdateComponent,
+    loadComponent: () => import('./update/commonserviceoption-update.component').then(m => m.CommonserviceoptionUpdateComponent),
     resolve: {
       commonserviceoption: CommonserviceoptionResolve,
     },
@@ -34,7 +31,7 @@ const commonserviceoptionRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: CommonserviceoptionUpdateComponent,
+    loadComponent: () => import('./update/commonserviceoption-update.component').then(m => m.CommonserviceoptionUpdateComponent),
     resolve: {
       commonserviceoption: CommonserviceoptionResolve,
     },

@@ -17,7 +17,7 @@ describe('Billingserviceoption Management Detail Component', () => {
           [
             {
               path: '**',
-              component: BillingserviceoptionDetailComponent,
+              loadComponent: () => import('./billingserviceoption-detail.component').then(m => m.BillingserviceoptionDetailComponent),
               resolve: { billingserviceoption: () => of({ id: 123 }) },
             },
           ],

@@ -63,5 +63,7 @@ public class CommonserviceoptionAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertCommonserviceoptionUpdatableRelationshipsEquals(Commonserviceoption expected, Commonserviceoption actual) {}
+    public static void assertCommonserviceoptionUpdatableRelationshipsEquals(Commonserviceoption expected, Commonserviceoption actual) {
+        // empty method
+    }
 }

@@ -14,10 +14,10 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="vehicletypeid" type="bigint">
+            <column name="vehicletypeid" type="integer">
                 <constraints nullable="true" />
             </column>
-            <column name="billingserviceoptionid" type="bigint">
+            <column name="billingserviceoptionid" type="integer">
                 <constraints nullable="true" />
             </column>
             <column name="value" type="${floatType}">

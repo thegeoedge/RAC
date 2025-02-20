@@ -8,3 +8,4 @@ entity Billingserviceoption {
     billtocustomer Boolean // BillToCustomer
 }
 paginate * with pagination
+filter all

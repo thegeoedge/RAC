@@ -21,10 +21,10 @@ public class Billingserviceoptionvalues implements Serializable {
     private Long id;
 
     @Column(name = "vehicletypeid")
-    private Long vehicletypeid;
+    private Integer vehicletypeid;
 
     @Column(name = "billingserviceoptionid")
-    private Long billingserviceoptionid;
+    private Integer billingserviceoptionid;
 
     @Column(name = "value")
     private Float value;
@@ -50,29 +50,29 @@ public class Billingserviceoptionvalues implements Serializable {
         this.id = id;
     }
 
-    public Long getVehicletypeid() {
+    public Integer getVehicletypeid() {
         return this.vehicletypeid;
     }
 
-    public Billingserviceoptionvalues vehicletypeid(Long vehicletypeid) {
+    public Billingserviceoptionvalues vehicletypeid(Integer vehicletypeid) {
         this.setVehicletypeid(vehicletypeid);
         return this;
     }
 
-    public void setVehicletypeid(Long vehicletypeid) {
+    public void setVehicletypeid(Integer vehicletypeid) {
         this.vehicletypeid = vehicletypeid;
     }
 
-    public Long getBillingserviceoptionid() {
+    public Integer getBillingserviceoptionid() {
         return this.billingserviceoptionid;
     }
 
-    public Billingserviceoptionvalues billingserviceoptionid(Long billingserviceoptionid) {
+    public Billingserviceoptionvalues billingserviceoptionid(Integer billingserviceoptionid) {
         this.setBillingserviceoptionid(billingserviceoptionid);
         return this;
     }
 
-    public void setBillingserviceoptionid(Long billingserviceoptionid) {
+    public void setBillingserviceoptionid(Integer billingserviceoptionid) {
         this.billingserviceoptionid = billingserviceoptionid;
     }
 

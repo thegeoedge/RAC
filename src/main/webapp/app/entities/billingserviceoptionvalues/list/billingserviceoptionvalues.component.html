@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
         <span>Refresh list</span>
       </button>
 
@@ -23,6 +23,8 @@
   <jhi-alert-error></jhi-alert-error>
 
   <jhi-alert></jhi-alert>
+
+  <jhi-filter [filters]="filters"></jhi-filter>
 
   @if (billingserviceoptionvalues?.length === 0) {
     <div class="alert alert-warning" id="no-result">
@@ -81,7 +83,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (billingserviceoptionvalues of billingserviceoptionvalues; track trackId) {
+          @for (billingserviceoptionvalues of billingserviceoptionvalues; track trackId(billingserviceoptionvalues)) {
             <tr data-cy="entityTable">
               <td>
                 <a [routerLink]="['/billingserviceoptionvalues', billingserviceoptionvalues.id, 'view']">{{

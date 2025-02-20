@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,11 @@ class BillingserviceoptionResourceIT {
 
     private static final Integer DEFAULT_LMU = 1;
     private static final Integer UPDATED_LMU = 2;
+    private static final Integer SMALLER_LMU = 1 - 1;
 
     private static final Integer DEFAULT_ORDERBY = 1;
     private static final Integer UPDATED_ORDERBY = 2;
+    private static final Integer SMALLER_ORDERBY = 1 - 1;
 
     private static final Boolean DEFAULT_BILLTOCUSTOMER = false;
     private static final Boolean UPDATED_BILLTOCUSTOMER = true;
@@ -74,14 +77,16 @@ class BillingserviceoptionResourceIT {
 
     private Billingserviceoption billingserviceoption;
 
+    private Billingserviceoption insertedBillingserviceoption;
+
     /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Billingserviceoption createEntity(EntityManager em) {
-        Billingserviceoption billingserviceoption = new Billingserviceoption()
+    public static Billingserviceoption createEntity() {
+        return new Billingserviceoption()
             .servicename(DEFAULT_SERVICENAME)
             .servicediscription(DEFAULT_SERVICEDISCRIPTION)
             .isactive(DEFAULT_ISACTIVE)
@@ -89,7 +94,6 @@ class BillingserviceoptionResourceIT {
             .lmu(DEFAULT_LMU)
             .orderby(DEFAULT_ORDERBY)
             .billtocustomer(DEFAULT_BILLTOCUSTOMER);
-        return billingserviceoption;
     }
 
     /**
@@ -98,8 +102,8 @@ class BillingserviceoptionResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Billingserviceoption createUpdatedEntity(EntityManager em) {
-        Billingserviceoption billingserviceoption = new Billingserviceoption()
+    public static Billingserviceoption createUpdatedEntity() {
+        return new Billingserviceoption()
             .servicename(UPDATED_SERVICENAME)
             .servicediscription(UPDATED_SERVICEDISCRIPTION)
             .isactive(UPDATED_ISACTIVE)
@@ -107,12 +111,19 @@ class BillingserviceoptionResourceIT {
             .lmu(UPDATED_LMU)
             .orderby(UPDATED_ORDERBY)
             .billtocustomer(UPDATED_BILLTOCUSTOMER);
-        return billingserviceoption;
     }
 
     @BeforeEach
     public void initTest() {
-        billingserviceoption = createEntity(em);
+        billingserviceoption = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedBillingserviceoption != null) {
+            billingserviceoptionRepository.delete(insertedBillingserviceoption);
+            insertedBillingserviceoption = null;
+        }
     }
 
     @Test
@@ -136,6 +147,8 @@ class BillingserviceoptionResourceIT {
             returnedBillingserviceoption,
             getPersistedBillingserviceoption(returnedBillingserviceoption)
         );
+
+        insertedBillingserviceoption = returnedBillingserviceoption;
     }
 
     @Test
@@ -159,7 +172,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void getAllBillingserviceoptions() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         // Get all the billingserviceoptionList
         restBillingserviceoptionMockMvc
@@ -180,7 +193,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void getBillingserviceoption() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         // Get the billingserviceoption
         restBillingserviceoptionMockMvc
@@ -199,6 +212,427 @@ class BillingserviceoptionResourceIT {
 
     @Test
     @Transactional
+    void getBillingserviceoptionsByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        Long id = billingserviceoption.getId();
+
+        defaultBillingserviceoptionFiltering("id.equals=" + id, "id.notEquals=" + id);
+
+        defaultBillingserviceoptionFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
+
+        defaultBillingserviceoptionFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicenameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicename equals to
+        defaultBillingserviceoptionFiltering("servicename.equals=" + DEFAULT_SERVICENAME, "servicename.equals=" + UPDATED_SERVICENAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicenameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicename in
+        defaultBillingserviceoptionFiltering(
+            "servicename.in=" + DEFAULT_SERVICENAME + "," + UPDATED_SERVICENAME,
+            "servicename.in=" + UPDATED_SERVICENAME
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicenameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicename is not null
+        defaultBillingserviceoptionFiltering("servicename.specified=true", "servicename.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicenameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicename contains
+        defaultBillingserviceoptionFiltering("servicename.contains=" + DEFAULT_SERVICENAME, "servicename.contains=" + UPDATED_SERVICENAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicenameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicename does not contain
+        defaultBillingserviceoptionFiltering(
+            "servicename.doesNotContain=" + UPDATED_SERVICENAME,
+            "servicename.doesNotContain=" + DEFAULT_SERVICENAME
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicediscriptionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicediscription equals to
+        defaultBillingserviceoptionFiltering(
+            "servicediscription.equals=" + DEFAULT_SERVICEDISCRIPTION,
+            "servicediscription.equals=" + UPDATED_SERVICEDISCRIPTION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicediscriptionIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicediscription in
+        defaultBillingserviceoptionFiltering(
+            "servicediscription.in=" + DEFAULT_SERVICEDISCRIPTION + "," + UPDATED_SERVICEDISCRIPTION,
+            "servicediscription.in=" + UPDATED_SERVICEDISCRIPTION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicediscriptionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicediscription is not null
+        defaultBillingserviceoptionFiltering("servicediscription.specified=true", "servicediscription.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicediscriptionContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicediscription contains
+        defaultBillingserviceoptionFiltering(
+            "servicediscription.contains=" + DEFAULT_SERVICEDISCRIPTION,
+            "servicediscription.contains=" + UPDATED_SERVICEDISCRIPTION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByServicediscriptionNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where servicediscription does not contain
+        defaultBillingserviceoptionFiltering(
+            "servicediscription.doesNotContain=" + UPDATED_SERVICEDISCRIPTION,
+            "servicediscription.doesNotContain=" + DEFAULT_SERVICEDISCRIPTION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByIsactiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where isactive equals to
+        defaultBillingserviceoptionFiltering("isactive.equals=" + DEFAULT_ISACTIVE, "isactive.equals=" + UPDATED_ISACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByIsactiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where isactive in
+        defaultBillingserviceoptionFiltering("isactive.in=" + DEFAULT_ISACTIVE + "," + UPDATED_ISACTIVE, "isactive.in=" + UPDATED_ISACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByIsactiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where isactive is not null
+        defaultBillingserviceoptionFiltering("isactive.specified=true", "isactive.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmd equals to
+        defaultBillingserviceoptionFiltering("lmd.equals=" + DEFAULT_LMD, "lmd.equals=" + UPDATED_LMD);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmd in
+        defaultBillingserviceoptionFiltering("lmd.in=" + DEFAULT_LMD + "," + UPDATED_LMD, "lmd.in=" + UPDATED_LMD);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmd is not null
+        defaultBillingserviceoptionFiltering("lmd.specified=true", "lmd.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu equals to
+        defaultBillingserviceoptionFiltering("lmu.equals=" + DEFAULT_LMU, "lmu.equals=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu in
+        defaultBillingserviceoptionFiltering("lmu.in=" + DEFAULT_LMU + "," + UPDATED_LMU, "lmu.in=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu is not null
+        defaultBillingserviceoptionFiltering("lmu.specified=true", "lmu.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu is greater than or equal to
+        defaultBillingserviceoptionFiltering("lmu.greaterThanOrEqual=" + DEFAULT_LMU, "lmu.greaterThanOrEqual=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu is less than or equal to
+        defaultBillingserviceoptionFiltering("lmu.lessThanOrEqual=" + DEFAULT_LMU, "lmu.lessThanOrEqual=" + SMALLER_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu is less than
+        defaultBillingserviceoptionFiltering("lmu.lessThan=" + UPDATED_LMU, "lmu.lessThan=" + DEFAULT_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByLmuIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where lmu is greater than
+        defaultBillingserviceoptionFiltering("lmu.greaterThan=" + SMALLER_LMU, "lmu.greaterThan=" + DEFAULT_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby equals to
+        defaultBillingserviceoptionFiltering("orderby.equals=" + DEFAULT_ORDERBY, "orderby.equals=" + UPDATED_ORDERBY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby in
+        defaultBillingserviceoptionFiltering("orderby.in=" + DEFAULT_ORDERBY + "," + UPDATED_ORDERBY, "orderby.in=" + UPDATED_ORDERBY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby is not null
+        defaultBillingserviceoptionFiltering("orderby.specified=true", "orderby.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby is greater than or equal to
+        defaultBillingserviceoptionFiltering(
+            "orderby.greaterThanOrEqual=" + DEFAULT_ORDERBY,
+            "orderby.greaterThanOrEqual=" + UPDATED_ORDERBY
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby is less than or equal to
+        defaultBillingserviceoptionFiltering("orderby.lessThanOrEqual=" + DEFAULT_ORDERBY, "orderby.lessThanOrEqual=" + SMALLER_ORDERBY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby is less than
+        defaultBillingserviceoptionFiltering("orderby.lessThan=" + UPDATED_ORDERBY, "orderby.lessThan=" + DEFAULT_ORDERBY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByOrderbyIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where orderby is greater than
+        defaultBillingserviceoptionFiltering("orderby.greaterThan=" + SMALLER_ORDERBY, "orderby.greaterThan=" + DEFAULT_ORDERBY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByBilltocustomerIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where billtocustomer equals to
+        defaultBillingserviceoptionFiltering(
+            "billtocustomer.equals=" + DEFAULT_BILLTOCUSTOMER,
+            "billtocustomer.equals=" + UPDATED_BILLTOCUSTOMER
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByBilltocustomerIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where billtocustomer in
+        defaultBillingserviceoptionFiltering(
+            "billtocustomer.in=" + DEFAULT_BILLTOCUSTOMER + "," + UPDATED_BILLTOCUSTOMER,
+            "billtocustomer.in=" + UPDATED_BILLTOCUSTOMER
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBillingserviceoptionsByBilltocustomerIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+
+        // Get all the billingserviceoptionList where billtocustomer is not null
+        defaultBillingserviceoptionFiltering("billtocustomer.specified=true", "billtocustomer.specified=false");
+    }
+
+    private void defaultBillingserviceoptionFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultBillingserviceoptionShouldBeFound(shouldBeFound);
+        defaultBillingserviceoptionShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultBillingserviceoptionShouldBeFound(String filter) throws Exception {
+        restBillingserviceoptionMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(billingserviceoption.getId().intValue())))
+            .andExpect(jsonPath("$.[*].servicename").value(hasItem(DEFAULT_SERVICENAME)))
+            .andExpect(jsonPath("$.[*].servicediscription").value(hasItem(DEFAULT_SERVICEDISCRIPTION)))
+            .andExpect(jsonPath("$.[*].isactive").value(hasItem(DEFAULT_ISACTIVE.booleanValue())))
+            .andExpect(jsonPath("$.[*].lmd").value(hasItem(DEFAULT_LMD.toString())))
+            .andExpect(jsonPath("$.[*].lmu").value(hasItem(DEFAULT_LMU)))
+            .andExpect(jsonPath("$.[*].orderby").value(hasItem(DEFAULT_ORDERBY)))
+            .andExpect(jsonPath("$.[*].billtocustomer").value(hasItem(DEFAULT_BILLTOCUSTOMER.booleanValue())));
+
+        // Check, that the count call also returns 1
+        restBillingserviceoptionMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultBillingserviceoptionShouldNotBeFound(String filter) throws Exception {
+        restBillingserviceoptionMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restBillingserviceoptionMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+    @Test
+    @Transactional
     void getNonExistingBillingserviceoption() throws Exception {
         // Get the billingserviceoption
         restBillingserviceoptionMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
@@ -208,7 +642,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void putExistingBillingserviceoption() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -297,7 +731,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void partialUpdateBillingserviceoptionWithPatch() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -308,8 +742,7 @@ class BillingserviceoptionResourceIT {
         partialUpdatedBillingserviceoption
             .servicename(UPDATED_SERVICENAME)
             .servicediscription(UPDATED_SERVICEDISCRIPTION)
-            .lmd(UPDATED_LMD)
-            .lmu(UPDATED_LMU);
+            .billtocustomer(UPDATED_BILLTOCUSTOMER);
 
         restBillingserviceoptionMockMvc
             .perform(
@@ -332,7 +765,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void fullUpdateBillingserviceoptionWithPatch() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -423,7 +856,7 @@ class BillingserviceoptionResourceIT {
     @Transactional
     void deleteBillingserviceoption() throws Exception {
         // Initialize the database
-        billingserviceoptionRepository.saveAndFlush(billingserviceoption);
+        insertedBillingserviceoption = billingserviceoptionRepository.saveAndFlush(billingserviceoption);
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 

@@ -1,14 +1,14 @@
 import { inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { of, EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 import { IBillingserviceoptionvalues } from '../billingserviceoptionvalues.model';
 import { BillingserviceoptionvaluesService } from '../service/billingserviceoptionvalues.service';
 
 const billingserviceoptionvaluesResolve = (route: ActivatedRouteSnapshot): Observable<null | IBillingserviceoptionvalues> => {
-  const id = route.params['id'];
+  const id = route.params.id;
   if (id) {
     return inject(BillingserviceoptionvaluesService)
       .find(id)
@@ -16,10 +16,9 @@ const billingserviceoptionvaluesResolve = (route: ActivatedRouteSnapshot): Obser
         mergeMap((billingserviceoptionvalues: HttpResponse<IBillingserviceoptionvalues>) => {
           if (billingserviceoptionvalues.body) {
             return of(billingserviceoptionvalues.body);
-          } else {
-            inject(Router).navigate(['404']);
-            return EMPTY;
           }
+          inject(Router).navigate(['404']);
+          return EMPTY;
         }),
       );
   }
