@@ -5,6 +5,7 @@ import { ASC } from 'app/config/navigation.constants';
 import { AutocarejobComponent } from './list/autocarejob.component';
 import { AutocarejobDetailComponent } from './detail/autocarejob-detail.component';
 import { AutocarejobUpdateComponent } from './update/autocarejob-update.component';
+import { AutocarejobInstructionComponent } from './update/autocarejob-instruction.component';
 import AutocarejobResolve from './route/autocarejob-routing-resolve.service';
 
 const autocarejobRoute: Routes = [
@@ -27,6 +28,14 @@ const autocarejobRoute: Routes = [
   {
     path: 'new',
     component: AutocarejobUpdateComponent,
+    resolve: {
+      autocarejob: AutocarejobResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
+    path: ':id/instructions',
+    component: AutocarejobInstructionComponent,
     resolve: {
       autocarejob: AutocarejobResolve,
     },

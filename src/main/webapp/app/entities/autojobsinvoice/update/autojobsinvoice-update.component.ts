@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -17,9 +17,12 @@ import { AutojobsinvoiceFormService, AutojobsinvoiceFormGroup } from './autojobs
   templateUrl: './autojobsinvoice-update.component.html',
   imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
-export class AutojobsinvoiceUpdateComponent implements OnInit {
+export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
   isSaving = false;
   autojobsinvoice: IAutojobsinvoice | null = null;
+
+  // Add an @Input() property to receive data from the parent component
+  @Input() formData: IAutojobsinvoice | null = null;
 
   protected autojobsinvoiceService = inject(AutojobsinvoiceService);
   protected autojobsinvoiceFormService = inject(AutojobsinvoiceFormService);
@@ -35,6 +38,18 @@ export class AutojobsinvoiceUpdateComponent implements OnInit {
         this.updateForm(autojobsinvoice);
       }
     });
+
+    // If formData is provided via @Input(), update the form
+    if (this.formData) {
+      this.updateForm(this.formData);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // If formData changes, update the form
+    if (changes.formData && this.formData) {
+      this.updateForm(this.formData);
+    }
   }
 
   previousState(): void {
@@ -42,6 +57,7 @@ export class AutojobsinvoiceUpdateComponent implements OnInit {
   }
 
   save(): void {
+    // Ensure this method is public
     this.isSaving = true;
     const autojobsinvoice = this.autojobsinvoiceFormService.getAutojobsinvoice(this.editForm);
     if (autojobsinvoice.id !== null) {
