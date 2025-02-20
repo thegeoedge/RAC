@@ -457,10 +457,18 @@
                     <fa-icon icon="eye"></fa-icon>
                     <span class="d-none d-md-inline">View</span>
                   </a>
-
                   <a [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt"></fa-icon>
                     <span class="d-none d-md-inline">Edit</span>
+                  </a>
+                  <a
+                    [routerLink]="['/sales-invoice-dummy', 'new']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                    [queryParams]="{ id: salesinvoice.id, invoice: salesinvoice.invoicedate }"
+                  >
+                    <fa-icon icon="book"></fa-icon>
+                    <span class="d-none d-md-inline">Dummy invoice</span>
                   </a>
 
                   <button type="submit" (click)="delete(salesinvoice)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">

@@ -62,5 +62,7 @@ public class BillingserviceoptionAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertBillingserviceoptionUpdatableRelationshipsEquals(Billingserviceoption expected, Billingserviceoption actual) {}
+    public static void assertBillingserviceoptionUpdatableRelationshipsEquals(Billingserviceoption expected, Billingserviceoption actual) {
+        // empty method
+    }
 }

@@ -12,20 +12,19 @@ import java.time.Instant;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Billingserviceoptionvalues implements Serializable {
 
-    // private static final long serialVersionUID = 1L;
-
-    // @Id
-    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    // @SequenceGenerator(name = "sequenceGenerator")
-    // @Column(name = "id")
-    // private Long id;
+    private static final long serialVersionUID = 1L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
+    private Long id;
+
     @Column(name = "vehicletypeid")
-    private Long vehicletypeid;
+    private Integer vehicletypeid;
 
     @Column(name = "billingserviceoptionid")
-    private Long billingserviceoptionid;
+    private Integer billingserviceoptionid;
 
     @Column(name = "value")
     private Float value;
@@ -38,42 +37,42 @@ public class Billingserviceoptionvalues implements Serializable {
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    // public Long getId() {
-    //     return this.id;
-    // }
+    public Long getId() {
+        return this.id;
+    }
 
-    // public Billingserviceoptionvalues id(Long id) {
-    //     this.setId(id);
-    //     return this;
-    // }
+    public Billingserviceoptionvalues id(Long id) {
+        this.setId(id);
+        return this;
+    }
 
-    // public void setId(Long id) {
-    //     this.id = id;
-    // }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getVehicletypeid() {
+    public Integer getVehicletypeid() {
         return this.vehicletypeid;
     }
 
-    public Billingserviceoptionvalues vehicletypeid(Long vehicletypeid) {
+    public Billingserviceoptionvalues vehicletypeid(Integer vehicletypeid) {
         this.setVehicletypeid(vehicletypeid);
         return this;
     }
 
-    public void setVehicletypeid(Long vehicletypeid) {
+    public void setVehicletypeid(Integer vehicletypeid) {
         this.vehicletypeid = vehicletypeid;
     }
 
-    public Long getBillingserviceoptionid() {
+    public Integer getBillingserviceoptionid() {
         return this.billingserviceoptionid;
     }
 
-    public Billingserviceoptionvalues billingserviceoptionid(Long billingserviceoptionid) {
+    public Billingserviceoptionvalues billingserviceoptionid(Integer billingserviceoptionid) {
         this.setBillingserviceoptionid(billingserviceoptionid);
         return this;
     }
 
-    public void setBillingserviceoptionid(Long billingserviceoptionid) {
+    public void setBillingserviceoptionid(Integer billingserviceoptionid) {
         this.billingserviceoptionid = billingserviceoptionid;
     }
 
@@ -118,16 +117,16 @@ public class Billingserviceoptionvalues implements Serializable {
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
-    // @Override
-    // public boolean equals(Object o) {
-    //     if (this == o) {
-    //         return true;
-    //     }
-    //     if (!(o instanceof Billingserviceoptionvalues)) {
-    //         return false;
-    //     }
-    //     return getId() != null && getId().equals(((Billingserviceoptionvalues) o).getId());
-    // }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Billingserviceoptionvalues)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((Billingserviceoptionvalues) o).getId());
+    }
 
     @Override
     public int hashCode() {
@@ -139,7 +138,7 @@ public class Billingserviceoptionvalues implements Serializable {
     @Override
     public String toString() {
         return "Billingserviceoptionvalues{" +
-            // "id=" + getId() +
+            "id=" + getId() +
             ", vehicletypeid=" + getVehicletypeid() +
             ", billingserviceoptionid=" + getBillingserviceoptionid() +
             ", value=" + getValue() +

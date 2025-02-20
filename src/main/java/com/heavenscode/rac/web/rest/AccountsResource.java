@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Accounts;
 import com.heavenscode.rac.repository.AccountsRepository;
+import com.heavenscode.rac.service.AccountsQueryService;
+import com.heavenscode.rac.service.AccountsService;
+import com.heavenscode.rac.service.criteria.AccountsCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/accounts")
-@Transactional
 public class AccountsResource {
 
-    private final Logger log = LoggerFactory.getLogger(AccountsResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountsResource.class);
 
     private static final String ENTITY_NAME = "accounts";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final AccountsService accountsService;
+
     private final AccountsRepository accountsRepository;
 
-    public AccountsResource(AccountsRepository accountsRepository) {
+    private final AccountsQueryService accountsQueryService;
+
+    public AccountsResource(
+        AccountsService accountsService,
+        AccountsRepository accountsRepository,
+        AccountsQueryService accountsQueryService
+    ) {
+        this.accountsService = accountsService;
         this.accountsRepository = accountsRepository;
+        this.accountsQueryService = accountsQueryService;
     }
 
     /**
@@ -52,11 +63,11 @@ public class AccountsResource {
      */
     @PostMapping("")
     public ResponseEntity<Accounts> createAccounts(@RequestBody Accounts accounts) throws URISyntaxException {
-        log.debug("REST request to save Accounts : {}", accounts);
+        LOG.debug("REST request to save Accounts : {}", accounts);
         if (accounts.getId() != null) {
             throw new BadRequestAlertException("A new accounts cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        accounts = accountsRepository.save(accounts);
+        accounts = accountsService.save(accounts);
         return ResponseEntity.created(new URI("/api/accounts/" + accounts.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, accounts.getId().toString()))
             .body(accounts);
@@ -77,7 +88,7 @@ public class AccountsResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Accounts accounts
     ) throws URISyntaxException {
-        log.debug("REST request to update Accounts : {}, {}", id, accounts);
+        LOG.debug("REST request to update Accounts : {}, {}", id, accounts);
         if (accounts.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -89,7 +100,7 @@ public class AccountsResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        accounts = accountsRepository.save(accounts);
+        accounts = accountsService.update(accounts);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accounts.getId().toString()))
             .body(accounts);
@@ -111,7 +122,7 @@ public class AccountsResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Accounts accounts
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Accounts partially : {}, {}", id, accounts);
+        LOG.debug("REST request to partial update Accounts partially : {}, {}", id, accounts);
         if (accounts.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -123,73 +134,7 @@ public class AccountsResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Accounts> result = accountsRepository
-            .findById(accounts.getId())
-            .map(existingAccounts -> {
-                if (accounts.getCode() != null) {
-                    existingAccounts.setCode(accounts.getCode());
-                }
-                if (accounts.getDate() != null) {
-                    existingAccounts.setDate(accounts.getDate());
-                }
-                if (accounts.getName() != null) {
-                    existingAccounts.setName(accounts.getName());
-                }
-                if (accounts.getDescription() != null) {
-                    existingAccounts.setDescription(accounts.getDescription());
-                }
-                if (accounts.getType() != null) {
-                    existingAccounts.setType(accounts.getType());
-                }
-                if (accounts.getParent() != null) {
-                    existingAccounts.setParent(accounts.getParent());
-                }
-                if (accounts.getBalance() != null) {
-                    existingAccounts.setBalance(accounts.getBalance());
-                }
-                if (accounts.getLmu() != null) {
-                    existingAccounts.setLmu(accounts.getLmu());
-                }
-                if (accounts.getLmd() != null) {
-                    existingAccounts.setLmd(accounts.getLmd());
-                }
-                if (accounts.getHasbatches() != null) {
-                    existingAccounts.setHasbatches(accounts.getHasbatches());
-                }
-                if (accounts.getAccountvalue() != null) {
-                    existingAccounts.setAccountvalue(accounts.getAccountvalue());
-                }
-                if (accounts.getAccountlevel() != null) {
-                    existingAccounts.setAccountlevel(accounts.getAccountlevel());
-                }
-                if (accounts.getAccountsnumberingsystem() != null) {
-                    existingAccounts.setAccountsnumberingsystem(accounts.getAccountsnumberingsystem());
-                }
-                if (accounts.getSubparentid() != null) {
-                    existingAccounts.setSubparentid(accounts.getSubparentid());
-                }
-                if (accounts.getCanedit() != null) {
-                    existingAccounts.setCanedit(accounts.getCanedit());
-                }
-                if (accounts.getAmount() != null) {
-                    existingAccounts.setAmount(accounts.getAmount());
-                }
-                if (accounts.getCreditamount() != null) {
-                    existingAccounts.setCreditamount(accounts.getCreditamount());
-                }
-                if (accounts.getDebitamount() != null) {
-                    existingAccounts.setDebitamount(accounts.getDebitamount());
-                }
-                if (accounts.getDebitorcredit() != null) {
-                    existingAccounts.setDebitorcredit(accounts.getDebitorcredit());
-                }
-                if (accounts.getReporttype() != null) {
-                    existingAccounts.setReporttype(accounts.getReporttype());
-                }
-
-                return existingAccounts;
-            })
-            .map(accountsRepository::save);
+        Optional<Accounts> result = accountsService.partialUpdate(accounts);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -201,14 +146,31 @@ public class AccountsResource {
      * {@code GET  /accounts} : get all the accounts.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of accounts in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<Accounts>> getAllAccounts(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        log.debug("REST request to get a page of Accounts");
-        Page<Accounts> page = accountsRepository.findAll(pageable);
+    public ResponseEntity<List<Accounts>> getAllAccounts(
+        AccountsCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Accounts by criteria: {}", criteria);
+
+        Page<Accounts> page = accountsQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /accounts/count} : count all the accounts.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countAccounts(AccountsCriteria criteria) {
+        LOG.debug("REST request to count Accounts by criteria: {}", criteria);
+        return ResponseEntity.ok().body(accountsQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -219,8 +181,8 @@ public class AccountsResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Accounts> getAccounts(@PathVariable("id") Long id) {
-        log.debug("REST request to get Accounts : {}", id);
-        Optional<Accounts> accounts = accountsRepository.findById(id);
+        LOG.debug("REST request to get Accounts : {}", id);
+        Optional<Accounts> accounts = accountsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(accounts);
     }
 
@@ -232,8 +194,8 @@ public class AccountsResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccounts(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Accounts : {}", id);
-        accountsRepository.deleteById(id);
+        LOG.debug("REST request to delete Accounts : {}", id);
+        accountsService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

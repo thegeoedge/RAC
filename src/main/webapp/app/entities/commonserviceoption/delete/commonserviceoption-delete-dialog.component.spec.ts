@@ -1,8 +1,7 @@
 jest.mock('@ng-bootstrap/ng-bootstrap');
 
-import { ComponentFixture, TestBed, inject, fakeAsync, tick } from '@angular/core/testing';
-import { HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed, fakeAsync, inject, tick } from '@angular/core/testing';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -18,8 +17,8 @@ describe('Commonserviceoption Management Delete Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, CommonserviceoptionDeleteDialogComponent],
-      providers: [NgbActiveModal],
+      imports: [CommonserviceoptionDeleteDialogComponent],
+      providers: [provideHttpClient(), NgbActiveModal],
     })
       .overrideTemplate(CommonserviceoptionDeleteDialogComponent, '')
       .compileComponents();

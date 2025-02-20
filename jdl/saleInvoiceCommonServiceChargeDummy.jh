@@ -1,0 +1,11 @@
+entity SaleInvoiceCommonServiceChargeDummy {
+  
+  invoiceid Integer,
+  lineid Integer,
+  optionid Integer,
+  mainid Integer,
+  code String,
+  name String,
+  description String,
+  value Float
+}

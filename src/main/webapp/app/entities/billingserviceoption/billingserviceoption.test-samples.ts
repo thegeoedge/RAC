@@ -3,25 +3,24 @@ import dayjs from 'dayjs/esm';
 import { IBillingserviceoption, NewBillingserviceoption } from './billingserviceoption.model';
 
 export const sampleWithRequiredData: IBillingserviceoption = {
-  id: 14081,
+  id: 13457,
 };
 
 export const sampleWithPartialData: IBillingserviceoption = {
-  id: 860,
-  servicename: 'into',
-  lmd: dayjs('2024-10-03T20:57'),
-  lmu: 26306,
-  orderby: 8865,
+  id: 5073,
+  servicediscription: 'vaguely',
+  isactive: false,
+  billtocustomer: false,
 };
 
 export const sampleWithFullData: IBillingserviceoption = {
-  id: 2539,
-  servicename: 'bah stockpile',
-  servicediscription: 'carrier viciously wholly',
+  id: 27605,
+  servicename: 'warmly',
+  servicediscription: 'separately',
   isactive: false,
-  lmd: dayjs('2024-10-04T07:47'),
-  lmu: 16202,
-  orderby: 27406,
+  lmd: dayjs('2024-10-04T03:56'),
+  lmu: 30941,
+  orderby: 31054,
   billtocustomer: false,
 };
 
