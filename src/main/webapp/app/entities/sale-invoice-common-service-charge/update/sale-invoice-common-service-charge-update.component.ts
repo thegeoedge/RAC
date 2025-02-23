@@ -1,9 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
-import { FormsModule, ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormArray, FormGroup, FormControl } from '@angular/forms';
 import SharedModule from 'app/shared/shared.module';
 
 import { ISaleInvoiceCommonServiceCharge, NewSaleInvoiceCommonServiceCharge } from '../sale-invoice-common-service-charge.model';
@@ -13,6 +13,7 @@ import {
   SaleInvoiceCommonServiceChargeFormService,
 } from './sale-invoice-common-service-charge-form.service';
 import { IServicesubcategory } from 'app/entities/servicesubcategory/servicesubcategory.model';
+import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
 
 @Component({
   standalone: true,
@@ -24,10 +25,13 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   isSaving = false;
   saleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge[] = [];
   filteredItems: IServicesubcategory[][] = [];
+  showCodeField: boolean = true;
   protected saleInvoiceCommonServiceChargeService = inject(SaleInvoiceCommonServiceChargeService);
   protected saleInvoiceCommonServiceChargeFormService = inject(SaleInvoiceCommonServiceChargeFormService);
   protected activatedRoute = inject(ActivatedRoute);
 
+  commonServiceOptions: ICommonserviceoption[] = [];
+  @Output() totalUpdated = new EventEmitter<number>();
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: FormGroup = new FormGroup({
     serviceCharges: new FormArray([]),
@@ -45,6 +49,75 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         this.addServiceChargeDummy(); // Add default row when no data is available
       }
     });
+    this.fetchCommonServiceOptions();
+  }
+  fetchCommonServiceOptions(): void {
+    this.saleInvoiceCommonServiceChargeService
+      .getElementsByUserInputCode()
+      .pipe(debounceTime(300)) // Avoid frequent API calls
+      .subscribe({
+        next: (response: HttpResponse<ICommonserviceoption[]>) => {
+          this.commonServiceOptions = response.body || [];
+          console.log('API response items:', this.commonServiceOptions);
+        },
+        error: err => {
+          console.error('Error fetching common service options:', err);
+        },
+      });
+  }
+
+  onCheckboxChange(event: Event, option: ICommonserviceoption): void {
+    const checkbox = event.target as HTMLInputElement;
+
+    // Log the checkbox state (checked or unchecked) and the option details
+    console.log('Checkbox changed:', checkbox.checked);
+    console.log('Selected option:', option);
+
+    if (checkbox.checked) {
+      // Create the form group for the selected option
+      const formGroup = new FormGroup({
+        id: new FormControl(option.id),
+        description: new FormControl(option.description),
+        name: new FormControl(option.name),
+        value: new FormControl(option.value),
+        mainid: new FormControl(option.mainid),
+        code: new FormControl(''),
+      });
+
+      // Check if this is the first row being added
+      if (this.serviceChargesArray.length === 0) {
+        // Add the first selected option to the first row (default row behavior)
+        this.serviceChargesArray.push(formGroup);
+      } else {
+        // If the array already has rows, insert the selected option at the start of the array
+        const firstRow = this.serviceChargesArray.at(0) as FormGroup;
+
+        // Check if there's already a default row and replace its values with the new selection
+        if (!firstRow.get('id')?.value) {
+          // Replace the default row with the first selected value
+          firstRow.patchValue({
+            id: option.id,
+            description: option.description,
+            name: option.name,
+            value: option.value,
+            mainid: option.mainid,
+          });
+        } else {
+          // If there is no default row, simply push to the array
+          this.serviceChargesArray.push(formGroup);
+        }
+      }
+    } else {
+      // Remove the option if unchecked from the serviceChargeDummies FormArray
+      const index = this.serviceChargesArray.controls.findIndex(control => {
+        const group = control as FormGroup;
+        return group.get('id')?.value === option.id;
+      });
+
+      if (index !== -1) {
+        this.serviceChargesArray.removeAt(index);
+      }
+    }
   }
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)
@@ -74,6 +147,13 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     }
   }
 
+  calculateTotal(): void {
+    const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, val) => acc + val, 0);
+
+    console.log('Total Value:', total);
+    this.totalUpdated.emit(total); // Emit total to parent
+  }
+
   onItemCodeInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement
     const inputElement = <HTMLInputElement>event.target;
@@ -90,7 +170,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     console.log('Fetching items for value:', value);
 
     this.saleInvoiceCommonServiceChargeService
-      .getElementsByUserInputCode(value) // Call the service to fetch items
+      .getElementsByUserInputCode() // Call the service to fetch items
       .pipe(debounceTime(300)) // Debounce to avoid frequent calls
       .subscribe({
         next: (response: HttpResponse<IServicesubcategory[]>) => {
@@ -117,7 +197,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
     const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => ({
       ...line,
-      invoiceId: inid, // Assign invoice ID
+      invoiceid: inid, // Assign invoice ID
       lineid: line.lineid ?? index + 1, // Ensure unique line ID
       optionid: index + 1, // Default option ID to 0
     }));

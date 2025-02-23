@@ -3,11 +3,13 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
+import { IInventory } from 'app/entities/inventory/inventory.model';
 
 import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISalesinvoice, NewSalesinvoice } from '../salesinvoice.model';
+import { RestInventory } from 'app/entities/inventory/service/inventory.service';
 
 export type PartialUpdateSalesinvoice = Partial<ISalesinvoice> & Pick<ISalesinvoice, 'id'>;
 
@@ -43,6 +45,13 @@ export class SalesinvoiceService {
     return this.http
       .post<RestSalesinvoice>(this.resourceUrl, copy, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  getElementsByUserInputCode(userInputCode: string): Observable<EntityArrayResponseType> {
+    const url = this.applicationConfigService.getEndpointFor(`api/inventories?code.contains=${userInputCode}&page=0&size=20`);
+    return this.http
+      .get<IInventory[]>(url, { observe: 'response' })
+      .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));
   }
 
   update(salesinvoice: ISalesinvoice): Observable<EntityResponseType> {
