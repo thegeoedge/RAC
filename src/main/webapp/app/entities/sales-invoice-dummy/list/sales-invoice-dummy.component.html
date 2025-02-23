@@ -298,14 +298,15 @@
                   <fa-icon class="p-1" icon="sort"></fa-icon>
                 </div>
               </th>
+            </div>
+            <th scope="col" jhiSortBy="dummyCommission">
+              <div class="d-flex">
+                <span>Dummy Commission</span>
 
-              <th scope="col" jhiSortBy="dummyCommission">
-                <div class="d-flex">
-                  <span>Dummy Commission</span>
-
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                </div>
-              </th>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <div *ngIf="false">
               <th scope="col" jhiSortBy="commissionPaidDate">
                 <div class="d-flex">
                   <span>Commission Paid Date</span>
@@ -392,12 +393,12 @@
               <td>{{ salesInvoiceDummy.vehicleNo }}</td>
 
               <div *ngIf="false">
-                <td>{{ salesInvoiceDummy.dummyCommission }}</td>
                 <td>{{ salesInvoiceDummy.commissionPaidDate | formatMediumDatetime }}</td>
                 <td>{{ salesInvoiceDummy.paidCommission }}</td>
                 <td>{{ salesInvoiceDummy.paidBy }}</td>
                 <td>{{ salesInvoiceDummy.originalInvoiceCode }}</td>
               </div>
+              <td>{{ salesInvoiceDummy.dummyCommission }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <a

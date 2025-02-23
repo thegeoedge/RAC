@@ -48,6 +48,7 @@
                   list="vehiclenumberList"
                   (change)="onVehicleSelect($event)"
                   (input)="onVehicleSearch($event)"
+                  [ngModel]="vehicleNo"
                 />
                 <datalist id="vehiclenumberList">
                   <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber">
@@ -61,15 +62,35 @@
                 <input type="number" class="form-control" name="millage" id="field_millage" data-cy="millage" formControlName="millage" />
               </div>
             </div>
-
             <div class="mb-3">
               <label class="form-label" for="field_jobtypename">Jobtypename</label>
-              <select class="form-control" name="jobtypename" id="field_jobtypename" data-cy="jobtypename" formControlName="jobtypename">
+              <select
+                class="form-control"
+                name="jobtypename"
+                id="field_jobtypename"
+                data-cy="jobtypename"
+                formControlName="jobtypename"
+                [ngModel]="jobType"
+              >
                 <option value="Full Service and Other Services">Full Service and Other Services</option>
                 <option value="Detailing services">Detailing services</option>
                 <option value="Performance Care">Performance Care</option>
                 <option value="Other">Other</option>
               </select>
+            </div>
+
+            <!-- New input field -->
+            <div class="mb-3">
+              <label class="form-label" for="field_description">Description</label>
+              <input
+                type="text"
+                class="form-control"
+                name="description"
+                id="field_description"
+                data-cy="description"
+                formControlName="description"
+                placeholder="Enter description"
+              />
             </div>
 
             <!-- <div class="mb-3">
@@ -101,6 +122,7 @@
                 id="field_customername"
                 data-cy="customername"
                 formControlName="customername"
+                [ngModel]="customername"
               />
             </div>
 
@@ -113,6 +135,7 @@
                 id="field_customertel"
                 data-cy="customertel"
                 formControlName="customertel"
+                [ngModel]="customerTel"
               />
             </div>
 
@@ -285,6 +308,9 @@
                 <td>{{ appointment.conformdate?.toDate() | date }}</td>
                 <td>{{ jobTypeMap[appointment.appointmenttype ?? 0] }}</td>
                 <td>{{ appointment.contactnumber }}</td>
+                <td>
+                  <button class="btn btn-info btn-sm" (click)="loadAppointment(appointment)">Load</button>
+                </td>
               </tr>
             </tbody>
           </table>

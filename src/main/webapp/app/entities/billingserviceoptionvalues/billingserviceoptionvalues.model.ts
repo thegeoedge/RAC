@@ -7,6 +7,7 @@ export interface IBillingserviceoptionvalues {
   value?: number | null;
   lmd?: dayjs.Dayjs | null;
   lmu?: number | null;
+  servicename?: string;
 }
 
 export type NewBillingserviceoptionvalues = Omit<IBillingserviceoptionvalues, 'id'> & { id: null };
