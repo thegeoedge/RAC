@@ -1,86 +1,115 @@
-<form [formGroup]="editForm">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Invoice ID</th>
-        <th>Line ID</th>
-        <th>Item ID</th>
-        <th>Item Code</th>
-        <th>Item Name</th>
-        <th>Description</th>
-        <th>Unit of Measurement</th>
-        <th>Quantity</th>
-        <th>Item Cost</th>
-        <th>Item Price</th>
-        <th>Discount</th>
-        <th>Tax</th>
-        <th>Selling Price</th>
-        <th>Line Total</th>
-        <th>LMU</th>
-        <th>LMD</th>
-        <th>NBT</th>
-        <th>VAT</th>
-        <th>Actions</th>
-        <!-- Add actions like remove -->
-      </tr>
-    </thead>
-    <tbody formArrayName="salesInvoiceLines">
-      <tr *ngFor="let line of salesInvoiceLinesArray.controls; let i = index" [formGroupName]="i">
-        <td><input formControlName="id" type="text" /></td>
-        <td><input formControlName="invoiceid" type="text" /></td>
-        <td><input formControlName="lineid" type="text" /></td>
-        <td><input formControlName="itemid" type="text" /></td>
+<div class="d-flex justify-content-center">
+  <form name="editForm" novalidate [formGroup]="editForm">
+    <h2 id="jhi-sales-invoice-lines-heading" data-cy="SalesInvoiceLinesCreateUpdateHeading" *ngIf="showCodeField"></h2>
 
-        <td>
-          <input
-            formControlName="itemcode"
-            type="text"
-            (input)="onItemCodeInput($event, i)"
-            (change)="onItemCodeSelect($event, i)"
-            [attr.list]="'autocomplete' + i"
-          />
-          <datalist [id]="'autocomplete' + i">
-            <option *ngFor="let item of filteredItems[i]" [value]="item.code">
-              {{ item.name }}
-            </option>
-          </datalist>
-        </td>
+    <jhi-alert-error></jhi-alert-error>
 
-        <td>
-          <input
-            formControlName="itemname"
-            type="text"
-            (input)="onItemNameInput($event, i)"
-            (change)="onItemCodeSelect($event, i)"
-            [attr.list]="'autocomplete' + i"
-          />
-          <datalist [id]="'autocomplete' + i">
-            <option *ngFor="let item of filteredItems[i]" [value]="item.code">
-              {{ item.name }}
-            </option>
-          </datalist>
-        </td>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th *ngIf="showCodeField" style="width: 120px">ID</th>
+            <th style="width: 150px">Invoice Id</th>
+            <th *ngIf="showCodeField" style="width: 150px">Line Id</th>
+            <th *ngIf="showCodeField" style="width: 150px">Item Id</th>
+            <th style="width: 100px">Item Code</th>
+            <th>Item Name</th>
+            <th *ngIf="showCodeField" style="width: 200px">Description</th>
+            <th *ngIf="showCodeField" style="width: 150px">Unit Of Measurement</th>
+            <th style="width: 120px">Quantity</th>
+            <th *ngIf="showCodeField" style="width: 150px">Item Cost</th>
+            <th *ngIf="showCodeField" style="width: 150px">Item Price</th>
+            <th style="width: 120px">Discount</th>
+            <th *ngIf="showCodeField" style="width: 120px">Tax</th>
+            <th style="width: 80px">Selling Price</th>
+            <th style="width: 80px">Line Total</th>
+            <th *ngIf="showCodeField" style="width: 120px">Lmu</th>
+            <th *ngIf="showCodeField" style="width: 180px">Lmd</th>
+            <th *ngIf="showCodeField" style="width: 100px">Nbt</th>
+            <th *ngIf="showCodeField" style="width: 100px">Vat</th>
+            <th style="width: 150px">Actions</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="salesInvoiceLines">
+          <tr *ngFor="let line of salesInvoiceLinesArray.controls; let i = index" [formGroupName]="i">
+            <td *ngIf="showCodeField">
+              <input type="number" formControlName="id" [readonly]="true" *ngIf="line.get('id')?.value" />
+            </td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="id" type="text" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="invoiceid" type="text" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="lineid" type="text" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemid" type="text" /></td>
 
-        <td><input formControlName="description" type="text" /></td>
-        <td><input formControlName="unitofmeasurement" type="text" /></td>
-        <td><input formControlName="quantity" type="number" /></td>
-        <td><input formControlName="itemcost" type="number" /></td>
-        <td><input formControlName="itemprice" type="number" /></td>
-        <td><input formControlName="discount" type="number" /></td>
-        <td><input formControlName="tax" type="number" /></td>
-        <td><input formControlName="sellingprice" type="number" /></td>
-        <td><input formControlName="linetotal" type="number" /></td>
-        <td><input formControlName="lmu" type="text" /></td>
-        <td><input formControlName="lmd" type="text" /></td>
-        <td><input formControlName="nbt" type="checkbox" /></td>
-        <td><input formControlName="vat" type="checkbox" /></td>
-        <td>
-          <button type="button" (click)="removeSalesInvoiceLine(i)" class="remove">Remove</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+            <td>
+              <input
+                formControlName="itemcode"
+                type="text"
+                (input)="onItemCodeInput($event, i)"
+                (change)="onItemCodeSelect($event, i)"
+                [attr.list]="'autocomplete' + i"
+              />
+              <datalist [id]="'autocomplete' + i">
+                <option *ngFor="let item of filteredItems[i]" [value]="item.code">
+                  {{ item.name }}
+                </option>
+              </datalist>
+            </td>
 
-  <button type="button" (click)="addSalesInvoiceLine()" class="add-row">Add Row</button>
-</form>
+            <td>
+              <input
+                formControlName="itemname"
+                type="text"
+                (input)="onItemNameInput($event, i)"
+                (change)="onItemCodeSelect($event, i)"
+                [attr.list]="'autocomplete' + i"
+              />
+              <datalist [id]="'autocomplete' + i">
+                <option *ngFor="let item of filteredItems[i]" [value]="item.code">
+                  {{ item.name }}
+                </option>
+              </datalist>
+            </td>
+
+            <td style="width: 800px"><input type="text" class="form-control" formControlName="itemName" /></td>
+            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="description" /></td>
+            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="unitOfMeasurement" /></td>
+            <td><input type="number" class="form-control" formControlName="quantity" (input)="onQuantityChange(i)" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemCost" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemPrice" /></td>
+            <td><input type="number" class="form-control" formControlName="discount" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="tax" /></td>
+            <td style="width: 720px"><input type="number" class="form-control" formControlName="sellingPrice" /></td>
+            <td style="width: 780px"><input type="number" class="form-control" formControlName="lineTotal" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="lmu" /></td>
+            <td *ngIf="showCodeField"><input type="datetime-local" class="form-control" formControlName="lmd" /></td>
+            <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="nbt" /></td>
+            <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="vat" /></td>
+            <td>
+              <button type="button" (click)="removeSalesInvoiceLine(i)" class="remove">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <button type="button" class="btn btn-success" (click)="addInvoiceLine()">Add Line</button>
+    </div>
+
+    <div *ngIf="showCodeField">
+      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+        <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+      </button>
+
+      <button
+        type="submit"
+        id="save-entity"
+        data-cy="entityCreateSaveButton"
+        [disabled]="editForm.invalid || isSaving"
+        class="btn btn-primary"
+      >
+        <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+      </button>
+    </div>
+  </form>
+</div>

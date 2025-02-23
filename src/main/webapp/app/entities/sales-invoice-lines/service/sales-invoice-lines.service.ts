@@ -9,13 +9,13 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISalesInvoiceLines, NewSalesInvoiceLines } from '../sales-invoice-lines.model';
 import { IInventory } from 'app/entities/inventory/inventory.model';
-
+import { RestInventory } from 'app/entities/inventory/service/inventory.service';
 export type PartialUpdateSalesInvoiceLines = Partial<ISalesInvoiceLines> & Pick<ISalesInvoiceLines, 'id'>;
 
 type RestOf<T extends ISalesInvoiceLines | NewSalesInvoiceLines> = Omit<T, 'lmd'> & {
   lmd?: string | null;
 };
-export type RestInventory = RestOf<IInventory>;
+
 export type RestSalesInvoiceLines = RestOf<ISalesInvoiceLines>;
 
 export type NewRestSalesInvoiceLines = RestOf<NewSalesInvoiceLines>;
