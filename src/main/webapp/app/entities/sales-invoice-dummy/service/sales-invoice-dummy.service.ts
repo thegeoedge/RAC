@@ -38,7 +38,24 @@ export class SalesInvoiceDummyService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-dummies');
   protected resourceUrli = this.applicationConfigService.getEndpointFor('api/salesinvoices');
+  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines'); // Set the endpoint for invoice lines
+  protected resourceInvoiceLinesUrli = this.applicationConfigService.getEndpointFor('api/sales-invoice-service-charge-lines');
 
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
+
+  fetchService(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+  }
+  fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+  }
+
+  fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+  }
   create(salesInvoiceDummy: NewSalesInvoiceDummy): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesInvoiceDummy);
     return this.http

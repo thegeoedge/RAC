@@ -78,7 +78,10 @@ export class AutocarejobService {
   }
 
   query(req?: any): Observable<EntityArrayResponseType> {
-    const options = createRequestOption(req);
+    const options = createRequestOption({
+      ...req,
+      sort: ['id,desc'], // Sorting by date in descending order
+    });
     return this.http
       .get<RestAutocarejob[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));

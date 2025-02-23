@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -6,7 +6,7 @@ import { finalize } from 'rxjs/operators';
 import dayjs from 'dayjs'; // Import Dayjs
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { AutocarejobInstructionComponent } from './autocarejob-instruction.component';
 import { IAutocarejob } from '../autocarejob.model';
 import { ICustomervehicle } from 'app/entities/customervehicle/customervehicle.model';
 import { CustomervehicleService } from 'app/entities/customervehicle/service/customervehicle.service';
@@ -21,7 +21,7 @@ import { AutocarejobFormService, AutocarejobFormGroup } from './autocarejob-form
   standalone: true,
   selector: 'jhi-autocarejob-update',
   templateUrl: './autocarejob-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
+  imports: [SharedModule, FormsModule, ReactiveFormsModule, AutocarejobInstructionComponent],
 })
 export class AutocarejobUpdateComponent implements OnInit {
   isSaving = false;
@@ -29,7 +29,7 @@ export class AutocarejobUpdateComponent implements OnInit {
   customervehicles: ICustomervehicle[] = [];
   customerDetails: any | null = null;
   autocareappointments: IAutocareappointment[] = [];
-
+  @ViewChild(AutocarejobInstructionComponent) autocarejobinstructionComponent!: AutocarejobInstructionComponent;
   protected autocarejobService = inject(AutocarejobService);
   protected autocarejobFormService = inject(AutocarejobFormService);
   protected activatedRoute = inject(ActivatedRoute);
@@ -74,7 +74,7 @@ export class AutocarejobUpdateComponent implements OnInit {
 
   loadAllAppointments(): void {
     let allAppointments: IAutocareappointment[] = [];
-    let page = 0;
+    let page = 20;
     const size = 20; // Adjust based on your backend settings
 
     const fetchPage = () => {
@@ -82,7 +82,7 @@ export class AutocarejobUpdateComponent implements OnInit {
         next: (res: HttpResponse<IAutocareappointment[]>) => {
           const appointments = res.body || [];
           allAppointments = [...allAppointments, ...appointments];
-
+          console.log('appointmentsss', appointments);
           if (appointments.length === size) {
             page++; // Fetch the next page if current page is full
             fetchPage();
@@ -98,7 +98,38 @@ export class AutocarejobUpdateComponent implements OnInit {
 
     fetchPage();
   }
-
+  jobType: string | null = null;
+  customername: string | null = null;
+  appointmentnum: number | null = null;
+  vehicleNo: string | null = null;
+  customerTel: string | null = null;
+  loadAppointment(appointment: any): void {
+    // Implement your logic here to load the appointment details
+    console.log('Loading appointment:', appointment);
+    console.log('Loading appointment:', appointment.contactnumber);
+    this.customerTel = appointment.contactnumber;
+    this.vehicleNo = appointment.vehiclenumber;
+    this.customername = appointment.customername;
+    this.appointmentnum = appointment.appointmenttype;
+    if (this.appointmentnum !== null) {
+      const jobType = this.jobTypeMap[this.appointmentnum];
+      if (jobType) {
+        console.log('Appointment type is:', jobType);
+        this.jobType = jobType;
+      } else {
+        console.log('Unknown appointment type');
+      }
+    } else {
+      console.log('Appointment type is not defined');
+    }
+    // For example, navigate to a detailed view or trigger an API call.
+  }
+  jobTypeMap: { [key: number]: string } = {
+    1: 'Full Service and Other Services',
+    2: 'Detailing services',
+    3: 'Performance Care',
+    4: 'Other',
+  };
   // Helper function to filter today's appointments
   filterTodayAppointments(appointments: IAutocareappointment[]): IAutocareappointment[] {
     const today = dayjs().startOf('day'); // Get today's date at midnight
@@ -115,13 +146,6 @@ export class AutocarejobUpdateComponent implements OnInit {
   previousState(): void {
     window.history.back();
   }
-
-  jobTypeMap: { [key: number]: string } = {
-    1: 'Full Service and Other Services',
-    2: 'Detailing services',
-    3: 'Performance Care',
-    4: 'Other',
-  };
 
   filteredVehicles: IAutocareappointment[] = [];
 
@@ -183,17 +207,33 @@ export class AutocarejobUpdateComponent implements OnInit {
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }
-
+  invid: number = 0;
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      next: response => {
+        console.log('Save Successfully:', response.body); // Log the response
+        alert('Save Successful! Job ID: ' + response.body?.id); // Display an alert
+
+        this.invid = response.body?.id ?? 0;
+        console.log('Saved Job ID:', this.invid); // Log the response
+
+        // Save as a number in local storage (stored as a string but retrieved as a number)
+        localStorage.setItem('invid', JSON.stringify(this.invid)); // Use JSON.stringify to store properly
+
+        // Retrieve from local storage and convert back to a number
+        const storedInvid = JSON.parse(localStorage.getItem('invid') || '0'); // Use JSON.parse
+        console.log('Retrieved from Local Storage (as number):', storedInvid);
+      },
+      error: error => {
+        console.error('Save Failed:', error);
+        this.onSaveError();
+      },
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
-  }
+  //protected onSaveSuccess(): void {
+  //this.previousState();
+  //}
 
   protected onSaveError(): void {
     // Api for inheritance.

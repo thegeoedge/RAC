@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, Input } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -34,15 +34,17 @@ import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.m
 import { BillingserviceoptionvaluesService } from 'app/entities/billingserviceoptionvalues/service/billingserviceoptionvalues.service';
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
+import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { IWorkshopworklist } from 'app/entities/workshopworklist/workshopworklist.model';
 import { WorkshopworklistService } from 'app/entities/workshopworklist/service/workshopworklist.service';
 import { AutojobsinvoiceUpdateComponent } from 'app/entities/autojobsinvoice/update/autojobsinvoice-update.component';
+import { AutocarejobUpdateComponent } from './autocarejob-update.component';
 import { AutojobsaleinvoicecommonservicechargeUpdateComponent } from 'app/entities/autojobsaleinvoicecommonservicecharge/update/autojobsaleinvoicecommonservicecharge-update.component';
 import { AutojobsinvoicelinesUpdateComponent } from 'app/entities/autojobsinvoicelines/update/autojobsinvoicelines-update.component';
 import { AutojobsalesinvoiceservicechargelineUpdateComponent } from 'app/entities/autojobsalesinvoiceservicechargeline/update/autojobsalesinvoiceservicechargeline-update.component';
 import { WorkshopVehicleWorkListUpdateComponent } from 'app/entities/workshop-vehicle-work-list/update/workshop-vehicle-work-list-update.component';
 import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
-
+import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
 @Component({
   standalone: true,
   selector: 'jhi-autocarejob-instruction',
@@ -56,14 +58,19 @@ import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsale
     AutojobsinvoicelinesUpdateComponent,
     AutojobsalesinvoiceservicechargelineUpdateComponent,
     WorkshopVehicleWorkListUpdateComponent,
+    AutocarejobUpdateComponent,
   ],
 })
 export class AutocarejobInstructionComponent implements OnInit {
+  @Input() invid: number = 0;
   @ViewChild(AutojobsinvoiceUpdateComponent) autojobsinvoiceComponent!: AutojobsinvoiceUpdateComponent;
   @ViewChild(WorkshopVehicleWorkListUpdateComponent) workshopVehicleWorkListComponent!: WorkshopVehicleWorkListUpdateComponent;
   @ViewChild(AutojobsaleinvoicecommonservicechargeUpdateComponent)
   autojobsaleinvoicecommonservicechargeComponent!: AutojobsaleinvoicecommonservicechargeUpdateComponent;
   @ViewChild(AutojobsinvoicelinesUpdateComponent) autojobsinvoicelinesComponent!: AutojobsinvoicelinesUpdateComponent;
+  jobinvoicelines = inject(AutojobsinvoicelinesService);
+  jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
+  @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
   constructor(private cdr: ChangeDetectorRef) {} // Inject ChangeDetectorRef
@@ -78,7 +85,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   inventory: IInventory[] = [];
   commonserviceoption: ICommonserviceoption[] = [];
   billingserviceoption: IBillingserviceoption[] = [];
-  selectedcommonServices: ICommonserviceoption[] = [];
+  // selectedcommonServices: ICommonserviceoption[] = [];
   totalcommonServiceCharge = 0;
   billingserviceoptionvalues: IBillingserviceoptionvalues[] = [];
   vehicletypes: IVehicletype[] = [];
@@ -187,6 +194,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
 
     const option = this.billingserviceoption.find(opt => opt.id === billingserviceoptionId);
+    // console.log('Billing Service Optionssssssssss:', option); // Debugging
     return option && option.servicename ? option.servicename : 'Unknown';
   }
 
@@ -199,13 +207,69 @@ export class AutocarejobInstructionComponent implements OnInit {
     return this.selectedServices.some(service => service.id === item.id);
   }
 
+  // Define the serviceArray to hold the selected service details
+  serviceArray: Array<{
+    invoiceid: number;
+    lineid: number;
+    optionid: number;
+    servicename: string;
+    servicediscription: string;
+    value: number;
+    addedbyid: number;
+    iscustomersrvice: boolean;
+    discount: number;
+    serviceprice: number;
+  }> = [];
+
   onServiceSelectionChanges(item: IBillingserviceoptionvalues, event: any): void {
+    const serviceName = this.getBillingServiceOptionName(item.billingserviceoptionid);
+
     if (event.target.checked) {
-      this.selectedServices.push(item);
+      // Check if the service already exists in the selectedServices array
+      const exists = this.selectedServices.some(service => service.billingserviceoptionid === item.billingserviceoptionid);
+
+      if (!exists) {
+        // Add the service to selectedServices with the service name and value
+        this.selectedServices.push({
+          ...item,
+          servicename: serviceName,
+        });
+
+        // Add the service to serviceArray with the required structure
+        this.serviceArray.push({
+          // Assuming the item has an id
+          invoiceid: 0, // Set this value appropriately
+          lineid: 0, // Set this value appropriately
+          optionid: 0,
+          servicename: serviceName,
+          servicediscription: '', // Assuming this field exists
+          value: item.value ?? 0,
+          addedbyid: 0, // Set this value appropriately
+          iscustomersrvice: true, // Set this value appropriately
+          discount: 0, // Assuming this field exists
+          serviceprice: 0, // Assuming this field exists
+        });
+      }
     } else {
-      this.selectedServices = this.selectedServices.filter(service => service.id !== item.id);
+      // Remove the service by filtering it out
+      this.selectedServices = this.selectedServices.filter(service => service.billingserviceoptionid !== item.billingserviceoptionid);
+
+      // Remove the service from serviceArray by filtering it out
+      this.serviceArray = this.serviceArray.filter(service => service.optionid !== item.billingserviceoptionid);
     }
+
     this.calculateTotalCharges(); // Ensure this is called
+
+    console.log('Selected Services:', this.selectedServices);
+    console.log('serviceArrayyyyyyyyyyyyyyyy:', this.serviceArray);
+
+    this.selectedServices.forEach(service => {
+      console.log('Selected Service billingserviceoptionid:', service.billingserviceoptionid);
+      console.log('Service Name:', service.servicename);
+    });
+
+    const selectedServiceNames = this.selectedServices.map(s => s.servicename);
+    console.log('Selected Service Names:', selectedServiceNames);
   }
 
   onAmountChange(item: IBillingserviceoptionvalues): void {
@@ -238,13 +302,55 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.commonserviceoption = res.body;
     });
   }
+  // Define the new array with the given structure
+  commonServiceArray: Array<{
+    invoiceid: number;
+    lineid: number;
+    optionid: number;
+    mainid: number;
+    code: string;
+    name: string;
+    description: string;
+    value: number;
+    addedbyid: number;
+    discount: number;
+    serviceprice: number;
+  }> = [];
+
+  selectedcommonServices: Array<ICommonserviceoption> = []; // Assuming this is defined elsewhere
 
   onServiceSelectionChange(service: ICommonserviceoption, event: any) {
     if (event.target.checked) {
+      // Add service to selectedcommonServices if not already added
       this.selectedcommonServices.push(service);
+
+      // Add the service to commonServiceArray
+      this.commonServiceArray.push({
+        // Assuming 'id' exists in the service
+        invoiceid: 0, // Set appropriately
+        lineid: 0, // Set appropriately
+        optionid: service.id, // Assuming 'optionid' is the same as 'id'
+        mainid: 0, // Set appropriately
+        code: service.code || '', // Set from the service object with default value
+        name: service.name || '', // Set from the service object with default value
+        description: service.description || 'No description', // Default if description is missing
+        value: service.value ?? 0, // Set from the service object with default value
+        addedbyid: 0, // Set appropriately
+        discount: 0, // Default discount value
+        serviceprice: 0, // Default value
+      });
     } else {
+      // Remove service from selectedcommonServices if unchecked
       this.selectedcommonServices = this.selectedcommonServices.filter(s => s.id !== service.id);
+
+      // Remove service from commonServiceArray
+      this.commonServiceArray = this.commonServiceArray.filter(s => s.optionid !== service.id);
     }
+
+    console.log('Selected Common Services:', this.selectedcommonServices);
+    console.log('Common Service Arrayyyy:', this.commonServiceArray);
+
+    // Ensure total charge is recalculated
     this.calculateTotalCharge();
   }
 
@@ -349,12 +455,54 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.filtereditems = [];
     }
   }
+  itemsArray: Array<{
+    id: number;
+    invocieid: number;
+    lineid: number;
+    itemid: number;
+    itemcode: string;
+    itemname: string;
+    description: string;
+    unitofmeasurement: string;
+    quantity: number;
+    itemcost: number;
+    itemprice: number;
+    discount: number;
+    tax: number;
+    sellingprice: number;
+    linetotal: number;
+    lmu: number;
+    lmd: string;
+    nbt: boolean;
+    vat: boolean;
+  }> = [];
 
   onAddItem(): void {
     const selectedItem = this.filtereditems.find(item => item.name === (document.getElementById('field_item') as HTMLInputElement).value);
 
     if (selectedItem) {
-      // Add the selected item to the list with default values
+      // Add the selected item to the list with the required fields and default values
+      this.itemsArray.push({
+        id: 0, // Set a default value
+        itemid: selectedItem.id, // Assuming selectedItem has an 'id' field
+        invocieid: 0, // Set a default value
+        lineid: 0, // Set a default value
+        itemcode: selectedItem.code ?? '', // Assign itemcode from selectedItem with default value
+        itemname: selectedItem.name ?? '', // Assign itemname from selectedItem with default value
+        description: selectedItem.description ?? '', // Assuming selectedItem has a 'description' field
+        unitofmeasurement: selectedItem.unitofmeasurement ?? '', // Provide a default value if undefined or null
+        quantity: 1, // Default quantity
+        itemcost: 0, // Set a default value
+        itemprice: 0, // Assuming selectedItem has 'price' field
+        discount: 0, // Default discount
+        tax: 0, // Assuming selectedItem has 'tax' field
+        sellingprice: selectedItem.lastsellingprice ?? 0, // Assign sellingprice from selectedItem with default value
+        linetotal: 0, // Assuming selectedItem has 'linetotal' field
+        lmu: selectedItem.lmu ?? 0, // Assuming selectedItem has 'lmu' field
+        lmd: selectedItem.lmd ? selectedItem.lmd.toString() : '', // Ensure lmd is a string
+        nbt: false, // Assuming selectedItem has 'nbt' field
+        vat: false, // Assuming selectedItem has 'vat' field
+      });
       this.selectedItems.push({
         ...selectedItem,
         discountPercentage: 0, // Default discount percentage
@@ -364,6 +512,8 @@ export class AutocarejobInstructionComponent implements OnInit {
       (document.getElementById('field_item') as HTMLInputElement).value = '';
       this.filtereditems = [];
     }
+
+    console.log('Selected Items Arrayyyyuuu:', this.itemsArray);
   }
 
   onDeleteItem(index: number): void {
@@ -528,12 +678,21 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }
-
+  invoid: number = 0;
   saveAll(): void {
     this.save();
 
     if (this.autojobsinvoiceComponent) {
-      this.autojobsinvoiceComponent.save();
+      this.autojobsinvoiceComponent.save().subscribe({
+        next: invoiceIdFromComponent => {
+          console.log('Invoice ID returned from autojobsinvoiceComponent.save():', invoiceIdFromComponent);
+          // Do something with the invoice ID from the component
+          this.invoid = invoiceIdFromComponent;
+        },
+        error: error => {
+          console.error('Component save failed:', error);
+        },
+      });
     }
     // if (this.workshopVehicleWorkListComponent) {
     //   this.workshopVehicleWorkListComponent.save();
@@ -548,17 +707,65 @@ export class AutocarejobInstructionComponent implements OnInit {
     //   this.autojobsalesinvoiceservicechargelineComponent.save();
     // }
   }
-
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: response => {
+        if (response.body) {
+          const invoiceId = response.body.id; // Extract ID
+          console.log('Save response body:', invoiceId);
+
+          // Retrieve stored invoiceId from local storage
+
+          console.log('Retrieved Invoice ID from Local Storage:', this.invoid);
+
+          this.commonServiceArray.forEach(service => {
+            service.invoiceid = this.invoid; // Use extracted invoiceId
+
+            // Assuming commonserviceoptionService.create() accepts service data and returns an observable
+            this.jobcommon.create({ ...service, id: null }).subscribe({
+              next: createResponse => {
+                console.log('Serviceee created successfully:', createResponse);
+              },
+              error: createError => {
+                console.error('Error creating service:', createError.body);
+              },
+            });
+          });
+
+          // Loop through the itemsArray and update the invoiceId field for each item
+          this.itemsArray.forEach(item => {
+            item.invocieid = this.invoid; // Use stored invoiceId
+
+            // Convert lmd to Dayjs object
+            const itemWithDayjsLmd = {
+              ...item,
+              id: null, // Set id to null for new Autojobsinvoicelines
+              lmd: dayjs(item.lmd),
+            };
+
+            // Call create method to save invoice lines
+            this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
+              next: createResponse => {
+                console.log('Item created successfully:', createResponse);
+              },
+              error: createError => {
+                console.error('Error creating item:', createError);
+              },
+            });
+          });
+
+          console.log('Updated itemsArray:', this.itemsArray);
+        } else {
+          console.error('Save response body is null');
+        }
+      },
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
-  }
+  //protected onSaveSuccess(): void {
+  //  this.previousState();
+  // }
 
   protected onSaveError(): void {
     // Api for inheritance.

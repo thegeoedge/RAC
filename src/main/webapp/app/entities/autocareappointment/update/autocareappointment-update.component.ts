@@ -71,6 +71,7 @@ dayjs.extend(utc);
 export class AutocareappointmentUpdateComponent implements OnInit {
   hideIsNoAnswer: boolean = true;
   isSaving = false;
+  selectedTab: number = 0;
   autocareappointment: IAutocareappointment | null = null;
   autocareappointmenttypes: IAutocareappointmenttype[] = [];
   customervehicles: ICustomervehicle[] = [];
@@ -109,7 +110,18 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       this.loadHoistAppointmentTime();
     });
   }
+  openIndex: number | null = null;
 
+  openAccordion(index: number) {
+    this.openIndex = index;
+  }
+  closeAccordion(index: number) {
+    setTimeout(() => {
+      if (this.openIndex === index) {
+        this.openIndex = null;
+      }
+    }, 500);
+  }
   getHoistsByType(hoistTypeId: number): any[] {
     return this.hoistData.filter(hoist => hoist.hoisttypeid === hoistTypeId);
   }
@@ -200,6 +212,7 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       // Use the new service method to fetch matching results
       this.customervehicleService.findByVehicleNumber(searchTerm).subscribe(response => {
         this.filteredVehicles = response.body || [];
+        console.log('Filtered vehicles:', this.filteredVehicles);
         // Update the vehicle ID field if there's any vehicle found
         if (this.filteredVehicles.length > 0) {
           this.editForm.get('vehicleid')?.patchValue(this.filteredVehicles[0].id); // Patching vehicle ID
