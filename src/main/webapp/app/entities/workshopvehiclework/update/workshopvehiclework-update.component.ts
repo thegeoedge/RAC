@@ -10,6 +10,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IWorkshopvehiclework } from '../workshopvehiclework.model';
 import { WorkshopvehicleworkService } from '../service/workshopvehiclework.service';
 import { WorkshopvehicleworkFormService, WorkshopvehicleworkFormGroup } from './workshopvehiclework-form.service';
+import { IWorkshopworklist } from 'app/entities/workshopworklist/workshopworklist.model';
+import { WorkshopworklistService } from 'app/entities/workshopworklist/service/workshopworklist.service';
 
 @Component({
   standalone: true,
@@ -20,10 +22,13 @@ import { WorkshopvehicleworkFormService, WorkshopvehicleworkFormGroup } from './
 export class WorkshopvehicleworkUpdateComponent implements OnInit {
   isSaving = false;
   workshopvehiclework: IWorkshopvehiclework | null = null;
+  workshopworklist: IWorkshopworklist[] = [];
+  selectedworkItems: IWorkshopworklist[] = [];
 
   protected workshopvehicleworkService = inject(WorkshopvehicleworkService);
   protected workshopvehicleworkFormService = inject(WorkshopvehicleworkFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected workshopworklistService = inject(WorkshopworklistService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: WorkshopvehicleworkFormGroup = this.workshopvehicleworkFormService.createWorkshopvehicleworkFormGroup();
@@ -34,7 +39,22 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit {
       if (workshopvehiclework) {
         this.updateForm(workshopvehiclework);
       }
+      this.loadDataFromWorkshopWorklistEntities();
     });
+  }
+
+  loadDataFromWorkshopWorklistEntities() {
+    this.workshopworklistService.query({ size: 1000 }).subscribe((res: any) => {
+      this.workshopworklist = res.body;
+    });
+  }
+
+  onworkServiceSelectionChange(item: any, event: any): void {
+    if (event.target.checked) {
+      this.selectedworkItems.push(item);
+    } else {
+      this.selectedworkItems = this.selectedworkItems.filter(selectedworkItem => selectedworkItem !== item);
+    }
   }
 
   previousState(): void {

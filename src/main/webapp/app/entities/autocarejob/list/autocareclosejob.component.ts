@@ -15,12 +15,11 @@ import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigati
 import { IAutocarejob } from '../autocarejob.model';
 import { EntityArrayResponseType, AutocarejobService } from '../service/autocarejob.service';
 import { AutocarejobDeleteDialogComponent } from '../delete/autocarejob-delete-dialog.component';
-import { AutocareclosejobComponent } from '../list/autocareclosejob.component';
 
 @Component({
   standalone: true,
-  selector: 'jhi-autocareopenjob',
-  templateUrl: './autocareopenjob.componenet.html',
+  selector: 'jhi-autocareclosejob',
+  templateUrl: './autocareclosejob.component.html',
   imports: [
     RouterModule,
     FormsModule,
@@ -31,10 +30,9 @@ import { AutocareclosejobComponent } from '../list/autocareclosejob.component';
     FormatMediumDatetimePipe,
     FormatMediumDatePipe,
     ItemCountComponent,
-    AutocareclosejobComponent,
   ],
 })
-export class AutocareopenjobComponent implements OnInit {
+export class AutocareclosejobComponent implements OnInit {
   subscription: Subscription | null = null;
   autocarejobs?: IAutocarejob[];
   isLoading = false;
@@ -81,27 +79,15 @@ export class AutocareopenjobComponent implements OnInit {
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
         this.onResponseSuccess(res);
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
-        this.autocarejobs = this.autocarejobs?.filter(
-          job => !job.isjobclose && job.jobdate?.format('YYYY-MM-DD') === today, // Only show open jobs for today
-        );
-
+        this.autocarejobs = this.autocarejobs?.filter(job => job.isjobclose); // Only show open jobs
         this.filterJobs(); // Apply filtering when loading data
       },
     });
   }
-
   filterJobs(): void {
     if (!this.autocarejobs) return;
-
-    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
     this.filteredAutocarejobs = this.autocarejobs.filter(
-      job =>
-        job.vehiclenumber?.toLowerCase().includes(this.searchText.toLowerCase()) &&
-        !job.isjobclose &&
-        job.jobdate?.format('YYYY-MM-DD') === today, // Ensure job date matches today
+      job => job.vehiclenumber?.toLowerCase().includes(this.searchText.toLowerCase()) && job.isjobclose,
     );
   }
 
