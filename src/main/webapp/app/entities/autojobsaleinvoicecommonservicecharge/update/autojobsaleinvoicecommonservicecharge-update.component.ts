@@ -45,6 +45,7 @@ export class AutojobsaleinvoicecommonservicechargeUpdateComponent implements OnI
       if (autojobsaleinvoicecommonservicecharge) {
         this.updateForm(autojobsaleinvoicecommonservicecharge);
       }
+      this.loadDataFromCommonServiceOptionEntities();
     });
 
     // If formData is provided via @Input(), update the form

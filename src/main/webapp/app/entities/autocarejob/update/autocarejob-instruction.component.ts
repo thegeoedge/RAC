@@ -42,6 +42,7 @@ import { AutojobsinvoicelinesUpdateComponent } from 'app/entities/autojobsinvoic
 import { AutojobsalesinvoiceservicechargelineUpdateComponent } from 'app/entities/autojobsalesinvoiceservicechargeline/update/autojobsalesinvoiceservicechargeline-update.component';
 import { WorkshopVehicleWorkListUpdateComponent } from 'app/entities/workshop-vehicle-work-list/update/workshop-vehicle-work-list-update.component';
 import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
+import { WorkshopvehicleworkUpdateComponent } from 'app/entities/workshopvehiclework/update/workshopvehiclework-update.component';
 
 @Component({
   standalone: true,
@@ -56,6 +57,7 @@ import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsale
     AutojobsinvoicelinesUpdateComponent,
     AutojobsalesinvoiceservicechargelineUpdateComponent,
     WorkshopVehicleWorkListUpdateComponent,
+    WorkshopvehicleworkUpdateComponent,
   ],
 })
 export class AutocarejobInstructionComponent implements OnInit {
@@ -217,9 +219,6 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.totalServiceCharge = this.selectedServices.reduce((sum, service) => sum + (service.value || 0), 0);
     console.log('Total Service Charge:', this.totalServiceCharge);
   }
-  // addSelectedServices(): void {
-  //   console.log('Selected Services:', this.selectedServices);
-  // }
 
   loadDataFromOtherEntities() {
     this.vehiclebrandmodelService.query().subscribe((res: any) => {
@@ -303,11 +302,6 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.selectedworkItems = this.selectedworkItems.filter(selectedworkItem => selectedworkItem !== item);
     }
   }
-  // loadDataFromBillingServiceOptionEntities() {
-  //   this.billingserviceoptionService.query().subscribe((res: any) => {
-  //     this.billingserviceoption = res.body;
-  //   });
-  // }
 
   loadDataFromBillingServiceOptionValuesEntities() {
     this.billingserviceoptionvaluesService.query().subscribe((res: any) => {
@@ -521,7 +515,10 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
-    const autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
+    let autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
+
+    autocarejob = { ...autocarejob, isjobclose: true, jobclosetime: dayjs() }; // Mark job as closed and set close time
+
     if (autocarejob.id !== null) {
       this.subscribeToSaveResponse(this.autocarejobService.update(autocarejob));
     } else {
