@@ -1,11 +1,11 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule, FormArray, FormGroup, FormControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormArray, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
 import {
   ISaleInvoiceCommonServiceChargeDummy,
@@ -30,14 +30,59 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
   protected activatedRoute = inject(ActivatedRoute);
   commonServiceOptions: ICommonserviceoption[] = [];
   @Output() totalUpdated = new EventEmitter<number>();
+  @Input() fetchedServicesCommon: any;
   editForm: FormGroup = new FormGroup({
     serviceChargeDummies: new FormArray([]),
   });
+  protected fb = inject(FormBuilder);
 
   get serviceChargeDummiesArray(): FormArray {
     return this.editForm.get('serviceChargeDummies') as FormArray;
   }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fetchedServicesCommon'] && this.fetchedServicesCommon) {
+      // Loop through the fetchedItems array and add each item to the form array
+      this.fetchedServicesCommon.forEach((item: any) => {
+        this.addItemToFormArray(item);
+      });
+      console.log('Fetched Items on Change:', this.fetchedServicesCommon); // Log fetched items
+    }
+  }
+  addItemToFormArray(item: any): void {
+    // Create a new form group for the item
+    const newItem = this.fb.group({
+      name: [item.itemname],
+      value: [item.sellingprice],
+      isCustomerService: [false],
+      description: [item.itemname],
+      code: [item.itemcode],
+    });
 
+    // Add the new form group to the form array
+    this.serviceChargeDummiesArray.push(newItem);
+    this.totalvalue(newItem);
+  }
+  totalvalue(formGroup: FormGroup): void {
+    const value = formGroup.get('value');
+
+    // Update the line total when the value changes
+    value?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal());
+
+    // Initialize the line total when the form is added
+    this.updateLineTotal();
+  }
+  totalsum: number = 0; // Global variable to store total value
+  updateLineTotal(): void {
+    // Calculate the total by summing up all values in the serviceChargeLines array
+    const total = this.serviceChargeDummiesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    // Emit the total to the parent component
+    this.totalUpdated.emit(total);
+    console.log('Updated Total cccccccccccccccccccccccc:', total); // Log the updated total
+    this.totalsum = total;
+  }
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ saleInvoiceCommonServiceChargeDummies }) => {
       if (saleInvoiceCommonServiceChargeDummies && saleInvoiceCommonServiceChargeDummies.length > 0) {
@@ -64,14 +109,17 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
       });
   }
 
+  totalfetch: number = 0; // Global variable to store total value
+
   onCheckboxChange(event: Event, option: ICommonserviceoption): void {
     const checkbox = event.target as HTMLInputElement;
-
-    // Log the checkbox state (checked or unchecked) and the option details
     console.log('Checkbox changed:', checkbox.checked);
     console.log('Selected option:', option);
 
     if (checkbox.checked) {
+      // Add the value of the selected option
+      this.totalfetch += option.value ?? 0;
+
       // Create the form group for the selected option
       const formGroup = new FormGroup({
         id: new FormControl(option.id),
@@ -87,12 +135,10 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
         // Add the first selected option to the first row (default row behavior)
         this.serviceChargeDummiesArray.push(formGroup);
       } else {
-        // If the array already has rows, insert the selected option at the start of the array
         const firstRow = this.serviceChargeDummiesArray.at(0) as FormGroup;
 
         // Check if there's already a default row and replace its values with the new selection
         if (!firstRow.get('id')?.value) {
-          // Replace the default row with the first selected value
           firstRow.patchValue({
             id: option.id,
             description: option.description,
@@ -101,12 +147,14 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
             mainid: option.mainid,
           });
         } else {
-          // If there is no default row, simply push to the array
           this.serviceChargeDummiesArray.push(formGroup);
         }
       }
     } else {
-      // Remove the option if unchecked from the serviceChargeDummies FormArray
+      // Remove the value of the unchecked option
+      this.totalfetch -= option.value ?? 0;
+
+      // Remove the option if unchecked from the FormArray
       const index = this.serviceChargeDummiesArray.controls.findIndex(control => {
         const group = control as FormGroup;
         return group.get('id')?.value === option.id;
@@ -116,6 +164,10 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
         this.serviceChargeDummiesArray.removeAt(index);
       }
     }
+
+    // Log total fetched value
+    console.log('Total Fetched Value:', this.totalfetch);
+    this.calculateTotal(this.totalfetch); // Emit total to parent
   }
 
   onItemCodeSelect(event: Event, index: number): void {
@@ -141,18 +193,13 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
         // Add any other fields you want to update with the selected item's details
       });
       console.log(salesInvoiceLineGroup.value);
-      this.calculateTotal();
     } else {
       console.log('Item not found for code:', selectedItemCode);
     }
   }
-  calculateTotal(): void {
-    const total = this.serviceChargeDummiesArray.controls
-      .map(control => control.get('value')?.value || 0)
-      .reduce((acc, val) => acc + val, 0);
-
-    console.log('Total Value:', total);
-    this.totalUpdated.emit(total); // Emit total to parent
+  calculateTotal(total: number): void {
+    console.log('Total Value:', total + this.totalsum); // Log the total value
+    this.totalUpdated.emit(total + this.totalsum); // Emit total to parent
   }
 
   onItemCodeInput(event: Event, index: number): void {
@@ -199,7 +246,7 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
 
     const serviceChargeDummies = this.serviceChargeDummiesArray.value.map((line: any, index: number) => ({
       ...line,
-      invoiceId: inid, // Assign invoice ID
+      invoiceid: inid, // Assign invoice ID
       lineid: line.lineid ?? index + 1, // Ensure unique line ID
       optionid: index + 1, // Default option ID to 0
     }));

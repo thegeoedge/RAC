@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, Input, inject, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
@@ -33,14 +33,58 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
   protected activatedRoute = inject(ActivatedRoute);
   protected fb = inject(FormBuilder);
   @Output() totalUpdated = new EventEmitter<number>(); // Emit total to parent
+  @Input() fetchedServices: any;
   protected vehicletypesService = inject(VehicletypeService);
   editForm: FormGroup = new FormGroup({
     serviceChargeLines: new FormArray([]),
   });
   typeid: number = 0;
+  totalfetch: number = 0;
   vehicletypes: IVehicletype[] = [];
   get serviceChargeLinesArray(): FormArray {
     return this.editForm.get('serviceChargeLines') as FormArray;
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fetchedServices'] && this.fetchedServices) {
+      // Loop through the fetchedItems array and add each item to the form array
+      this.fetchedServices.forEach((item: any) => {
+        this.addItemToFormArray(item);
+      });
+      console.log('Fetched Items on Change:', this.fetchedServices); // Log fetched items
+    }
+  }
+
+  addItemToFormArray(item: any): void {
+    // Create a new form group for the item
+    const newItem = this.fb.group({
+      serviceName: [item.itemname],
+      value: [item.sellingprice],
+      isCustomerService: [false],
+    });
+
+    // Add the new form group to the form array
+    this.serviceChargeLinesArray.push(newItem);
+    this.totalvalue(newItem);
+  }
+  totalvalue(formGroup: FormGroup): void {
+    const value = formGroup.get('value');
+
+    // Update the line total when the value changes
+    value?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal());
+
+    // Initialize the line total when the form is added
+    this.updateLineTotal();
+  }
+
+  updateLineTotal(): void {
+    // Calculate the total by summing up all values in the serviceChargeLines array
+    const total = this.serviceChargeLinesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    // Emit the total to the parent component
+    this.totalUpdated.emit(total);
+    console.log('Updated Total ssssssssssser:', total); // Log the updated total
   }
 
   ngOnInit(): void {
@@ -48,8 +92,6 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
       if (salesInvoiceServiceChargeLines && salesInvoiceServiceChargeLines.length > 0) {
         this.salesInvoiceServiceChargeLines = salesInvoiceServiceChargeLines;
         this.updateForm(salesInvoiceServiceChargeLines);
-      } else {
-        this.addServiceChargeLine();
       }
     });
     this.loadVehicleTypes();
@@ -124,45 +166,55 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
     const existingRows = this.serviceChargeLinesArray.controls.length;
     console.log('typeid:', this.typeid);
 
-    // Temporary map to store responses
-    const serviceResponses = new Map<number, any>();
-
-    // Iterate over selected services
+    let completedRequests = 0; // Track completed API requests
+    let totalFetchedValue = 0;
     this.selectedServices.forEach((service, index) => {
       console.log('Selected service ID:', service.id);
-
       console.log(`Sending API request to fetch billing values with params: service.id=${service.id}, typeid=${this.typeid}`);
 
       this.salesInvoiceServiceChargeLineDummyService.biliingvalues(service.id, this.typeid).subscribe(response => {
         console.log('API Response:', response);
 
-        const billingValues = response.body; // Assuming the response contains the data in 'body'
-        console.log('Billing values:', billingValues);
-
-        serviceResponses.set(service.id, billingValues && billingValues.length > 0 ? billingValues[0].value : '');
-
+        const billingValues = response.body;
+        const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
+        totalFetchedValue += fetchedValue ?? 0;
         if (index === 0 && existingRows > 0) {
           // Update first row if it exists
           const firstRow = this.serviceChargeLinesArray.controls[0];
           firstRow.get('serviceName')?.setValue(service.servicename);
           firstRow.get('iqd')?.setValue(service.id);
-          firstRow.get('value')?.setValue(serviceResponses.get(service.id));
+          firstRow.get('value')?.setValue(fetchedValue);
         } else {
           // Add new row with fetched value
           this.serviceChargeLinesArray.push(
             this.fb.group({
               serviceName: [service.servicename],
-              value: [serviceResponses.get(service.id)], // Set fetched value
+              value: [fetchedValue], // Set fetched value
               isCustomerService: [false],
               id: [service.id],
             }),
           );
         }
+
+        // Increment completed requests counter
+        completedRequests++;
+        this.totalfetch = totalFetchedValue;
+        console.log('Current total fetched value:', this.totalfetch);
+
+        this.calculateTotal(this.totalfetch);
+        // When all requests are done, calculate total
       });
     });
+    console.log('Final total before API completion (may be outdated):', this.totalfetch);
 
     // Reset selected services after processing
     this.selectedServices = [];
+  }
+
+  calculateTotal(total: number): void {
+    console.log('Total Value:', total); // Log the correct total value
+    this.totalUpdated.emit(total); // Emit total to parent
+    // Small delay to allow UI updates
   }
 
   selectedServices: { id: number; servicename: string }[] = [];
@@ -228,12 +280,6 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
           this.filteredItems[index] = []; // Clear suggestions on error
         },
       });
-  }
-  calculateTotal(): void {
-    const total = this.serviceChargeLinesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, val) => acc + val, 0);
-
-    console.log('Total Value:', total);
-    this.totalUpdated.emit(total); // Emit total to parent
   }
 
   save(inid: number): void {

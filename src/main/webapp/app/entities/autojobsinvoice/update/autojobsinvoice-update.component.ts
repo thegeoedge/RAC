@@ -56,21 +56,37 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     window.history.back();
   }
 
-  save(): void {
+  save(): Observable<number> {
     // Ensure this method is public
     this.isSaving = true;
     const autojobsinvoice = this.autojobsinvoiceFormService.getAutojobsinvoice(this.editForm);
     if (autojobsinvoice.id !== null) {
-      this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
+      return this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
     } else {
-      this.subscribeToSaveResponse(this.autojobsinvoiceService.create(autojobsinvoice));
+      return this.subscribeToSaveResponse(this.autojobsinvoiceService.create(autojobsinvoice));
     }
   }
-
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutojobsinvoice>>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutojobsinvoice>>): Observable<number> {
+    return new Observable(observer => {
+      result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
+        next: response => {
+          console.log('Save Successful:', response);
+          if (response.body) {
+            const invoiceId = response.body.id;
+            console.log('Saved Invoice ID:', invoiceId);
+            observer.next(invoiceId); // Emit the invoice ID
+            observer.complete();
+          } else {
+            console.error('Response body is null');
+            observer.error('Response body is null');
+          }
+        },
+        error: error => {
+          console.error('Save Failed:', error);
+          this.onSaveError();
+          observer.error(error);
+        },
+      });
     });
   }
 

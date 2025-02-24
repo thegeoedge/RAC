@@ -19,7 +19,7 @@ public class SalesInvoiceLines implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "invocieid")
+    @Column(name = "invoiceid")
     private Integer invoiceid;
 
     @Column(name = "lineid")

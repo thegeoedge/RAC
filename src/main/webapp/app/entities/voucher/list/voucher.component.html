@@ -37,13 +37,15 @@
       <table class="table table-striped" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span>ID</span>
+            <div *ngIf="false">
+              <th scope="col" jhiSortBy="id">
+                <div class="d-flex">
+                  <span>ID</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+            </div>
             <th scope="col" jhiSortBy="code">
               <div class="d-flex">
                 <span>Code</span>
@@ -79,13 +81,15 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="totalAmountInWord">
-              <div class="d-flex">
-                <span>Total Amount In Word</span>
+            <div *ngIf="false">
+              <th scope="col" jhiSortBy="totalAmountInWord">
+                <div class="d-flex">
+                  <span>Total Amount In Word</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+            </div>
             <th scope="col" jhiSortBy="comments">
               <div class="d-flex">
                 <span>Comments</span>
@@ -93,41 +97,43 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="lmu">
-              <div class="d-flex">
-                <span>Lmu</span>
+            <div *ngIf="false">
+              <th scope="col" jhiSortBy="lmu">
+                <div class="d-flex">
+                  <span>Lmu</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lmd">
-              <div class="d-flex">
-                <span>Lmd</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="lmd">
+                <div class="d-flex">
+                  <span>Lmd</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="termId">
-              <div class="d-flex">
-                <span>Term Id</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="termId">
+                <div class="d-flex">
+                  <span>Term Id</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="term">
-              <div class="d-flex">
-                <span>Term</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="term">
+                <div class="d-flex">
+                  <span>Term</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="date">
-              <div class="d-flex">
-                <span>Date</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="date">
+                <div class="d-flex">
+                  <span>Date</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+            </div>
             <th scope="col" jhiSortBy="amountPaid">
               <div class="d-flex">
                 <span>Amount Paid</span>
@@ -135,52 +141,62 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="supplierID">
-              <div class="d-flex">
-                <span>Supplier ID</span>
+            <div *ngIf="false">
+              <th scope="col" jhiSortBy="supplierID">
+                <div class="d-flex">
+                  <span>Supplier ID</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="isActive">
-              <div class="d-flex">
-                <span>Is Active</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="isActive">
+                <div class="d-flex">
+                  <span>Is Active</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdBy">
-              <div class="d-flex">
-                <span>Created By</span>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="createdBy">
+                <div class="d-flex">
+                  <span>Created By</span>
 
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                </div>
+              </th>
+            </div>
             <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
           @for (voucher of vouchers; track trackId(voucher)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/voucher', voucher.id, 'view']">{{ voucher.id }}</a>
-              </td>
+              <div *ngIf="false">
+                <td>
+                  <a [routerLink]="['/voucher', voucher.id, 'view']">{{ voucher.id }}</a>
+                </td>
+              </div>
               <td>{{ voucher.code }}</td>
               <td>{{ voucher.voucherDate | formatMediumDatetime }}</td>
               <td>{{ voucher.supplierName }}</td>
               <td>{{ voucher.supplierAddress }}</td>
               <td>{{ voucher.totalAmount }}</td>
-              <td>{{ voucher.totalAmountInWord }}</td>
+              <div *ngIf="false">
+                <td>{{ voucher.totalAmountInWord }}</td>
+              </div>
               <td>{{ voucher.comments }}</td>
-              <td>{{ voucher.lmu }}</td>
-              <td>{{ voucher.lmd | formatMediumDatetime }}</td>
-              <td>{{ voucher.termId }}</td>
-              <td>{{ voucher.term }}</td>
-              <td>{{ voucher.date | formatMediumDatetime }}</td>
+              <div *ngIf="false">
+                <td>{{ voucher.lmu }}</td>
+                <td>{{ voucher.lmd | formatMediumDatetime }}</td>
+                <td>{{ voucher.termId }}</td>
+                <td>{{ voucher.term }}</td>
+                <td>{{ voucher.date | formatMediumDatetime }}</td>
+              </div>
               <td>{{ voucher.amountPaid }}</td>
-              <td>{{ voucher.supplierID }}</td>
-              <td>{{ voucher.isActive }}</td>
-              <td>{{ voucher.createdBy }}</td>
+              <div *ngIf="false">
+                <td>{{ voucher.supplierID }}</td>
+                <td>{{ voucher.isActive }}</td>
+                <td>{{ voucher.createdBy }}</td>
+              </div>
               <td class="text-end">
                 <div class="btn-group">
                   <a [routerLink]="['/voucher', voucher.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">

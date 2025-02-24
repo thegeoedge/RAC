@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, Input, inject, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
@@ -22,6 +22,8 @@ import CommonModule from 'app/shared/shared.module';
 export class SalesInvoiceLinesDummyUpdateComponent implements OnInit {
   isSaving = false;
   @Output() totalUpdated = new EventEmitter<number>();
+  @Input() selectedItem: any;
+  @Input() fetchedItems: any;
   salesInvoiceLinesDummy: ISalesInvoiceLinesDummy[] = [];
   filteredItems: IInventory[][] = []; // Array of arrays to store filtered items for each row
   showCodeField: boolean = false;
@@ -37,19 +39,102 @@ export class SalesInvoiceLinesDummyUpdateComponent implements OnInit {
   toggleShowCodeField(): void {
     this.showCodeField = !this.showCodeField;
   }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedItem'] && this.selectedItem) {
+      this.addItemToFormArray(this.selectedItem);
+      console.log('Selected Item on Change:', this.selectedItem); // Log selected item
+    }
+
+    if (changes['fetchedItems'] && this.fetchedItems) {
+      // Loop through the fetchedItems array and add each item to the form array
+      this.fetchedItems.forEach((item: any) => {
+        this.addItemToFormArray(item);
+      });
+      console.log('Fetched Items on Change:', this.fetchedItems); // Log fetched items
+    }
+  }
+
+  addItemToFormArray(item: any): void {
+    const newItem = this.fb.group({
+      itemCode: [item.code || ''], // Add the code to the array
+      itemName: [item.name || item.itemname], // Add the name to the array
+      quantity: [item.availablequantity || item.quantity],
+      sellingPrice: [item.lastsellingprice || item.sellingprice],
+      lineTotal: [{ value: 0, disabled: true }], // Initialize lineTotal with a disabled field
+      discount: [0],
+    });
+
+    // Calculate lineTotal dynamically when quantity or sellingPrice changes
+    this.listenToQuantityAndPriceChanges(newItem);
+
+    this.salesInvoiceLinesDummyArray.push(newItem);
+  }
+
+  addInvoiceLine(): void {
+    const newLine = this.fb.group({
+      itemCode: [''],
+      itemName: [''],
+      quantity: [0],
+      sellingPrice: [0],
+      lineTotal: [{ value: 0, disabled: true }], // Initialize lineTotal with a disabled field
+      discount: [0],
+    });
+
+    // Calculate lineTotal dynamically when quantity or sellingPrice changes
+    this.listenToQuantityAndPriceChanges(newLine);
+
+    this.salesInvoiceLinesDummyArray.push(newLine);
+  }
+
+  // Helper function to listen to quantity and selling price changes
+  listenToQuantityAndPriceChanges(formGroup: FormGroup): void {
+    const quantityControl = formGroup.get('quantity');
+    const sellingPriceControl = formGroup.get('sellingPrice');
+
+    // Use debounceTime to avoid too frequent updates (e.g., wait 300ms after the user stops typing)
+    quantityControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
+    sellingPriceControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
+
+    // Also update lineTotal when the form is initialized
+    this.updateLineTotal(formGroup);
+  }
+
+  // Update the lineTotal value
+  updateLineTotal(formGroup: FormGroup): void {
+    const quantity = formGroup.get('quantity')?.value;
+    const sellingPrice = formGroup.get('sellingPrice')?.value;
+    const lineTotalControl = formGroup.get('lineTotal');
+
+    // Calculate line total: quantity * sellingPrice
+    const lineTotal = quantity * sellingPrice;
+    lineTotalControl?.setValue(lineTotal, { emitEvent: false }); // Set the value without emitting the event to avoid infinite loop
+
+    // Calculate the total of all lineTotals in the form array
+    const total = this.salesInvoiceLinesDummyArray.controls
+      .map(control => control.get('lineTotal')?.value || lineTotal)
+      .reduce((acc, value) => acc + value, lineTotal);
+    console.log('Totallll:', total);
+    // Emit the updated total of all lineTotals
+    this.totalUpdated.emit(total);
+  }
+
   get salesInvoiceLinesDummyArray(): FormArray {
     return this.editForm.get('salesInvoiceLinesDummy') as FormArray;
   }
 
   ngOnInit(): void {
+    console.log('Selected Item on Initttt:', this.selectedItem); // Log selected item
+
     this.activatedRoute.data.subscribe(({ salesInvoiceLinesDummy }) => {
       if (salesInvoiceLinesDummy && salesInvoiceLinesDummy.length > 0) {
         this.salesInvoiceLinesDummy = salesInvoiceLinesDummy;
         this.updateForm(salesInvoiceLinesDummy);
-      } else {
-        this.addInvoiceLine(); // Ensure at least one row is added
       }
     });
+    if (this.selectedItem) {
+      this.addItemToFormArray(this.selectedItem); // Add the first default row using selectedItem
+    }
   }
 
   previousState(): void {
@@ -91,20 +176,27 @@ export class SalesInvoiceLinesDummyUpdateComponent implements OnInit {
   }
 
   onQuantityChange(index: number): void {
+    // Get the specific FormGroup from the array
     const salesInvoiceLineGroup = this.salesInvoiceLinesDummyArray.at(index) as FormGroup;
 
+    // Get the values of quantity and sellingPrice from the form controls
     const quantity = salesInvoiceLineGroup.get('quantity')?.value || 0;
     const itemPrice = salesInvoiceLineGroup.get('sellingPrice')?.value || 0; // Fixed price per unit
 
     // Ensure quantity is never negative
     const validQuantity = Math.max(0, quantity);
 
-    // Calculate selling price
+    // Calculate the new selling price based on quantity and price per unit
     const newSellingPrice = validQuantity * itemPrice;
 
-    // Update selling price in the form
+    // Update the lineTotal in the form
     salesInvoiceLineGroup.patchValue({ lineTotal: newSellingPrice });
-    this.calculateTotal();
+
+    // Retrieve the updated lineTotal from the form
+    const lineTotal = salesInvoiceLineGroup.get('lineTotal')?.value;
+    console.log('Line Totarrrrrrrrrl:', lineTotal);
+    // Emit the updated lineTotal value
+    this.totalUpdated.emit(lineTotal);
   }
 
   onItemCodeSelect(event: Event, index: number): void {
@@ -212,11 +304,11 @@ export class SalesInvoiceLinesDummyUpdateComponent implements OnInit {
     }
   }
 
-  addInvoiceLine(): void {
-    const newRow = this.salesInvoiceLinesDummyFormService.createSalesInvoiceLinesDummyFormGroup();
-    console.log('Adding row:', newRow.value);
-    this.salesInvoiceLinesDummyArray.push(newRow);
-  }
+  // addInvoiceLine(): void {
+  // const newRow = this.salesInvoiceLinesDummyFormService.createSalesInvoiceLinesDummyFormGroup();
+  // console.log('Adding row:', newRow.value);
+  // this.salesInvoiceLinesDummyArray.push(newRow);
+  // }
 
   removeInvoiceLine(index: number): void {
     this.salesInvoiceLinesDummyArray.removeAt(index);
