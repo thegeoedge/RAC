@@ -45,7 +45,7 @@ import { AutojobsalesinvoiceservicechargelineUpdateComponent } from 'app/entitie
 import { WorkshopVehicleWorkListUpdateComponent } from 'app/entities/workshop-vehicle-work-list/update/workshop-vehicle-work-list-update.component';
 import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
 import { WorkshopvehicleworkUpdateComponent } from 'app/entities/workshopvehiclework/update/workshopvehiclework-update.component';
-
+import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojobsalesinvoiceservicechargeline/service/autojobsalesinvoiceservicechargeline.service';
 
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
 
@@ -65,7 +65,6 @@ import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autoj
     WorkshopvehicleworkUpdateComponent,
 
     AutocarejobUpdateComponent,
-
   ],
 })
 export class AutocarejobInstructionComponent implements OnInit {
@@ -77,6 +76,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   @ViewChild(AutojobsinvoicelinesUpdateComponent) autojobsinvoicelinesComponent!: AutojobsinvoicelinesUpdateComponent;
   jobinvoicelines = inject(AutojobsinvoicelinesService);
   jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
+  jobservice = inject(AutojobsalesinvoiceservicechargelineService);
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
@@ -233,6 +233,8 @@ export class AutocarejobInstructionComponent implements OnInit {
 
     if (event.target.checked) {
       // Check if the service already exists in the selectedServices array
+      const nextLineId = this.serviceArray.length > 0 ? Math.max(...this.serviceArray.map(item => item.lineid), 0) + 1 : 1;
+      const nextOpId = this.serviceArray.length > 0 ? Math.max(...this.serviceArray.map(item => item.lineid), 0) + 1 : 1;
       const exists = this.selectedServices.some(service => service.billingserviceoptionid === item.billingserviceoptionid);
 
       if (!exists) {
@@ -246,8 +248,8 @@ export class AutocarejobInstructionComponent implements OnInit {
         this.serviceArray.push({
           // Assuming the item has an id
           invoiceid: 0, // Set this value appropriately
-          lineid: 0, // Set this value appropriately
-          optionid: 0,
+          lineid: nextLineId, // Set this value appropriately
+          optionid: nextOpId,
           servicename: serviceName,
           servicediscription: '', // Assuming this field exists
           value: item.value ?? 0,
@@ -325,6 +327,8 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   onServiceSelectionChange(service: ICommonserviceoption, event: any) {
     if (event.target.checked) {
+      // Add the selected item to the list with the required fields and default values
+      const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       // Add service to selectedcommonServices if not already added
       this.selectedcommonServices.push(service);
 
@@ -332,7 +336,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.commonServiceArray.push({
         // Assuming 'id' exists in the service
         invoiceid: 0, // Set appropriately
-        lineid: 0, // Set appropriately
+        lineid: nextLineId, // Set appropriately
         optionid: service.id, // Assuming 'optionid' is the same as 'id'
         mainid: 0, // Set appropriately
         code: service.code || '', // Set from the service object with default value
@@ -448,6 +452,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Use the new service method to fetch matching results
       this.inventoryService.findByItem(searchTerm).subscribe(response => {
         this.filtereditems = response.body || [];
+        console.log('Filtered Itemsssssssss:', this.filtereditems);
       });
     } else {
       // Clear the suggestions if input is too short
@@ -481,11 +486,12 @@ export class AutocarejobInstructionComponent implements OnInit {
 
     if (selectedItem) {
       // Add the selected item to the list with the required fields and default values
+      const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.itemsArray.push({
         id: 0, // Set a default value
         itemid: selectedItem.id, // Assuming selectedItem has an 'id' field
         invocieid: 0, // Set a default value
-        lineid: 0, // Set a default value
+        lineid: nextLineId, // Set a default value
         itemcode: selectedItem.code ?? '', // Assign itemcode from selectedItem with default value
         itemname: selectedItem.name ?? '', // Assign itemname from selectedItem with default value
         description: selectedItem.description ?? '', // Assuming selectedItem has a 'description' field
@@ -682,8 +688,6 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
   invoid: number = 0;
   saveAll(): void {
-    this.save();
-
     if (this.autojobsinvoiceComponent) {
       this.autojobsinvoiceComponent.save().subscribe({
         next: invoiceIdFromComponent => {
@@ -696,6 +700,7 @@ export class AutocarejobInstructionComponent implements OnInit {
         },
       });
     }
+    this.save();
     // if (this.workshopVehicleWorkListComponent) {
     //   this.workshopVehicleWorkListComponent.save();
     // }
@@ -734,29 +739,40 @@ export class AutocarejobInstructionComponent implements OnInit {
             });
           });
 
-          // Loop through the itemsArray and update the invoiceId field for each item
-          this.itemsArray.forEach(item => {
-            item.invocieid = this.invoid; // Use stored invoiceId
+          this.serviceArray.forEach(service => {
+            service.invoiceid = this.invoid; // Use extracted invoiceId
 
-            // Convert lmd to Dayjs object
-            const itemWithDayjsLmd = {
-              ...item,
-              id: null, // Set id to null for new Autojobsinvoicelines
-              lmd: dayjs(item.lmd),
-            };
-
-            // Call create method to save invoice lines
-            this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
+            // Assuming commonserviceoptionService.create() accepts service data and returns an observable
+            this.jobservice.create({ ...service, id: null }).subscribe({
               next: createResponse => {
-                console.log('Item created successfully:', createResponse);
+                console.log('Serviceeeeesssssssssssw created successfully:', createResponse);
               },
               error: createError => {
-                console.error('Error creating item:', createError);
+                console.error('Error creating service:', createError.body);
               },
             });
           });
 
+          // Loop through the itemsArray and update the invoiceId field for each item
+          this.itemsArray.forEach((item, index) => {
+            setTimeout(() => {
+              item.invocieid = this.invoid;
+
+              const itemWithDayjsLmd = {
+                ...item,
+                id: null,
+                lmd: dayjs(item.lmd),
+              };
+
+              this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
+                next: createResponse => console.log(`Item ${index + 1} created:`, createResponse),
+                error: createError => console.error(`Error for item ${index + 1}:`, createError),
+              });
+            }, index * 500); // 500ms delay per request
+          });
+
           console.log('Updated itemsArray:', this.itemsArray);
+          console.log('arryyyyyyyyyyyyyyyyyyyyay service', this.serviceArray);
         } else {
           console.error('Save response body is null');
         }
