@@ -61,19 +61,32 @@
               <div class="col-md-6">
                 <div class="mb-2">
                   <label class="form-label" for="field_code">Code</label>
-                  <input type="text" class="form-control form-control-sm" id="field_code" formControlName="code" />
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="field_code"
+                    formControlName="itemCode"
+                    (input)="onItemCodeInput($event, i)"
+                    (change)="onItemCodeSelect($event, i)"
+                    [attr.list]="'autocomplete' + i"
+                  />
+                  <datalist [id]="'autocomplete' + i">
+                    <option *ngFor="let item of filteredItems[i]" [value]="item.code">
+                      {{ item.name }}
+                    </option>
+                  </datalist>
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_item">Item</label>
-                  <input type="text" class="form-control form-control-sm" id="field_item" />
+                  <input type="text" class="form-control form-control-sm" id="field_item" [value]="itemName" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_itemPrice">Item Price</label>
-                  <input type="number" class="form-control form-control-sm" id="field_itemPrice" />
+                  <input type="number" class="form-control form-control-sm" id="field_itemPrice" [value]="lastsellingprice" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_availableQty">Available Quantity</label>
-                  <input type="number" class="form-control form-control-sm" id="field_availableQty" />
+                  <input type="number" class="form-control form-control-sm" id="field_availableQty" [value]="availablequantity" />
                 </div>
               </div>
 
@@ -98,6 +111,7 @@
                 </div>
               </div>
             </div>
+            <button type="button" class="btn btn-primary" (click)="onAddItem()">Add Item</button>
           </div>
         </div>
 
