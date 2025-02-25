@@ -9,7 +9,7 @@
         <thead>
           <tr>
             <th *ngIf="showCodeField" style="width: 120px">ID</th>
-            <th style="width: 150px">Invoice Id</th>
+            <th *ngIf="showCodeField" style="width: 150px">Invoice Id</th>
             <th *ngIf="showCodeField" style="width: 150px">Line Id</th>
             <th *ngIf="showCodeField" style="width: 150px">Item Id</th>
             <th style="width: 100px">Item Code</th>
@@ -70,16 +70,16 @@
               </datalist>
             </td>
 
-            <td style="width: 800px"><input type="text" class="form-control" formControlName="itemName" /></td>
+            
             <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="description" /></td>
-            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="unitOfMeasurement" /></td>
+            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName=" unitofmeasurement" /></td>
             <td><input type="number" class="form-control" formControlName="quantity" (input)="onQuantityChange(i)" /></td>
-            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemCost" /></td>
-            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemPrice" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemcost" /></td>
+            <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemprice" /></td>
             <td><input type="number" class="form-control" formControlName="discount" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="tax" /></td>
-            <td style="width: 720px"><input type="number" class="form-control" formControlName="sellingPrice" /></td>
-            <td style="width: 780px"><input type="number" class="form-control" formControlName="lineTotal" /></td>
+            <td style="width: 720px"><input type="number" class="form-control" formControlName="sellingprice" /></td>
+            <td style="width: 780px"><input type="number" class="form-control" formControlName="linetotal" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="lmu" /></td>
             <td *ngIf="showCodeField"><input type="datetime-local" class="form-control" formControlName="lmd" /></td>
             <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="nbt" /></td>

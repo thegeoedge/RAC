@@ -52,9 +52,7 @@
               <td *ngIf="false">
                 <input type="number" class="form-control" formControlName="mainid" />
               </td>
-              <td>
-                <input type="number" class="form-control" name="lineId" id="field_lineId" data-cy="lineId" formControlName="lineId" />
-              </td>
+
               <td>
                 <input
                   formControlName="name"
@@ -70,11 +68,12 @@
                   </option>
                 </datalist>
               </td>
-              <td>
-                <input type="number" class="form-control" name="mainId" id="field_mainId" data-cy="mainId" formControlName="mainId" />
-              </td>
+              
               <td>
                 <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+              </td>
+              <td>
+                <input type="number" class="form-control" formControlName="value" />
               </td>
               <td>
                 <button type="button" class="btn btn-danger" (click)="removeServiceChargeDummy(i)">Remove</button>
