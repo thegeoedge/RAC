@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AutojobsalesinvoiceservicechargelineRepository extends JpaRepository<Autojobsalesinvoiceservicechargeline, Long> {}
+public interface AutojobsalesinvoiceservicechargelineRepository
+    extends JpaRepository<Autojobsalesinvoiceservicechargeline, Long>, JpaSpecificationExecutor<Autojobsalesinvoiceservicechargeline> {}

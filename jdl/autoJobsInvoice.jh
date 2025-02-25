@@ -31,3 +31,4 @@ entity Autojobsinvoice {
     autocarecompanyid Integer // AutoCareCompanyId
 }
 paginate * with pagination
+filter all

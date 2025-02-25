@@ -1,0 +1,155 @@
+<div class="d-flex justify-content-center">
+  <div class="col-10">
+    <div class="row">
+      <div class="col-12">
+        <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+          <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading">Job History</h2>
+
+          <div>
+            <jhi-alert-error></jhi-alert-error>
+
+            <div class="row">
+              <div class="mb-3 col-6">
+                <label class="form-label" for="field_vehiclenumber">Vehiclenumber</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="vehiclenumber"
+                  id="field_vehiclenumber"
+                  data-cy="vehiclenumber"
+                  formControlName="vehiclenumber"
+                  autocomplete="off"
+                  list="vehiclenumberList"
+                />
+              </div>
+            </div>
+            <h5 class="mb-3 mt-3">Customer Details</h5>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Job Type Name</th>
+                  <th>Full Name</th>
+                  <th>Phone</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <input type="text" class="form-control" name="code" id="field_code" data-cy="code" readonly />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="jobtypename"
+                      id="field_jobtypename"
+                      data-cy="jobtypename"
+                      formControlName="jobtypename"
+                      readonly
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="customername"
+                      id="field_customername"
+                      data-cy="customername"
+                      formControlName="customername"
+                      readonly
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="customertel"
+                      id="field_customertel"
+                      data-cy="customertel"
+                      formControlName="customertel"
+                      readonly
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link active"
+            id="billing-tab"
+            data-bs-toggle="tab"
+            href="#billing"
+            role="tab"
+            aria-controls="billing"
+            aria-selected="true"
+          >
+            Invoice wise
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link"
+            id="service-charges-tab"
+            data-bs-toggle="tab"
+            href="#service-charges"
+            role="tab"
+            aria-controls="service-charges"
+            aria-selected="false"
+          >
+            Job wise
+          </a>
+        </li>
+      </ul>
+      <!-- Tab panes -->
+      <div class="tab-content mt-3">
+        <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
+          <div *ngIf="invoiceIds.length > 0; else noData">
+            <div *ngFor="let invoiceId of invoiceIds" class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Invoice ID: {{ autojobsInvoicesMap[invoiceId].invoice.id }}</h5>
+                <p><strong>Customer Name:</strong> {{ autojobsInvoicesMap[invoiceId].invoice.customername }}</p>
+                <p><strong>Amount:</strong> {{ autojobsInvoicesMap[invoiceId].invoice.subtotal }}</p>
+
+                <!-- Display Invoice Lines -->
+                <h6>Invoice Lines:</h6>
+                <ul>
+                  <li *ngFor="let line of autojobsInvoicesMap[invoiceId].invoiceLines">{{ line.description }} - {{ line.amount }}</li>
+                </ul>
+
+                <!-- Display Service Charges -->
+                <h6>Service Charges:</h6>
+                <ul>
+                  <li *ngFor="let service of autojobsInvoicesMap[invoiceId].serviceLines">
+                    {{ service.description }} - {{ service.amount }}
+                  </li>
+                </ul>
+
+                <!-- Display Common Service Charges -->
+                <h6>Common Service Charges:</h6>
+                <ul>
+                  <li *ngFor="let charge of autojobsInvoicesMap[invoiceId].commonServiceCharges">
+                    {{ charge.description }} - {{ charge.amount }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noData>
+            <p>No invoice history available.</p>
+          </ng-template>
+        </div>
+        <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab"></div>
+      </div>
+    </div>
+  </div>
+</div>

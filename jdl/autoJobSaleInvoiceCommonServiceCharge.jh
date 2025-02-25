@@ -12,3 +12,4 @@ entity Autojobsaleinvoicecommonservicecharge {
     serviceprice Float
 }
 paginate * with pagination
+filter all

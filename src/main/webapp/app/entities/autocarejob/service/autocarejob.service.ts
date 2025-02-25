@@ -9,6 +9,7 @@ import { DATE_FORMAT } from 'app/config/input.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IAutocarejob, NewAutocarejob } from '../autocarejob.model';
+import { RestAutojobsinvoice } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 
 export type PartialUpdateAutocarejob = Partial<IAutocarejob> & Pick<IAutocarejob, 'id'>;
 
@@ -74,6 +75,13 @@ export class AutocarejobService {
     const options = createRequestOption({ 'name.contains': name });
     return this.http
       .get<RestAutocarejob[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  findJobInvoicesByCustomerName(customerName: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ 'customername.equals': customerName, page: 0, size: 20 });
+    return this.http
+      .get<RestAutojobsinvoice[]>('/api/autojobsinvoices', { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
