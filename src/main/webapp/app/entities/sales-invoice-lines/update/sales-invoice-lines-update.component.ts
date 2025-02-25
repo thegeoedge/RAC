@@ -14,7 +14,7 @@ import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
 import CommonModule from 'app/shared/shared.module';
 
-@Component({ 
+@Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-update',
   templateUrl: './sales-invoice-lines-update.component.html',
@@ -31,6 +31,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   protected activatedRoute = inject(ActivatedRoute);
   protected fb = inject(FormBuilder);
   @Input() selectedItem: any;
+  @Input() fetchedItems: any;
   // Use FormArray to handle multiple lines
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
@@ -47,17 +48,22 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       console.log('Before Adding Item:', this.salesInvoiceLinesArray.controls);
       this.addItemToFormArray(this.selectedItem);
       console.log('After Adding Item:', this.salesInvoiceLinesArray.controls);
-    } else {
-      console.error('Error: selectedItem is undefined or null');
+    }
+    if (changes['fetchedItems'] && this.fetchedItems) {
+      // Loop through the fetchedItems array and add each item to the form array
+      this.fetchedItems.forEach((item: any) => {
+        this.addItemToFormArray(item);
+      });
+      console.log('Fetched Items on Change:', this.fetchedItems); // Log fetched items
     }
   }
 
   addItemToFormArray(item: any): void {
     const newItem = this.fb.group({
       itemcode: [item.code || item.itemcode || ''], // Match template
-      itemname: [item.name], // Match template
+      itemname: [item.name || item.itemname], // Match template
       quantity: [item.availablequantity || item.quantity],
-      sellingprice: [item.lastsellingprice || item.lastsellingprice      ], // Match template
+      sellingprice: [item.lastsellingprice || item.lastsellingprice || item.sellingprice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
       discount: [0],
     });
@@ -106,12 +112,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       if (salesInvoiceLines && salesInvoiceLines.length > 0) {
         this.salesInvoiceLines = salesInvoiceLines;
         this.updateForm(salesInvoiceLines);
-      } 
+      }
 
       console.log('Sales Invoice Lines:', this.salesInvoiceLines); // Add this line to see if the data is correct
       this.updateForm(this.salesInvoiceLines);
     });
-   
   }
 
   onItemCodeSelect(event: Event, index: number): void {

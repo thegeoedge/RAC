@@ -303,7 +303,15 @@
                     <fa-icon icon="eye"></fa-icon>
                     <span class="d-none d-md-inline">View</span>
                   </a>
-
+                  <a
+                    [routerLink]="['/salesinvoice', 'new']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                    [queryParams]="{ id: autojobsinvoice.id }"
+                  >
+                    <fa-icon icon="book"></fa-icon>
+                    <span class="d-none d-md-inline">invoice</span>
+                  </a>
                   <a
                     [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'edit']"
                     class="btn btn-primary btn-sm"

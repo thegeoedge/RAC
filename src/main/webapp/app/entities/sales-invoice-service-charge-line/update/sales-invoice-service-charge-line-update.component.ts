@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Input, Output, inject, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
@@ -35,7 +35,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
   @Output() totalUpdated = new EventEmitter<number>(); // Emit total to parent
   protected vehicletypesService = inject(VehicletypeService);
-
+  @Input() fetchedServices: any;
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: FormGroup = new FormGroup({
     serviceChargeLines: new FormArray([]),
@@ -46,6 +46,27 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   vehicletypes: IVehicletype[] = [];
   get serviceChargeLinesArray(): FormArray {
     return this.editForm.get('serviceChargeLines') as FormArray;
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fetchedServices'] && this.fetchedServices) {
+      // Loop through the fetchedItems array and add each item to the form array
+      this.fetchedServices.forEach((item: any) => {
+        this.addItemToFormArray(item);
+      });
+      console.log('Fetched Items on Change:', this.fetchedServices); // Log fetched items
+    }
+  }
+  addItemToFormArray(item: any): void {
+    // Create a new form group for the item
+    const newItem = this.fb.group({
+      serviceName: [item.itemname],
+      value: [item.sellingprice],
+      isCustomerService: [false],
+    });
+
+    // Add the new form group to the form array
+    this.serviceChargeLinesArray.push(newItem);
+    this.totalvalue(newItem);
   }
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ salesInvoiceServiceChargeLines }) => {
@@ -140,7 +161,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       },
     });
   }
-  
+
   addToTable() {
     if (this.selectedServices.length === 0) {
       return; // No selected services, nothing to add
@@ -163,9 +184,9 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       this.salesInvoiceServiceChargeLineService.biliingvalues(service.id, this.typeid).subscribe(response => {
         console.log('API Response:', response);
 
-        const billingValues = response.body; 
+        const billingValues = response.body;
         const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
-        totalFetchedValue += fetchedValue ?? 0;// Assuming the response contains the data in 'body'
+        totalFetchedValue += fetchedValue ?? 0; // Assuming the response contains the data in 'body'
         console.log('Billing values:', billingValues);
 
         serviceResponses.set(service.id, billingValues && billingValues.length > 0 ? billingValues[0].value : '');
@@ -190,7 +211,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
         completedRequests++;
         this.totalfetch = totalFetchedValue;
         console.log('Current total fetched value:', this.totalfetch);
-    
+
         this.calculateTotal(this.totalfetch);
       });
     });
