@@ -45,8 +45,10 @@
       "fieldType": "Float"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Autojobsalesinvoiceservicechargeline",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no"
+  "searchEngine": "no",
+  "service": "serviceClass"
 }

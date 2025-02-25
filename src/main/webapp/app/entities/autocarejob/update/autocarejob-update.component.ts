@@ -75,7 +75,7 @@ export class AutocarejobUpdateComponent implements OnInit {
   loadAllAppointments(): void {
     let allAppointments: IAutocareappointment[] = [];
     let page = 20;
-    const size = 20; // Adjust based on your backend settings
+    const size = 20;
 
     const fetchPage = () => {
       this.autocareappointmentService.query({ page, size }).subscribe({
@@ -104,13 +104,13 @@ export class AutocarejobUpdateComponent implements OnInit {
   vehicleNo: string | null = null;
   customerTel: string | null = null;
   loadAppointment(appointment: any): void {
-    // Implement your logic here to load the appointment details
     console.log('Loading appointment:', appointment);
-    console.log('Loading appointment:', appointment.contactnumber);
+
     this.customerTel = appointment.contactnumber;
     this.vehicleNo = appointment.vehiclenumber;
     this.customername = appointment.customername;
     this.appointmentnum = appointment.appointmenttype;
+
     if (this.appointmentnum !== null) {
       const jobType = this.jobTypeMap[this.appointmentnum];
       if (jobType) {
@@ -122,24 +122,34 @@ export class AutocarejobUpdateComponent implements OnInit {
     } else {
       console.log('Appointment type is not defined');
     }
-    // For example, navigate to a detailed view or trigger an API call.
+
+    // **Save used appointment in localStorage**
+    let usedAppointments = JSON.parse(localStorage.getItem('usedAppointments') || '[]');
+    usedAppointments.push(appointment.id);
+    localStorage.setItem('usedAppointments', JSON.stringify(usedAppointments));
+
+    // **Remove from local list**
+    this.todayAppointments = this.todayAppointments.filter(a => a.id !== appointment.id);
   }
+
   jobTypeMap: { [key: number]: string } = {
     1: 'Full Service and Other Services',
     2: 'Detailing services',
     3: 'Performance Care',
     4: 'Other',
   };
-  // Helper function to filter today's appointments
   filterTodayAppointments(appointments: IAutocareappointment[]): IAutocareappointment[] {
     const today = dayjs().startOf('day'); // Get today's date at midnight
     console.log('Today:', today);
+
+    let usedAppointments = JSON.parse(localStorage.getItem('usedAppointments') || '[]');
+
     return appointments.filter(appointment => {
-      if (!appointment.conformdate) {
-        return false; // Exclude appointments with null conformdate
+      if (!appointment.conformdate || usedAppointments.includes(appointment.id)) {
+        return false; // Exclude null dates and used appointments
       }
       const appointmentDate = dayjs(appointment.conformdate).startOf('day'); // Get appointment date at midnight
-      return appointmentDate.isSame(today); // Compare dates
+      return appointmentDate.isSame(today);
     });
   }
 
@@ -211,7 +221,7 @@ export class AutocarejobUpdateComponent implements OnInit {
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
-        console.log('Save Successfully:', response.body); // Log the response
+        this.onSaveSuccess(), console.log('Save Successfully:', response.body); // Log the response
         alert('Save Successful! Job ID: ' + response.body?.id); // Display an alert
 
         this.invid = response.body?.id ?? 0;
@@ -231,9 +241,9 @@ export class AutocarejobUpdateComponent implements OnInit {
     });
   }
 
-  //protected onSaveSuccess(): void {
-  //this.previousState();
-  //}
+  protected onSaveSuccess(): void {
+    this.previousState();
+  }
 
   protected onSaveError(): void {
     // Api for inheritance.
