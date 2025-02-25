@@ -286,7 +286,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   selectedItem: { name: string; availablequantity: number; lastsellingprice: number } | null = null;
 
-  itemName: string = ''; // Variable to hold the selected item's name
+  itemname: string = ''; // Variable to hold the selected item's name
   availablequantity: number = 0;
   lastsellingprice: number = 0;
 
@@ -299,18 +299,18 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
     if (selectedItem) {
       console.log('Selected Item:', selectedItem);
-      this.itemName = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
+      this.itemname = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
     } else {
       console.warn('No matching item found for:', selectedCode);
-      this.itemName = ''; // Clear itemName if no match is found
+      this.itemname = ''; // Clear itemName if no match is found
     }
   }
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
-      name: this.itemName,
+      name: this.itemname,
       availablequantity: this.buyQuantity,
       lastsellingprice: this.lastsellingprice,
     };
@@ -321,7 +321,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // Call the function to get the buy quantity
 
     // Optionally reset the inputs after adding
-    this.itemName = '';
+    this.itemname = '';
     this.availablequantity = 0;
     this.lastsellingprice = 0;
   }

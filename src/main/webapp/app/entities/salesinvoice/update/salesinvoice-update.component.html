@@ -78,7 +78,7 @@
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_item">Item</label>
-                  <input type="text" class="form-control form-control-sm" id="field_item" [value]="itemName" />
+                  <input type="text" class="form-control form-control-sm" id="field_item" [value]="itemname" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_itemPrice">Item Price</label>
@@ -282,7 +282,10 @@
             <!-- Tab panes -->
             <div class="tab-content mt-3">
               <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-                <jhi-sales-invoice-lines-update (totalUpdated)="receiveTotal($event, 'child1')"></jhi-sales-invoice-lines-update>
+                <jhi-sales-invoice-lines-update
+                  [selectedItem]="selectedItem"
+                  (totalUpdated)="receiveTotal($event, 'child1')"
+                ></jhi-sales-invoice-lines-update>
               </div>
               <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab">
                 <jhi-sales-invoice-service-charge-line-update
