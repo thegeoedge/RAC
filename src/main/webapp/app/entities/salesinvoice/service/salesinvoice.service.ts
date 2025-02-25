@@ -40,6 +40,25 @@ export class SalesinvoiceService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/salesinvoices');
 
+  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines');
+  protected resourceInvoiceLinesUrli = this.applicationConfigService.getEndpointFor('api/sales-invoice-service-charge-lines');
+
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
+
+  fetchService(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+  }
+  fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+  }
+
+  fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceid.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+  }
+
   create(salesinvoice: NewSalesinvoice): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesinvoice);
     return this.http

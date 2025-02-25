@@ -91,11 +91,6 @@
         </tbody>
       </table>
     </div>
-
-    <div>
-      <button type="button" class="btn btn-success" (click)="addInvoiceLine()">Add Line</button>
-    </div>
-
     <div *ngIf="showCodeField">
       <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
         <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>

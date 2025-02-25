@@ -61,19 +61,32 @@
               <div class="col-md-6">
                 <div class="mb-2">
                   <label class="form-label" for="field_code">Code</label>
-                  <input type="text" class="form-control form-control-sm" id="field_code" formControlName="code" />
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="field_code"
+                    formControlName="itemCode"
+                    (input)="onItemCodeInput($event, i)"
+                    (change)="onItemCodeSelect($event, i)"
+                    [attr.list]="'autocomplete' + i"
+                  />
+                  <datalist [id]="'autocomplete' + i">
+                    <option *ngFor="let item of filteredItems[i]" [value]="item.code">
+                      {{ item.name }}
+                    </option>
+                  </datalist>
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_item">Item</label>
-                  <input type="text" class="form-control form-control-sm" id="field_item" />
+                  <input type="text" class="form-control form-control-sm" id="field_item" [value]="itemname" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_itemPrice">Item Price</label>
-                  <input type="number" class="form-control form-control-sm" id="field_itemPrice" />
+                  <input type="number" class="form-control form-control-sm" id="field_itemPrice" [value]="lastsellingprice" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_availableQty">Available Quantity</label>
-                  <input type="number" class="form-control form-control-sm" id="field_availableQty" />
+                  <input type="number" class="form-control form-control-sm" id="field_availableQty" [value]="availablequantity" />
                 </div>
               </div>
 
@@ -98,6 +111,7 @@
                 </div>
               </div>
             </div>
+            <button type="button" class="btn btn-primary" (click)="onAddItem()">Add Item</button>
           </div>
         </div>
 
@@ -268,7 +282,10 @@
             <!-- Tab panes -->
             <div class="tab-content mt-3">
               <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-                <jhi-sales-invoice-lines-update (totalUpdated)="receiveTotal($event, 'child1')"></jhi-sales-invoice-lines-update>
+                <jhi-sales-invoice-lines-update
+                  [selectedItem]="selectedItem"
+                  (totalUpdated)="receiveTotal($event, 'child1')"
+                ></jhi-sales-invoice-lines-update>
               </div>
               <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab">
                 <jhi-sales-invoice-service-charge-line-update

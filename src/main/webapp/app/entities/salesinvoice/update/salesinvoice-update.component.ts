@@ -3,10 +3,14 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { ISalesInvoiceLines } from 'app/entities/sales-invoice-lines/sales-invoice-lines.model';
+import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-common-service-charge/sale-invoice-common-service-charge.model';
+import { ISalesInvoiceServiceChargeLine } from 'app/entities/sales-invoice-service-charge-line/sales-invoice-service-charge-line/sales-invoice-service-charge-line.model';
 import { ISalesinvoice } from '../salesinvoice.model';
 import { SalesinvoiceService } from '../service/salesinvoice.service';
 import { SalesinvoiceFormService, SalesinvoiceFormGroup } from './salesinvoice-form.service';
@@ -15,6 +19,8 @@ import { SaleInvoiceCommonServiceChargeUpdateComponent } from '../../sale-invoic
 import { SalesInvoiceServiceChargeLineUpdateComponent } from '../../sales-invoice-service-charge-line/update/sales-invoice-service-charge-line-update.component';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
+import { IInventory } from 'app/entities/inventory/inventory.model';
+import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 
 @Component({
   standalone: true,
@@ -45,13 +51,18 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
 
+  filteredItems: IInventory[][] = [];
+  ISalesInvoiceLines: ISalesInvoiceLines[] = [];
+  ISalesInvoiceServiceChargeLine: ISalesInvoiceServiceChargeLine[] = [];
+  ISaleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge[] = [];
   // Initialize editForm with SalesinvoiceFormService
   editForm: SalesinvoiceFormGroup = this.salesinvoiceFormService.createSalesinvoiceFormGroup();
-  cdr: any;
   discountOption: string = 'percentage'; // Default value
   discountValue: number = 0;
   subTotal: number = 0;
+  i: number = 0;
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ salesinvoice }) => {
@@ -61,7 +72,10 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         this.updateForm(salesinvoice);
         this.loadSalesInvoiceDummy(id);
       }
-      console.log('Query id:', id);
+      this.servicelines(id);
+      this.servicecommonlines(id);
+      console.log('Query idddddddd:', id);
+      this.invoicelines(id);
     });
     this.loadVehicleTypes();
     // Subscribe to form control valueChanges
@@ -82,6 +96,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
     this.calculateDiscount(); // Log the updated value to the console
     // Call the function to calculate discount
+  }
+  buyQuantity: number = 0; // Store the buy quantity value
+
+  // Function to handle changes in the quantity field
+  onBuyQtyChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.buyQuantity = Number(inputElement.value);
+    console.log('Buy Quantity:', this.buyQuantity);
   }
 
   onsubtotalValueChange(event: any): void {
@@ -148,6 +170,93 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
   }
 
+  fetchedServicesCommon: { itemname: string; sellingprice: number }[] = [];
+
+  private servicecommonlines(id: number): void {
+    this.salesInvoiceService.fetchServiceCommon(id).subscribe(
+      (res: HttpResponse<ISaleInvoiceCommonServiceCharge[]>) => {
+        if (res.body && res.body.length > 0) {
+          // Clear previous fetched items before adding new ones
+          this.fetchedServicesCommon = [];
+
+          res.body.forEach(item => {
+            this.fetchedServicesCommon.push({
+              itemname: item.name ?? '',
+
+              sellingprice: item.value ?? 0,
+            });
+          });
+
+          // Log the complete array of fetched items
+          console.log('Fetched Itemssssscommon:', res.body);
+        } else {
+          console.log('No invoice lines found.');
+        }
+      },
+      error => {
+        console.error('Error fetching invoice lines:', error);
+      },
+    );
+  }
+
+  fetchedServices: { itemname: string; sellingprice: number }[] = [];
+
+  private servicelines(id: number): void {
+    this.salesInvoiceService.fetchService(id).subscribe(
+      (res: HttpResponse<ISalesInvoiceServiceChargeLine[]>) => {
+        if (res.body && res.body.length > 0) {
+          // Clear previous fetched items before adding new ones
+          this.fetchedServices = [];
+
+          res.body.forEach(item => {
+            this.fetchedServices.push({
+              itemname: item.serviceName ?? '',
+
+              sellingprice: item.value ?? 0,
+            });
+          });
+
+          // Log the complete array of fetched items
+          console.log('Fetched Itemssssssssssssssssss:', res.body);
+        } else {
+          console.log('No invoice lines found.');
+        }
+      },
+      error => {
+        console.error('Error fetching invoice lines:', error);
+      },
+    );
+  }
+
+  fetchedItems: { itemname: string; quantity: number; sellingprice: number }[] = [];
+
+  private invoicelines(id: number): void {
+    this.salesInvoiceService.fetchInvoiceLines(id).subscribe(
+      (res: HttpResponse<ISalesInvoiceLines[]>) => {
+        if (res.body && res.body.length > 0) {
+          // Clear previous fetched items before adding new ones
+          this.fetchedItems = [];
+
+          res.body.forEach(item => {
+            this.fetchedItems.push({
+              itemname: item.itemname ?? '',
+              quantity: item.quantity ?? 0,
+              sellingprice: item.sellingprice ?? 0,
+            });
+          });
+
+          // Log the complete array of fetched items
+          console.log('Fetched Items:', this.fetchedItems);
+        } else {
+          console.log('No invoice lines found.');
+        }
+      },
+      error => {
+        console.error('Error fetching invoice lines:', error);
+      },
+    );
+  }
+
   private loadSalesInvoiceDummy(id: number): void {
     this.salesInvoiceService.find(id).subscribe(response => {
       const salesInvoiceDummy = response.body;
@@ -173,6 +282,83 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         this.updateForm(transformedData);
       }
     });
+  }
+
+  selectedItem: { name: string; availablequantity: number; lastsellingprice: number } | null = null;
+
+  itemname: string = ''; // Variable to hold the selected item's name
+  availablequantity: number = 0;
+  lastsellingprice: number = 0;
+
+  onItemCodeSelect(event: Event, index: number): void {
+    const inputElement = event.target as HTMLInputElement;
+    const selectedCode = inputElement.value;
+
+    // Find the selected item based on the code
+    const selectedItem = this.filteredItems[index]?.find(item => item.code === selectedCode);
+
+    if (selectedItem) {
+      console.log('Selected Item:', selectedItem);
+      this.itemname = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
+      this.availablequantity = selectedItem.availablequantity ?? 0;
+      this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
+    } else {
+      console.warn('No matching item found for:', selectedCode);
+      this.itemname = ''; // Clear itemName if no match is found
+    }
+  }
+  onAddItem(): void {
+    // Store the selected item as an object
+    this.selectedItem = {
+      name: this.itemname,
+      availablequantity: this.buyQuantity,
+      lastsellingprice: this.lastsellingprice,
+    };
+
+    // Log the selected item to the console
+    console.log('Selected Item:', this.selectedItem);
+    console.log('Returned Buy Quantity:', this.buyQuantity);
+    // Call the function to get the buy quantity
+
+    // Optionally reset the inputs after adding
+    this.itemname = '';
+    this.availablequantity = 0;
+    this.lastsellingprice = 0;
+  }
+
+  onItemCodeInput(event: Event, index: number): void {
+    // Type assertion: Treat event target as HTMLInputElement
+    const inputElement = <HTMLInputElement>event.target;
+    const value = inputElement.value; // Get the value typed by the user
+
+    // Log the input value to the console when a user types
+    console.log('User typed:', value);
+
+    if (!value) {
+      this.filteredItems[index] = []; // Clear suggestions if input is empty
+      return;
+    }
+
+    console.log('Fetching items for value:', value);
+
+    this.salesInvoiceLinesService
+      .getElementsByUserInputCode(value) // Call the service to fetch items
+      .pipe(debounceTime(300)) // Debounce to avoid frequent calls
+      .subscribe({
+        next: (response: HttpResponse<IInventory[]>) => {
+          const items = response.body || [];
+
+          // Log the response body items received
+          console.log('API response items:', items);
+
+          this.filteredItems[index] = items.filter(item => item && item.code && item.name); // Filter out invalid items
+          console.log('Filtered items for index', index, ':', this.filteredItems[index]); // Log filtered items
+        },
+        error: error => {
+          console.error('Error fetching items:', error);
+          this.filteredItems[index] = []; // Clear suggestions on error
+        },
+      });
   }
 
   previousState(): void {

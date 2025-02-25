@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
@@ -30,7 +30,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   protected salesInvoiceLinesFormService = inject(SalesInvoiceLinesFormService);
   protected activatedRoute = inject(ActivatedRoute);
   protected fb = inject(FormBuilder);
-
+  @Input() selectedItem: any;
   // Use FormArray to handle multiple lines
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
@@ -42,7 +42,62 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     return this.editForm.get('salesInvoiceLines') as FormArray;
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedItem'] && this.selectedItem) {
+      console.log('Before Adding Item:', this.salesInvoiceLinesArray.controls);
+      this.addItemToFormArray(this.selectedItem);
+      console.log('After Adding Item:', this.salesInvoiceLinesArray.controls);
+    } else {
+      console.error('Error: selectedItem is undefined or null');
+    }
+  }
+
+  addItemToFormArray(item: any): void {
+    const newItem = this.fb.group({
+      itemcode: [item.code || item.itemcode || ''], // Match template
+      itemname: [item.name], // Match template
+      quantity: [item.availablequantity || item.quantity],
+      sellingprice: [item.lastsellingprice || item.sellingprice], // Match template
+      linetotal: [{ value: 0, disabled: true }], // Match template
+      discount: [0],
+    });
+
+    // Calculate lineTotal dynamically when quantity or sellingPrice changes
+    this.listenToQuantityAndPriceChanges(newItem);
+
+    this.salesInvoiceLinesDummyArray.push(newItem);
+  }
+  listenToQuantityAndPriceChanges(formGroup: FormGroup): void {
+    const quantityControl = formGroup.get('quantity');
+    const sellingPriceControl = formGroup.get('sellingPrice');
+
+    // Use debounceTime to avoid too frequent updates (e.g., wait 300ms after the user stops typing)
+    quantityControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
+    sellingPriceControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
+
+    // Also update lineTotal when the form is initialized
+    this.updateLineTotal(formGroup);
+  }
+  updateLineTotal(formGroup: FormGroup): void {
+    const quantity = formGroup.get('quantity')?.value;
+    const sellingPrice = formGroup.get('sellingPrice')?.value;
+    const lineTotalControl = formGroup.get('lineTotal');
+
+    // Calculate line total: quantity * sellingPrice
+    const lineTotal = quantity * sellingPrice;
+    lineTotalControl?.setValue(lineTotal, { emitEvent: false }); // Set the value without emitting the event to avoid infinite loop
+
+    // Calculate the total of all lineTotals in the form array
+    const total = this.salesInvoiceLinesDummyArray.controls
+      .map(control => control.get('lineTotal')?.value || lineTotal)
+      .reduce((acc, value) => acc + value, lineTotal);
+    console.log('Totallll:', total);
+    // Emit the updated total of all lineTotals
+    this.totalUpdated.emit(total);
+  }
   ngOnInit(): void {
+    console.log('Selected Item on Initttt:', this.selectedItem); // Log selected item
+
     this.activatedRoute.data.subscribe(({ salesInvoiceLines }) => {
       // Ensure salesInvoiceLines is always an array
       this.salesInvoiceLines = Array.isArray(salesInvoiceLines) ? salesInvoiceLines : [salesInvoiceLines];
@@ -57,6 +112,9 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       console.log('Sales Invoice Lines:', this.salesInvoiceLines); // Add this line to see if the data is correct
       this.updateForm(this.salesInvoiceLines);
     });
+    if (this.selectedItem) {
+      this.addItemToFormArray(this.selectedItem); // Add the first default row using selectedItem
+    }
   }
 
   onItemCodeSelect(event: Event, index: number): void {
