@@ -16,6 +16,7 @@ const routes: Routes = [
     component: HomeComponent,
     title: 'home.title',
   },
+
   {
     path: '',
     component: NavbarComponent,

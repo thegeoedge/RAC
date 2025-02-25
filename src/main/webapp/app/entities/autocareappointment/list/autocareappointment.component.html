@@ -1,7 +1,55 @@
 <div>
   <h2 id="page-heading" data-cy="AutocareappointmentHeading">
     <span>Autocareappointments</span>
+  </h2>
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <a
+        class="nav-link active"
+        id="billing-tab"
+        data-bs-toggle="tab"
+        href="#billing"
+        role="tab"
+        aria-controls="billing"
+        aria-selected="true"
+        (click)="updateUrl('desc')"
+      >
+        Confirmed Appointments
+      </a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a
+        class="nav-link"
+        id="service-charges-tab"
+        data-bs-toggle="tab"
+        href="#service-charges"
+        role="tab"
+        aria-controls="service-charges"
+        aria-selected="false"
+        (click)="updateUrl('asc')"
+      >
+        Not Confirmed Appointments
+      </a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a
+        class="nav-link"
+        id="missed-tab"
+        data-bs-toggle="tab"
+        href="#missed"
+        role="tab"
+        aria-controls="missed"
+        aria-selected="false"
+        (click)="updateUrl('change')"
+      >
+        Missed Appointments
+      </a>
+    </li>
+  </ul>
 
+  <!-- ✅ Define the function inside a script at the bottom -->
+
+  <h2>
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
         <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
@@ -37,19 +85,19 @@
           <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
             <th scope="col" jhiSortBy="isconformed">
               <div class="d-flex">
-                <span>Isconformed</span>
+                <span>Is Confirmed?</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="id">
+            <th scope="col" jhiSortBy="id" *ngIf="false">
               <div class="d-flex">
                 <span>ID</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col">
+            <th scope="col" *ngIf="false">
               <div class="d-flex">
                 <span>Appointment type</span>
 
@@ -138,19 +186,19 @@
             </th>
             <th scope="col" jhiSortBy="customername">
               <div class="d-flex">
-                <span>Customername</span>
+                <span>Customer name</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col">
+            <th scope="col" *ngIf="false">
               <div class="d-flex">
                 <span>Issued</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col">
+            <th scope="col" *ngIf="false">
               <div class="d-flex">
                 <span>Hoistid</span>
 
@@ -180,14 +228,15 @@
                 </div>
               </th>
             </div>
-            <div *ngIf="false">
-              <th scope="col" jhiSortBy="missedappointmentcall">
-                <div class="d-flex">
-                  <span>Missedappointmentcall</span>
 
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                </div>
-              </th>
+            <th scope="col" jhiSortBy="missedappointmentcall" *ngIf="showUpdateMissedButton">
+              <div class="d-flex">
+                <span>Missedappointmentcall</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <div *ngIf="false">
               <th scope="col" jhiSortBy="customermobileid">
                 <div class="d-flex">
                   <span>Customermobileid</span>
@@ -238,10 +287,10 @@
           @for (autocareappointment of autocareappointments; track trackId) {
             <tr data-cy="entityTable">
               <td>{{ autocareappointment.isconformed }}</td>
-              <td>
+              <td *ngIf="false">
                 <a [routerLink]="['/autocareappointment', autocareappointment.id, 'view']">{{ autocareappointment.id }}</a>
               </td>
-              <td>{{ autocareappointment.appointmenttype }}</td>
+              <td *ngIf="false">{{ autocareappointment.appointmenttype }}</td>
               <td>{{ autocareappointment.appointmentdate | formatMediumDatetime }}</td>
               <td *ngIf="false">{{ autocareappointment.addeddate | formatMediumDatetime }}</td>
               <td>{{ autocareappointment.conformdate | formatMediumDatetime }}</td>
@@ -258,15 +307,18 @@
               </div>
               <td>{{ autocareappointment.contactnumber }}</td>
               <td>{{ autocareappointment.customername }}</td>
-              <td>{{ autocareappointment.issued }}</td>
-              <td>{{ autocareappointment.hoistid }}</td>
+              <td *ngIf="false">{{ autocareappointment.issued }}</td>
+              <td *ngIf="false">{{ autocareappointment.hoistid }}</td>
               <div *ngIf="false">
                 <td>{{ autocareappointment.isarrived }}</td>
                 <td>{{ autocareappointment.iscancel }}</td>
                 <td>{{ autocareappointment.isnoanswer }}</td>
               </div>
+
+              <td *ngIf="showUpdateMissedButton">
+                <input type="text" [(ngModel)]="autocareappointment.missedappointmentcall" class="form-control" />
+              </td>
               <div *ngIf="false">
-                <td>{{ autocareappointment.missedappointmentcall }}</td>
                 <td>{{ autocareappointment.customermobileid }}</td>
                 <td>{{ autocareappointment.customermobilevehicleid }}</td>
                 <td>{{ autocareappointment.vehicleid }}</td>
@@ -297,6 +349,23 @@
                   <button type="submit" (click)="delete(autocareappointment)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times"></fa-icon>
                     <span class="d-none d-md-inline">Delete</span>
+                  </button>
+                  <button
+                    *ngIf="showConfirmButton"
+                    type="submit"
+                    (click)="tick(autocareappointment)"
+                    class="btn btn-success btn-sm"
+                    data-cy="entityDeleteButton"
+                  >
+                    <fa-icon icon="check"></fa-icon>
+                    <span class="d-none d-md-inline">Confirm</span>
+                  </button>
+                  <button
+                    *ngIf="showUpdateMissedButton && autocareappointment.missedappointmentcall"
+                    (click)="updateMissedAppointment(autocareappointment)"
+                    class="btn btn-warning btn-sm"
+                  >
+                    Edit Comment
                   </button>
                 </div>
               </td>

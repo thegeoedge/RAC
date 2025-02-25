@@ -3,16 +3,16 @@ import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import SharedModule from 'app/shared/shared.module';
-import { ITEM_DELETED_EVENT, ITEM_UPDATED_EVENT } from 'app/config/navigation.constants';
+import { ITEM_UPDATED_EVENT } from 'app/config/navigation.constants';
 import { IAutocareappointment } from '../autocareappointment.model';
 import { AutocareappointmentService } from '../service/autocareappointment.service';
 
 @Component({
   standalone: true,
-  templateUrl: './autocareappointment-delete-dialog.component.html',
+  templateUrl: './autocareappointment-update-dialog.component.html',
   imports: [SharedModule, FormsModule],
 })
-export class AutocareappointmentDeleteDialogComponent {
+export class AutocareappointmentUpdateDialogComponent {
   autocareappointment?: IAutocareappointment;
 
   protected autocareappointmentService = inject(AutocareappointmentService);
@@ -22,9 +22,9 @@ export class AutocareappointmentDeleteDialogComponent {
     this.activeModal.dismiss();
   }
 
-  confirmDelete(id: number): void {
-    this.autocareappointmentService.delete(id).subscribe(() => {
-      this.activeModal.close(ITEM_DELETED_EVENT);
+  confirmUpdate(autocareappointment: IAutocareappointment): void {
+    this.autocareappointmentService.update(autocareappointment).subscribe(() => {
+      this.activeModal.close(ITEM_UPDATED_EVENT);
     });
   }
 }

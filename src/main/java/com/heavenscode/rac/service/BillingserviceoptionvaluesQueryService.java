@@ -3,6 +3,7 @@ package com.heavenscode.rac.service;
 import com.heavenscode.rac.domain.*; // for static metamodels
 import com.heavenscode.rac.domain.Billingserviceoptionvalues;
 import com.heavenscode.rac.repository.BillingserviceoptionvaluesRepository;
+// import com.heavenscode.rac.domain.Billingserviceoptionvalues_; // Removed as it cannot be resolved
 import com.heavenscode.rac.service.criteria.BillingserviceoptionvaluesCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

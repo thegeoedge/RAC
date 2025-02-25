@@ -11,11 +11,11 @@ import { ItemCountComponent } from 'app/shared/pagination';
 import { FormsModule } from '@angular/forms';
 
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
+import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA, ITEM_UPDATED_EVENT } from 'app/config/navigation.constants';
 import { IAutocareappointment } from '../autocareappointment.model';
 import { EntityArrayResponseType, AutocareappointmentService } from '../service/autocareappointment.service';
 import { AutocareappointmentDeleteDialogComponent } from '../delete/autocareappointment-delete-dialog.component';
-
+import { AutocareappointmentUpdateDialogComponent } from '../delete/autocareappointment-update-dialog.component';
 @Component({
   standalone: true,
   selector: 'jhi-autocareappointment',
@@ -38,7 +38,7 @@ export class AutocareappointmentComponent implements OnInit {
   isLoading = false;
 
   sortState = sortStateSignal({});
-
+  showConfirmButton = false;
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
@@ -49,7 +49,7 @@ export class AutocareappointmentComponent implements OnInit {
   protected sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
-
+  showUpdateMissedButton = false;
   trackId = (_index: number, item: IAutocareappointment): number => this.autocareappointmentService.getAutocareappointmentIdentifier(item);
 
   ngOnInit(): void {
@@ -59,6 +59,35 @@ export class AutocareappointmentComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+
+    this.subscription = this.activatedRoute.queryParamMap.subscribe(params => {
+      const sort = params.get('sort'); // Get the 'sort' query parameter
+      // Check if the sort parameter is 'isconformed,asc'
+      if (sort === 'isconformed,asc') {
+        this.showConfirmButton = true;
+      } else {
+        this.showConfirmButton = false;
+      }
+    });
+
+    this.subscription = this.activatedRoute.queryParamMap.subscribe(params => {
+      const page = params.get('page');
+      const size = params.get('size');
+      const sort = params.get('sort');
+
+      // Check if the URL contains the expected parameters
+      this.showUpdateMissedButton = page === '1' && size === '20' && sort === 'missedappointmentcall,desc';
+    });
+  }
+  checkCurrentUrl(): void {
+    // Get the current URL
+    const currentUrl = this.router.url;
+
+    // Define the target URL path
+    const targetUrl = '/autocareappointment?page=1&size=20&sort=missedappointmentcall,desc';
+
+    // Check if the current URL matches the target URL
+    this.showUpdateMissedButton = currentUrl === targetUrl;
   }
 
   delete(autocareappointment: IAutocareappointment): void {
@@ -71,6 +100,60 @@ export class AutocareappointmentComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+  }
+
+  tick(autocareappointment: IAutocareappointment): void {
+    // Open the modal to confirm the 'tick' action (confirmation for 'isconformed' update)
+    const modalRef = this.modalService.open(AutocareappointmentUpdateDialogComponent, { size: 'lg', backdrop: 'static' });
+
+    // Pass the autocareappointment object (it can have the 'isconformed' value set to true in the modal)
+    autocareappointment.isconformed = true;
+    modalRef.componentInstance.autocareappointment = autocareappointment;
+
+    // Handle modal close and reload the data if updated (event for the 'tick' action)
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_UPDATED_EVENT), // Listen for the update event
+        tap(() => this.load()), // Reload or refresh the data after updating
+      )
+      .subscribe();
+  }
+
+  updateMissedAppointment(autocareappointment: IAutocareappointment): void {
+    // Open modal for updating missed appointment call
+    const modalRef = this.modalService.open(AutocareappointmentUpdateDialogComponent, { size: 'lg', backdrop: 'static' });
+
+    // Pass the autocareappointment object to the modal
+    modalRef.componentInstance.autocareappointment = { ...autocareappointment };
+
+    // Handle modal close and update the UI with the new value
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_UPDATED_EVENT), // Listen for update event
+        tap(() => this.load()), // Reload the updated data
+      )
+      .subscribe();
+  }
+
+  updateUrl(order: string): void {
+    console.log('Current URL:', window.location.href); // ✅ Logs the current URL
+
+    let newUrl = '';
+
+    if (order === 'change') {
+      newUrl = '/autocareappointment?page=1&size=20&sort=missedappointmentcall,desc';
+    } else {
+      const params = new URLSearchParams({
+        page: '1',
+        size: '20',
+        sort: `isconformed,${order}`,
+      });
+
+      newUrl = `/autocareappointment?${params.toString()}`;
+    }
+
+    this.router.navigateByUrl(newUrl); // ✅ Navigate to the new URL
+    console.log('Updated URL:', newUrl); // ✅ Logs the updated URL
   }
 
   load(): void {

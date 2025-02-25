@@ -16,6 +16,7 @@ import { ISalesInvoiceDummy } from '../sales-invoice-dummy.model';
 
 import { EntityArrayResponseType, SalesInvoiceDummyService } from '../service/sales-invoice-dummy.service';
 import { SalesInvoiceDummyDeleteDialogComponent } from '../delete/sales-invoice-dummy-delete-dialog.component';
+import { faPrint } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   standalone: true,
@@ -38,7 +39,7 @@ export class SalesInvoiceDummyComponent implements OnInit {
   subscription: Subscription | null = null;
   salesInvoiceDummies?: ISalesInvoiceDummy[];
   isLoading = false;
-
+  faPrint = faPrint;
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
