@@ -44,11 +44,11 @@ export class SalesInvoiceDummyService {
   protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
 
   fetchService(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
+    const options = createRequestOption({ 'invoiceId.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
   }
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
+    const options = createRequestOption({ 'invoiceId.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
   }
 

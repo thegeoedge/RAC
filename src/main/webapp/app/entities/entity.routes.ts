@@ -27,6 +27,10 @@ const routes: Routes = [
     loadChildren: () => import('./autocarejob/autocarejob.routes'),
   },
   {
+    path: 'printinvoice',
+    loadChildren: () => import('./printinvoice/printinvoice.module').then(m => m.PrintInvoiceRoutingModule),
+  },
+  {
     path: 'vehicletype',
     data: { pageTitle: 'Vehicletypes' },
     loadChildren: () => import('./vehicletype/vehicletype.routes'),

@@ -256,11 +256,17 @@
                                       type="button"
                                       style="width: 100px"
                                       (click)="selectTime(timetable, hoist.id)"
-                                      class="btn btn-primary"
+                                      class="btn btn-primary custom-hover"
                                     >
                                       {{ timetable.hoisttime | date: 'hh:mm' : '+0000' }}
                                       <!-- {{ timetable.hoisttime }} -->
                                     </button>
+                                    <style>
+                                      .custom-hover:hover {
+                                        background-color: #e1ae2e !important; /* Change to your preferred color */
+                                        color: white !important;
+                                      }
+                                    </style>
                                   </ng-container>
                                 </ng-container>
                               </div>
@@ -373,7 +379,7 @@
             </div>
           </div>
         </div>
-        <div>
+        <div *ngIf="false">
           <div class="form-container d-flex align-items-center flex-wrap gap-4">
             <div class="form-group d-flex align-items-center gap-3 mb-3">
               <label class="form-label" for="field_isconformed">Isconformed</label>
