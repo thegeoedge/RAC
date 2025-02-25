@@ -42,6 +42,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   });
 
   typeid: number = 0;
+  totalfetch: number = 0;
   vehicletypes: IVehicletype[] = [];
   get serviceChargeLinesArray(): FormArray {
     return this.editForm.get('serviceChargeLines') as FormArray;
@@ -57,6 +58,27 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     });
     this.loadVehicleTypes();
   }
+  totalvalue(formGroup: FormGroup): void {
+    const value = formGroup.get('value');
+
+    // Update the line total when the value changes
+    value?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal());
+
+    // Initialize the line total when the form is added
+    this.updateLineTotal();
+  }
+
+  updateLineTotal(): void {
+    // Calculate the total by summing up all values in the serviceChargeLines array
+    const total = this.serviceChargeLinesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    // Emit the total to the parent component
+    this.totalUpdated.emit(total);
+    console.log('Updated Total ssssssssssser:', total); // Log the updated total
+  }
+
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
@@ -118,7 +140,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       },
     });
   }
-
+  
   addToTable() {
     if (this.selectedServices.length === 0) {
       return; // No selected services, nothing to add
@@ -131,6 +153,8 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     const serviceResponses = new Map<number, any>();
 
     // Iterate over selected services
+    let completedRequests = 0; // Track completed API requests
+    let totalFetchedValue = 0;
     this.selectedServices.forEach((service, index) => {
       console.log('Selected service ID:', service.id);
 
@@ -139,7 +163,9 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       this.salesInvoiceServiceChargeLineService.biliingvalues(service.id, this.typeid).subscribe(response => {
         console.log('API Response:', response);
 
-        const billingValues = response.body; // Assuming the response contains the data in 'body'
+        const billingValues = response.body; 
+        const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
+        totalFetchedValue += fetchedValue ?? 0;// Assuming the response contains the data in 'body'
         console.log('Billing values:', billingValues);
 
         serviceResponses.set(service.id, billingValues && billingValues.length > 0 ? billingValues[0].value : '');
@@ -149,21 +175,27 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
           const firstRow = this.serviceChargeLinesArray.controls[0];
           firstRow.get('serviceName')?.setValue(service.servicename);
           firstRow.get('iqd')?.setValue(service.id);
-          firstRow.get('value')?.setValue(serviceResponses.get(service.id));
+          firstRow.get('value')?.setValue(fetchedValue);
         } else {
           // Add new row with fetched value
           this.serviceChargeLinesArray.push(
             this.fb.group({
               serviceName: [service.servicename],
-              value: [serviceResponses.get(service.id)], // Set fetched value
+              value: [fetchedValue], // Set fetched value
               isCustomerService: [false],
               id: [service.id],
             }),
           );
         }
+        completedRequests++;
+        this.totalfetch = totalFetchedValue;
+        console.log('Current total fetched value:', this.totalfetch);
+    
+        this.calculateTotal(this.totalfetch);
       });
     });
 
+    // Reset selected services after processing
     // Reset selected services after processing
     this.selectedServices = [];
   }
@@ -251,11 +283,10 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     }
   }
 
-  calculateTotal(): void {
-    const total = this.serviceChargeLinesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, val) => acc + val, 0);
-
-    console.log('Total Value:', total);
+  calculateTotal(total: number): void {
+    console.log('Total Value:', total); // Log the correct total value
     this.totalUpdated.emit(total); // Emit total to parent
+    // Small delay to allow UI updates
   }
 
   save(inid: number): void {

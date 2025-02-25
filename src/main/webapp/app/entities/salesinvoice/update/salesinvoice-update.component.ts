@@ -97,13 +97,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.calculateDiscount(); // Log the updated value to the console
     // Call the function to calculate discount
   }
-  buyQuantity: number = 0; // Store the buy quantity value
+  buyquantity: number = 0; // Store the buy quantity value
 
   // Function to handle changes in the quantity field
   onBuyQtyChange(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    this.buyQuantity = Number(inputElement.value);
-    console.log('Buy Quantity:', this.buyQuantity);
+    this.buyquantity = Number(inputElement.value);
+    console.log('Buy Quantity:', this.buyquantity);
   }
 
   onsubtotalValueChange(event: any): void {
@@ -284,12 +284,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
   }
 
-  selectedItem: { name: string; availablequantity: number; lastsellingprice: number } | null = null;
+  selectedItem: { code:string; name: string; availablequantity: number; lastsellingprice: number } | null = null;
 
   itemname: string = ''; // Variable to hold the selected item's name
   availablequantity: number = 0;
   lastsellingprice: number = 0;
-
+code : string='';
   onItemCodeSelect(event: Event, index: number): void {
     const inputElement = event.target as HTMLInputElement;
     const selectedCode = inputElement.value;
@@ -302,6 +302,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.itemname = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
+      this.code= selectedItem.code ?? '';
     } else {
       console.warn('No matching item found for:', selectedCode);
       this.itemname = ''; // Clear itemName if no match is found
@@ -310,20 +311,22 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
+      code:this.code,
       name: this.itemname,
-      availablequantity: this.buyQuantity,
+      availablequantity: this.buyquantity,
       lastsellingprice: this.lastsellingprice,
     };
 
     // Log the selected item to the console
     console.log('Selected Item:', this.selectedItem);
-    console.log('Returned Buy Quantity:', this.buyQuantity);
+    console.log('Returned Buy Quantity:', this.buyquantity);
     // Call the function to get the buy quantity
 
     // Optionally reset the inputs after adding
     this.itemname = '';
     this.availablequantity = 0;
     this.lastsellingprice = 0;
+    this.code='';
   }
 
   onItemCodeInput(event: Event, index: number): void {

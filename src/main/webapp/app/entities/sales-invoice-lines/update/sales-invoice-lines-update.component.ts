@@ -14,7 +14,7 @@ import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
 import CommonModule from 'app/shared/shared.module';
 
-@Component({
+@Component({ 
   standalone: true,
   selector: 'jhi-sales-invoice-lines-update',
   templateUrl: './sales-invoice-lines-update.component.html',
@@ -57,11 +57,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       itemcode: [item.code || item.itemcode || ''], // Match template
       itemname: [item.name], // Match template
       quantity: [item.availablequantity || item.quantity],
-      sellingprice: [item.lastsellingprice || item.sellingprice], // Match template
+      sellingprice: [item.lastsellingprice || item.lastsellingprice      ], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
       discount: [0],
     });
-
+    console.log('New Item Addedaazzz:', newItem.value);
+    console.log(this.selectedItem);
     // Calculate lineTotal dynamically when quantity or sellingPrice changes
     this.listenToQuantityAndPriceChanges(newItem);
 
@@ -69,7 +70,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   }
   listenToQuantityAndPriceChanges(formGroup: FormGroup): void {
     const quantityControl = formGroup.get('quantity');
-    const sellingPriceControl = formGroup.get('sellingPrice');
+    const sellingPriceControl = formGroup.get('sellingprice');
 
     // Use debounceTime to avoid too frequent updates (e.g., wait 300ms after the user stops typing)
     quantityControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
@@ -80,8 +81,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   }
   updateLineTotal(formGroup: FormGroup): void {
     const quantity = formGroup.get('quantity')?.value;
-    const sellingPrice = formGroup.get('sellingPrice')?.value;
-    const lineTotalControl = formGroup.get('lineTotal');
+    const sellingPrice = formGroup.get('sellingprice')?.value;
+    const lineTotalControl = formGroup.get('linetotal');
 
     // Calculate line total: quantity * sellingPrice
     const lineTotal = quantity * sellingPrice;
@@ -89,7 +90,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
     // Calculate the total of all lineTotals in the form array
     const total = this.salesInvoiceLinesDummyArray.controls
-      .map(control => control.get('lineTotal')?.value || lineTotal)
+      .map(control => control.get('linetotal')?.value || lineTotal)
       .reduce((acc, value) => acc + value, lineTotal);
     console.log('Totallll:', total);
     // Emit the updated total of all lineTotals
@@ -105,16 +106,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       if (salesInvoiceLines && salesInvoiceLines.length > 0) {
         this.salesInvoiceLines = salesInvoiceLines;
         this.updateForm(salesInvoiceLines);
-      } else {
-        this.addInvoiceLine(); // Ensure at least one row is added
-      }
+      } 
 
       console.log('Sales Invoice Lines:', this.salesInvoiceLines); // Add this line to see if the data is correct
       this.updateForm(this.salesInvoiceLines);
     });
-    if (this.selectedItem) {
-      this.addItemToFormArray(this.selectedItem); // Add the first default row using selectedItem
-    }
+   
   }
 
   onItemCodeSelect(event: Event, index: number): void {
@@ -127,7 +124,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
     // If the item is found, update the form for this row with the item's details
     if (selectedItem) {
-      console.log('Selected item:', selectedItem);
+      console.log('Selected itemssss:', selectedItem);
 
       // Update form controls for this row (e.g., item code, item name, etc.)
       const salesInvoiceLineGroup = this.salesInvoiceLinesArray.at(index) as FormGroup;
@@ -220,8 +217,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     const newSellingPrice = validQuantity * itemPrice;
 
     // Update selling price in the form
-    salesInvoiceLineGroup.patchValue({ lineTotal: newSellingPrice });
-    this.calculateTotal();
+    salesInvoiceLineGroup.patchValue({ linetotal: newSellingPrice });
+    const lineTotal = salesInvoiceLineGroup.get('linetotal')?.value;
+    console.log('Line Totarrrrrrrrrl:', lineTotal);
+    // Emit the updated lineTotal value
+    this.totalUpdated.emit(lineTotal);
   }
   onItemNameInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement
@@ -259,7 +259,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   }
   calculateTotal(): void {
     const total = this.salesInvoiceLinesDummyArray.controls
-      .map(control => control.get('lineTotal')?.value || 0)
+      .map(control => control.get('linetotal')?.value || 0)
       .reduce((acc, value) => acc + value, 0);
 
     console.log('Total Selling Price:', total);

@@ -23,7 +23,7 @@
                 class="form-control form-control-sm"
                 name="customerName"
                 id="field_customerName"
-                formControlName="customerName"
+                formControlName="customername"
               />
             </div>
             <div class="mb-2">
@@ -33,12 +33,12 @@
                 class="form-control form-control-sm"
                 name="amountOwing"
                 id="field_amountOwing"
-                formControlName="amountOwing"
+                formControlName="amountowing"
               />
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_vehicleNo">Vehicle No</label>
-              <input type="text" class="form-control form-control-sm" name="vehicleNo" id="field_vehicleNo" formControlName="vehicleNo" />
+              <input type="text" class="form-control form-control-sm" name="vehicleno" id="field_vehicleNo" formControlName="vehicleno" />
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_invoiceDate">Invoice Date</label>
@@ -47,7 +47,7 @@
                 class="form-control form-control-sm"
                 id="field_invoiceDate"
                 name="invoiceDate"
-                formControlName="invoiceDate"
+                formControlName="invoicedate"
               />
             </div>
           </div>
@@ -94,7 +94,7 @@
               <div class="col-md-6">
                 <div class="mb-2">
                   <label class="form-label" for="field_buyQty">Buy Quantity</label>
-                  <input type="number" class="form-control form-control-sm" id="field_buyQty" />
+                  <input type="number" class="form-control form-control-sm" id="field_buyQty"   (input)="onBuyQtyChange($event)"/>
                 </div>
                 <div class="mb-2">
                   <label class="form-label me-2">Discount Option</label>
@@ -129,7 +129,7 @@
                     class="form-control form-control-sm"
                     name="subTotal"
                     id="field_subTotal"
-                    formControlName="subTotal"
+                    formControlName="subtotal"
                   />
                 </div>
 
@@ -182,7 +182,7 @@
                       class="form-control form-control-sm"
                       name="nbtAmount"
                       id="field_nbtAmount"
-                      formControlName="nbtAmount"
+                      formControlName="nbtamount"
                     />
                   </div>
 
@@ -193,7 +193,7 @@
                       class="form-control form-control-sm"
                       name="vatAmount"
                       id="field_vatAmount"
-                      formControlName="vatAmount"
+                      formControlName="vatamount"
                     />
                   </div>
                 </div>
@@ -205,7 +205,7 @@
                     class="form-control form-control-sm"
                     name="totalTax"
                     id="field_totalTax"
-                    formControlName="totalTax"
+                    formControlName="totaltax"
                   />
                 </div>
 
@@ -223,7 +223,7 @@
                     class="form-control form-control-sm"
                     name="netTotal"
                     id="field_netTotal"
-                    formControlName="netTotal"
+                    formControlName="nettotal"
                   />
                 </div>
               </div>

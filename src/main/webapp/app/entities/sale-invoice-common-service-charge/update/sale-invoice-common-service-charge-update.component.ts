@@ -39,6 +39,18 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   get serviceChargesArray(): FormArray {
     return this.editForm.get('serviceCharges') as FormArray;
   }
+  totalsum: number = 0; // Global variable to store total value
+  updateLineTotal(): void {
+    // Calculate the total by summing up all values in the serviceChargeLines array
+    const total = this.serviceChargesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    // Emit the total to the parent component
+    this.totalUpdated.emit(total);
+    console.log('Updated Total cccccccccccccccccccccccc:', total); // Log the updated total
+    this.totalsum = total;
+  }
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ saleInvoiceCommonServiceCharges }) => {
@@ -65,7 +77,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         },
       });
   }
-
+  totalfetch: number = 0;
   onCheckboxChange(event: Event, option: ICommonserviceoption): void {
     const checkbox = event.target as HTMLInputElement;
 
@@ -74,6 +86,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     console.log('Selected option:', option);
 
     if (checkbox.checked) {
+      this.totalfetch += option.value ?? 0;
       // Create the form group for the selected option
       const formGroup = new FormGroup({
         id: new FormControl(option.id),
@@ -118,6 +131,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         this.serviceChargesArray.removeAt(index);
       }
     }
+    console.log('Total Fetched Value:', this.totalfetch);
+    this.calculateTotal(this.totalfetch); 
   }
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)
@@ -147,11 +162,9 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     }
   }
 
-  calculateTotal(): void {
-    const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, val) => acc + val, 0);
-
-    console.log('Total Value:', total);
-    this.totalUpdated.emit(total); // Emit total to parent
+  calculateTotal(total: number): void {
+    console.log('Total Value:', total + this.totalsum); // Log the total value
+    this.totalUpdated.emit(total + this.totalsum); // Emit total to parent
   }
 
   onItemCodeInput(event: Event, index: number): void {
