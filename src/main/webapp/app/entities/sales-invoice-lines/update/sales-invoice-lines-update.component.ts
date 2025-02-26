@@ -395,12 +395,6 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     });
   }
 
-  addInvoiceLine(): void {
-    const newRow = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup();
-    console.log('Adding row:', newRow.value);
-    this.salesInvoiceLinesDummyArray.push(newRow);
-  }
-
   removeInvoiceLine(index: number): void {
     this.salesInvoiceLinesDummyArray.removeAt(index);
   }
