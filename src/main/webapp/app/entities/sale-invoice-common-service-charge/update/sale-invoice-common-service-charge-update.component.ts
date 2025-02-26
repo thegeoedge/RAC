@@ -240,9 +240,9 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
     const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => ({
       ...line,
-      invoiceid: inid, // Assign invoice ID
-      lineid: line.lineid ?? index + 1, // Ensure unique line ID
-      optionid: index + 1, // Default option ID to 0
+      invoiceId: inid, // Assign invoice ID
+      lineId: line.lineid ?? index + 1, // Ensure unique line ID
+      optionId: index + 1, // Default option ID to 0
     }));
 
     console.log('Modified sales invoice lines:', serviceCharges);
@@ -263,13 +263,13 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     forkJoin(requests)
       .pipe(finalize(() => this.onSaveFinalize()))
       .subscribe({
-        next: () => this.onSaveSuccess(),
+        //   next: () => //this.onSaveSuccess(),
         error: () => this.onSaveError(),
       });
   }
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      //  next: () => this.onSaveSuccess(),
       error: () => this.onSaveError(),
     });
   }
