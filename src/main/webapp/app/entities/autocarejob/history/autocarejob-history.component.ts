@@ -24,6 +24,11 @@ import { AutojobsalesinvoiceservicechargelineComponent } from 'app/entities/auto
 import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojobsalesinvoiceservicechargeline/service/autojobsalesinvoiceservicechargeline.service';
 import { AutojobsaleinvoicecommonservicechargeComponent } from 'app/entities/autojobsaleinvoicecommonservicecharge/list/autojobsaleinvoicecommonservicecharge.component';
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
+import { ISalesinvoice } from 'app/entities/salesinvoice/salesinvoice.model';
+import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvoice.service';
+import { SalesInvoiceServiceChargeLineService } from 'app/entities/sales-invoice-service-charge-line/service/sales-invoice-service-charge-line.service';
+import { SaleInvoiceCommonServiceChargeService } from 'app/entities/sale-invoice-common-service-charge/service/sale-invoice-common-service-charge.service';
+import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 
 @Component({
   standalone: true,
@@ -34,6 +39,7 @@ import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autoj
 export class AutocarejobhistoryComponent implements OnInit {
   isSaving = false;
   autocarejob: IAutocarejob | null = null;
+  salesinvoice: ISalesinvoice | null = null;
   autocarejobsinvoices: IAutojobsinvoice[] = [];
   customervehicles: ICustomervehicle[] = [];
   customerDetails: any | null = null;
@@ -44,6 +50,10 @@ export class AutocarejobhistoryComponent implements OnInit {
   autojobsinvoicelinesService = inject(AutojobsinvoicelinesService);
   autojobsservicelinesService = inject(AutojobsalesinvoiceservicechargelineService);
   autojobsalescommonService = inject(AutojobsaleinvoicecommonservicechargeService);
+  salesinvoiceService = inject(SalesinvoiceService);
+  salesinvoiceservicechargelineService = inject(SalesInvoiceServiceChargeLineService);
+  salesinvoicecommonservicechargeService = inject(SaleInvoiceCommonServiceChargeService);
+  salesinvoicelineService = inject(SalesInvoiceLinesService);
   protected activatedRoute = inject(ActivatedRoute);
   protected customervehicleService = inject(CustomervehicleService);
   protected customerService = inject(CustomerService);
@@ -61,6 +71,7 @@ export class AutocarejobhistoryComponent implements OnInit {
         this.updateForm(autocarejob);
       }
       this.fetchhistory();
+      this.fetchinvoicehistory();
     });
   }
 
@@ -125,6 +136,56 @@ export class AutocarejobhistoryComponent implements OnInit {
             // Fetch Common Service Charges
             this.autojobsalescommonService.query({ 'invoiceid.equals': invoiceId }).subscribe((chargesRes: HttpResponse<any[]>) => {
               this.autojobsInvoicesMap[invoiceId].commonServiceCharges = chargesRes.body || [];
+            });
+          });
+        }
+      });
+  }
+
+  get invoiceId(): number[] {
+    return Object.keys(this.salesInvoicesMap).map(id => Number(id));
+  }
+
+  salesInvoicesMap: {
+    [key: number]: {
+      invoice: ISalesinvoice;
+      invoiceLines: any[];
+      serviceLines: any[];
+      commonServiceCharges: any[];
+    };
+  } = {};
+
+  fetchinvoicehistory(): void {
+    this.salesinvoiceService
+      .query({ 'customername.contains': this.autocarejob?.customername })
+      .subscribe((res: HttpResponse<ISalesinvoice[]>) => {
+        if (res.body && res.body.length > 0) {
+          res.body.forEach(invoice => {
+            const invoiceId = invoice.id!;
+            this.salesInvoicesMap[invoiceId] = {
+              invoice,
+              invoiceLines: [],
+              serviceLines: [],
+              commonServiceCharges: [],
+            };
+
+            // Fetch Invoice Lines
+            this.salesinvoicelineService.query({ 'invoiceid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
+              this.salesInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
+              console.log(`Invoice Lines for ID ${invoiceId}:`, linesRes.body);
+            });
+
+            // Fetch Service Charges
+            this.salesinvoiceservicechargelineService
+              .query({ 'invoiceId.equals': invoiceId })
+              .subscribe((servicesRes: HttpResponse<any[]>) => {
+                this.salesInvoicesMap[invoiceId].serviceLines = servicesRes.body || [];
+                console.log(`Service Lines for ID ${invoiceId}:`, servicesRes.body);
+              });
+
+            // Fetch Common Service Charges
+            this.salesinvoicecommonservicechargeService.query({ 'id.equals': invoiceId }).subscribe((chargesRes: HttpResponse<any[]>) => {
+              this.salesInvoicesMap[invoiceId].commonServiceCharges = chargesRes.body || [];
             });
           });
         }
