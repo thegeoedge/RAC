@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SaleInvoiceCommonServiceChargeDummyRepository extends JpaRepository<SaleInvoiceCommonServiceChargeDummy, Long> {}
+public interface SaleInvoiceCommonServiceChargeDummyRepository
+    extends JpaRepository<SaleInvoiceCommonServiceChargeDummy, Long>, JpaSpecificationExecutor<SaleInvoiceCommonServiceChargeDummy> {}
