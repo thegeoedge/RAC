@@ -99,7 +99,7 @@
                   <jhi-alert-error></jhi-alert-error>
 
                   @if (editForm.controls.id.value !== null) {
-                    <div class="row align-items-center mt-3 mb-3">
+                    <div class="row align-items-center mt-3 mb-3" *ngIf="false">
                       <label class="col-auto form-label" for="field_id">ID</label>
                       <div class="col">
                         <input
@@ -115,10 +115,6 @@
                     </div>
                   }
 
-                  <!-- <div class="mb-3">
-                    <label class="form-label" for="field_vehicleid">Vehicleid</label>
-                    <input type="number" class="form-control" name="vehicleid" id="field_vehicleid" data-cy="vehicleid" formControlName="vehicleid" />
-                  </div> -->
                   <fieldset class="border p-3">
                     <legend class="w-auto px-2">Vehicle</legend>
                     <div class="row">
@@ -126,7 +122,7 @@
                         <label class="form-label" for="field_vehiclenumber">Vehiclenumber</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="vehiclenumber"
                           id="field_vehiclenumber"
                           data-cy="vehiclenumber"
@@ -146,7 +142,7 @@
                       <div class="mb-3 col-6">
                         <label class="form-label" for="field_jobtypename">Jobtypename</label>
                         <select
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="jobtypename"
                           id="field_jobtypename"
                           data-cy="jobtypename"
@@ -159,54 +155,13 @@
                         </select>
                       </div>
                     </div>
-                    <!-- <div class="mb-3">
-                    <label class="form-label" for="field_jobopenby">Jobopenby</label>
-                    <input type="number" class="form-control" name="jobopenby" id="field_jobopenby" data-cy="jobopenby" formControlName="jobopenby" />
-                  </div> -->
-
-                    <!-- <div class="mb-3">
-                    <label class="form-label" for="field_jobopentime">Jobopentime</label>
-                    <div class="d-flex">
-                      <input
-                        id="field_jobopentime"
-                        data-cy="jobopentime"
-                        type="datetime-local"
-                        class="form-control"
-                        name="jobopentime"
-                        formControlName="jobopentime"
-                        placeholder="YYYY-MM-DD HH:mm"
-                      />
-                    </div>
-                  </div> -->
-
-                    <!-- <div class="row">
-                    <div class="mb-3 col-6">
-                      <label class="form-label" for="field_brandname">Brand</label>
-                      <select class="form-control" formControlName="brandname">
-                        <option *ngFor="let item of vehiclebrandname" [value]="item.id">
-                          {{ item.brandname }}
-                        </option>
-                      </select>
-                    </div>
-          
-            
-                    <div class="mb-3 col-6">
-                      <label class="form-label" for="field_model">Model</label>
-                      <select class="form-control" formControlName="model">
-                        <option *ngFor="let item of vehiclebrandmodel" [value]="item.id">
-                          {{ item.model }}
-                        </option>
-                      </select>
-                    </div>
-                  
-          </div> -->
 
                     <div class="row">
                       <div class="mb-3 col-6">
                         <label class="form-label" for="field_customername">Customername</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="customername"
                           id="field_customername"
                           data-cy="customername"
@@ -218,7 +173,7 @@
                         <label class="form-label" for="field_customertel">Customer Tel</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="customertel"
                           id="field_customertel"
                           data-cy="customertel"
@@ -232,7 +187,7 @@
                           <label class="form-label" for="field_millage">Millage</label>
                           <input
                             type="number"
-                            class="form-control"
+                            class="form-control form-control-sm"
                             name="millage"
                             id="field_millage"
                             data-cy="millage"
@@ -241,31 +196,13 @@
                           />
                         </div>
 
-                        <!-- <div class="mb-3 col-6">
-                    <label class="form-label" for="field_millage">Millage</label>
-                    <input type="number" class="form-control" name="millage" id="field_millage" data-cy="millage" formControlName="millage" />
-                  </div> -->
-
-                        <!-- <div class="mb-3 col-6">
-                  <label class="form-label" for="field_imagefolder">Address</label>
-                  <input
-                  type="text"
-                  class="form-control"
-                  name="imagefolder"
-                  id="field_imagefolder"
-                  data-cy="imagefolder"
-                  formControlName="imagefolder"
-                />
-                </div> -->
-
                         <div class="mb-3 col-6">
-                          <label class="form-label" for="field_nextservicedate">Nextservicedate</label>
+                          <label class="form-label" for="field_nextservicedate">Next Service Date</label>
                           <div class="input-group">
                             <input
                               id="field_nextservicedate"
-                              data-cy="nextservicedate"
                               type="text"
-                              class="form-control"
+                              class="form-control form-control-sm"
                               name="nextservicedate"
                               ngbDatepicker
                               #nextservicedateDp="ngbDatepicker"
@@ -338,7 +275,7 @@
                           <div>
                             <input
                               type="text"
-                              class="form-control"
+                              class="form-control form-control-sm"
                               name="nextmillage"
                               id="field_nextmillage"
                               data-cy="nextmillage"
@@ -354,7 +291,7 @@
                         <label class="form-label" for="field_nextgearoilmilage">Next gear oilmilage</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="nextgearoilmilage"
                           id="field_nextgearoilmilage"
                           data-cy="nextgearoilmilage"
@@ -371,7 +308,7 @@
                         <label class="form-label" for="field_specialrquirments">Special rquirments</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="specialrquirments"
                           id="field_specialrquirments"
                           data-cy="specialrquirments"
@@ -383,7 +320,7 @@
                         <label class="form-label" for="field_specialinstructions">Special instructions</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="specialinstructions"
                           id="field_specialinstructions"
                           data-cy="specialinstructions"
@@ -397,7 +334,7 @@
                         <label class="form-label" for="field_remarks">Remarks</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="remarks"
                           id="field_remarks"
                           data-cy="remarks"
@@ -409,7 +346,7 @@
                         <label class="form-label" for="field_nextserviceinstructions">Next service instructions</label>
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           name="nextserviceinstructions"
                           id="field_nextserviceinstructions"
                           data-cy="nextserviceinstructions"
@@ -423,29 +360,16 @@
                     <legend class="w-auto px-2">Last Service</legend>
                     <div class="mb-3">
                       <label class="form-label" for="field_lastserviceinstructions">Last service instructions</label>
-                      <input
+                      <!-- <input
                         type="text"
                         class="form-control"
                         name="lastserviceinstructions"
                         id="field_lastserviceinstructions"
                         data-cy="lastserviceinstructions"
                         formControlName="lastserviceinstructions"
-                      />
+                      /> -->
                     </div>
                   </fieldset>
-
-                  <div class="mb-3" *ngIf="false">
-                    <label class="form-label" for="field_isjobclose">Isjobclose</label>
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      name="isjobclose"
-                      id="field_isjobclose"
-                      data-cy="isjobclose"
-                      formControlName="isjobclose"
-                      [checked]="true"
-                    />
-                  </div>
                 </div>
               </form>
             </div>
@@ -453,22 +377,13 @@
             <!-- Form 2 -->
             <div class="tab-pane fade" id="form2" role="tabpanel" aria-labelledby="form2-tab">
               <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-                @if (editForm.controls.id.value !== null) {
-                  <div class="row align-items-center mt-3 mb-3" style="display: none">
-                    <label class="col-auto form-label" for="field_id">ID</label>
-                    <div class="col">
-                      <input
-                        type="number"
-                        class="form-control"
-                        name="id"
-                        id="field_id"
-                        data-cy="id"
-                        formControlName="id"
-                        [readonly]="true"
-                      />
-                    </div>
+                <div class="row align-items-center mt-3 mb-3" *ngIf="editForm.controls.id.value !== null" style="display: none">
+                  <label class="col-auto form-label" for="field_id">ID</label>
+                  <div class="col">
+                    <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
                   </div>
-                }
+                </div>
+
                 <fieldset class="border p-3">
                   <legend class="w-auto px-2">Vehicle</legend>
                   <div class="row">
@@ -477,7 +392,7 @@
 
                       <input
                         type="text"
-                        class="form-control"
+                        class="form-control form-control-sm"
                         name="vehiclenumber"
                         id="field_vehiclenumber"
                         data-cy="vehiclenumber"
@@ -489,15 +404,13 @@
                       />
 
                       <datalist id="vehiclenumberList">
-                        <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber">
-                          <!-- {{ item.milage }}KM - {{ item.nextmilage }}KM -->
-                        </option>
+                        <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber"></option>
                       </datalist>
                     </div>
                     <div class="mb-3 col-6">
                       <label class="form-label" for="field_jobtypename">Jobtypename</label>
                       <select
-                        class="form-control"
+                        class="form-control form-control-sm"
                         name="jobtypename"
                         id="field_jobtypename"
                         data-cy="jobtypename"
@@ -517,7 +430,7 @@
                   <div class="mb-3">
                     <label class="form-label">Vehicle Types</label>
                     <select
-                      class="form-control"
+                      class="form-control form-control-sm"
                       [(ngModel)]="selectedVehicleTypeId"
                       (change)="onVehicleTypeChange()"
                       [ngModelOptions]="{ standalone: true }"
@@ -574,13 +487,16 @@
                       </tfoot>
                     </table>
                   </div>
-                  <!-- <button class="btn btn-primary" (click)="addSelectedServices()">Add Service</button> -->
                 </fieldset>
 
-                <!-- <div class="mt-3 p-3 border">
-                  <h5>Total Service Charge: <span class="fw-bold">{{ totalServiceCharge | currency:'LKR':'symbol':'1.2-2' }}</span></h5>
-                </div> -->
-                <div style="display: flex; flex-wrap: wrap; gap: 16px">
+                <!-- Toggle button for subcategories -->
+                <div class="d-flex align-items-center mt-3" style="cursor: pointer" (click)="toggleSubcategories()">
+                  <span [ngClass]="{ 'rotate-arrow': subcategoriesVisible }"> </span>
+                  <h5 class="ms-2 mb-0">service options</h5>
+                </div>
+
+                <!-- Subcategories section -->
+                <div *ngIf="subcategoriesVisible" style="display: flex; flex-wrap: wrap; gap: 16px">
                   <!-- Group subcategories by mainCategory -->
                   <ng-container *ngFor="let mainCategory of getUniqueMainCategories()">
                     <fieldset class="border p-3 mt-3" style="flex: 1 1 calc(50% - 8px); box-sizing: border-box">
@@ -629,13 +545,13 @@
                   <div class="row align-items-center mb-3">
                     <label class="col-auto fw-bold">Items :</label>
                     <div class="col-auto">
-                      <!-- <input type="radio" name="searchBy" id="byName" checked> <label for="byName">By Name</label> -->
-                      <!-- <input type="radio" name="searchBy" id="byCode" class="ms-2"> <label for="byCode">By Code</label> -->
+                      <input type="radio" name="searchBy" id="byName" checked /> <label for="byName">By Name</label>
+                      <input type="radio" name="searchBy" id="byCode" class="ms-2" /> <label for="byCode">By Code</label>
                     </div>
                     <div class="col">
                       <input
                         type="text"
-                        class="form-control"
+                        class="form-control form-control-sm"
                         name="item"
                         id="field_item"
                         data-cy="item"
@@ -805,7 +721,7 @@
 
             <!-- Form 5 -->
             <div class="tab-pane fade" id="form5" role="tabpanel" aria-labelledby="form5-tab">
-              <jhi-workshopvehiclework-update></jhi-workshopvehiclework-update>
+              <jhi-workshopvehiclework-update [formData]="mapFormTowork(editForm.value)"></jhi-workshopvehiclework-update>
             </div>
           </div>
         </div>
@@ -878,14 +794,14 @@
                     totalServiceCharge + calculateTotalWithDiscount() + totalcommonServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2'
                   }}</span>
                 </p>
-                <button class="btn btn-sm btn-primary btn-block mt-2" (click)="printSummary()">Print</button>
               </div>
 
               <jhi-autojobsinvoice-update [formData]="mapFormToAutojobsinvoice(editForm.value)"></jhi-autojobsinvoice-update>
             </div>
           </form>
           <div class="d-flex justify-content-center mt-2">
-            <button type="button" class="btn btn-primary" (click)="saveAll()">Save All</button>
+            <button class="btn btn-sm btn-success mx-2 px-3" style="width: 120px" (click)="printSummary()">Print</button>
+            <button class="btn btn-sm btn-primary mx-2 px-3" style="width: 120px" (click)="saveAll()">Save All</button>
           </div>
         </div>
 
@@ -911,7 +827,7 @@
             </div>
           </div>
 
-          <h4 class="mt-3"><strong>ESTIMATE</strong></h4>
+          <h4 class="mt-3"><strong>ESTIMATE / ඇස්තමේන්තුව</strong></h4>
 
           <table class="table table-bordered mt-3">
             <thead>
@@ -970,6 +886,7 @@
               >
             </h4>
           </div>
+          <p>සැපයුම් විකුණුම්ගෙන් යාමක් අවශ්‍යනම් මම භාණ්ඩ හා සේවා වලට වෙනස් මෙන් මිල ගණන් වෙනස් විය හැකි බව කරුණාවෙන් සැලකිලිමත් වන්න.</p>
           <p>Above prices may be vary on the requirement of goods and services.</p>
           <div class="d-flex justify-content-between mt-4">
             <div class="text-center">

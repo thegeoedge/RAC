@@ -10,6 +10,7 @@ import { AutocareopenjobComponent } from './list/autocareopenjob.component';
 import AutocarejobResolve from './route/autocarejob-routing-resolve.service';
 import { AutocareclosejobComponent } from './list/autocareclosejob.component';
 import { AutocarejobhistoryComponent } from './history/autocarejob-history.component';
+import { AutocarejobitemissueComponent } from './itemissue/autocarejob-itemissue.component';
 
 const autocarejobRoute: Routes = [
   {
@@ -66,6 +67,15 @@ const autocarejobRoute: Routes = [
   {
     path: ':id/history',
     component: AutocarejobhistoryComponent,
+    resolve: {
+      autocarejob: AutocarejobResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+
+  {
+    path: ':id/itemissue',
+    component: AutocarejobitemissueComponent,
     resolve: {
       autocarejob: AutocarejobResolve,
     },

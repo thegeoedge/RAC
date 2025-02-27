@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -24,6 +24,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit {
   workshopvehiclework: IWorkshopvehiclework | null = null;
   workshopworklist: IWorkshopworklist[] = [];
   selectedworkItems: IWorkshopworklist[] = [];
+  @Input() formData: any;
 
   protected workshopvehicleworkService = inject(WorkshopvehicleworkService);
   protected workshopvehicleworkFormService = inject(WorkshopvehicleworkFormService);

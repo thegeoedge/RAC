@@ -48,6 +48,7 @@ import { WorkshopvehicleworkUpdateComponent } from 'app/entities/workshopvehicle
 import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojobsalesinvoiceservicechargeline/service/autojobsalesinvoiceservicechargeline.service';
 
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
+import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopvehiclework.model';
 
 @Component({
   standalone: true,
@@ -121,6 +122,11 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected vehicletypesService = inject(VehicletypeService);
   protected workshopworklistService = inject(WorkshopworklistService);
 
+  subcategoriesVisible = false; // Controls whether subcategories are shown or hidden
+  toggleSubcategories() {
+    this.subcategoriesVisible = !this.subcategoriesVisible;
+  }
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
 
@@ -130,6 +136,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       if (autocarejob) {
         this.updateForm(autocarejob);
       }
+
       this.loadDataFromOtherEntities();
       this.loadDataFromBrandEntities();
       this.loadDataFromServicesEntities();
@@ -141,9 +148,15 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.loadBillingServiceOptions();
       this.loadBillingServiceOptionValues();
       this.loadDataFromWorkshopWorklistEntities();
+      this.setAutoNextServiceDate();
     });
   }
 
+  setAutoNextServiceDate(): void {
+    const futureDate = dayjs().add(6, 'month').format('YYYY-MM-DD'); // Add 6 months to today
+    this.editForm.patchValue({ nextservicedate: dayjs(futureDate) }); // Update form
+    this.cdr.detectChanges(); // Ensure UI updates
+  }
   previousState(): void {
     window.history.back();
   }
@@ -155,19 +168,59 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   loadBillingServiceOptions(): void {
-    this.billingserviceoptionService.query({ size: 1000 }).subscribe((res: HttpResponse<IBillingserviceoption[]>) => {
-      this.billingserviceoption = res.body || [];
-    });
+    let page = 0;
+    const pageSize = 20;
+    this.billingserviceoption = [];
+
+    const fetchPage = () => {
+      this.billingserviceoptionService.query({ page, size: pageSize }).subscribe(
+        (res: HttpResponse<IBillingserviceoption[]>) => {
+          this.billingserviceoption = [...this.billingserviceoption, ...(res.body || [])];
+
+          const totalItems = res.headers.get('X-Total-Count');
+          const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
+
+          if (this.billingserviceoption.length < totalRecords) {
+            page++;
+            fetchPage();
+          } else {
+          }
+        },
+        error => {},
+      );
+    };
+
+    fetchPage();
   }
 
   billingOptionsByVehicleType: { [key: number]: IBillingserviceoptionvalues[] } = {};
 
   loadBillingServiceOptionValues(): void {
-    this.billingserviceoptionvaluesService.query({ size: 1000 }).subscribe((res: HttpResponse<IBillingserviceoptionvalues[]>) => {
-      this.billingserviceoptionvalues = res.body || [];
-      this.createBillingOptionsLookup(); // Create the lookup object
-      this.filterBillingServiceOptionValues(); // Filter based on the selected vehicle type
-    });
+    let page = 0;
+    const pageSize = 20;
+    this.billingserviceoptionvalues = [];
+
+    const fetchPage = () => {
+      this.billingserviceoptionvaluesService.query({ page, size: pageSize }).subscribe(
+        (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
+          this.billingserviceoptionvalues = [...this.billingserviceoptionvalues, ...(res.body || [])];
+
+          const totalItems = res.headers.get('X-Total-Count');
+          const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
+
+          if (this.billingserviceoptionvalues.length < totalRecords) {
+            page++;
+            fetchPage();
+          } else {
+            this.createBillingOptionsLookup();
+            this.filterBillingServiceOptionValues();
+          }
+        },
+        error => {},
+      );
+    };
+
+    fetchPage();
   }
 
   createBillingOptionsLookup(): void {
@@ -246,17 +299,16 @@ export class AutocarejobInstructionComponent implements OnInit {
 
         // Add the service to serviceArray with the required structure
         this.serviceArray.push({
-          // Assuming the item has an id
-          invoiceid: 0, // Set this value appropriately
-          lineid: nextLineId, // Set this value appropriately
+          invoiceid: 0,
+          lineid: nextLineId,
           optionid: nextOpId,
           servicename: serviceName,
-          servicediscription: '', // Assuming this field exists
+          servicediscription: '',
           value: item.value ?? 0,
-          addedbyid: 0, // Set this value appropriately
-          iscustomersrvice: true, // Set this value appropriately
-          discount: 0, // Assuming this field exists
-          serviceprice: 0, // Assuming this field exists
+          addedbyid: 0,
+          iscustomersrvice: true,
+          discount: 0,
+          serviceprice: 0,
         });
       }
     } else {
@@ -269,16 +321,16 @@ export class AutocarejobInstructionComponent implements OnInit {
 
     this.calculateTotalCharges(); // Ensure this is called
 
-    console.log('Selected Services:', this.selectedServices);
-    console.log('serviceArrayyyyyyyyyyyyyyyy:', this.serviceArray);
+    // console.log('Selected Services:', this.selectedServices);
+    // console.log('serviceArrayyyyyyyyyyyyyyyy:', this.serviceArray);
 
     this.selectedServices.forEach(service => {
-      console.log('Selected Service billingserviceoptionid:', service.billingserviceoptionid);
-      console.log('Service Name:', service.servicename);
+      // console.log('Selected Service billingserviceoptionid:', service.billingserviceoptionid);
+      // console.log('Service Name:', service.servicename);
     });
 
-    const selectedServiceNames = this.selectedServices.map(s => s.servicename);
-    console.log('Selected Service Names:', selectedServiceNames);
+    // const selectedServiceNames = this.selectedServices.map(s => s.servicename);
+    // console.log('Selected Service Names:', selectedServiceNames);
   }
 
   onAmountChange(item: IBillingserviceoptionvalues): void {
@@ -332,20 +384,18 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Add service to selectedcommonServices if not already added
       this.selectedcommonServices.push(service);
 
-      // Add the service to commonServiceArray
       this.commonServiceArray.push({
-        // Assuming 'id' exists in the service
-        invoiceid: 0, // Set appropriately
-        lineid: nextLineId, // Set appropriately
-        optionid: service.id, // Assuming 'optionid' is the same as 'id'
-        mainid: 0, // Set appropriately
-        code: service.code || '', // Set from the service object with default value
-        name: service.name || '', // Set from the service object with default value
-        description: service.description || 'No description', // Default if description is missing
-        value: service.value ?? 0, // Set from the service object with default value
-        addedbyid: 0, // Set appropriately
-        discount: 0, // Default discount value
-        serviceprice: 0, // Default value
+        invoiceid: 0,
+        lineid: nextLineId,
+        optionid: service.id,
+        mainid: 0,
+        code: service.code || '',
+        name: service.name || '',
+        description: service.description || 'No description',
+        value: service.value ?? 0,
+        addedbyid: 0,
+        discount: 0,
+        serviceprice: 0,
       });
     } else {
       // Remove service from selectedcommonServices if unchecked
@@ -488,30 +538,30 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Add the selected item to the list with the required fields and default values
       const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.itemsArray.push({
-        id: 0, // Set a default value
-        itemid: selectedItem.id, // Assuming selectedItem has an 'id' field
-        invocieid: 0, // Set a default value
-        lineid: nextLineId, // Set a default value
-        itemcode: selectedItem.code ?? '', // Assign itemcode from selectedItem with default value
-        itemname: selectedItem.name ?? '', // Assign itemname from selectedItem with default value
-        description: selectedItem.description ?? '', // Assuming selectedItem has a 'description' field
-        unitofmeasurement: selectedItem.unitofmeasurement ?? '', // Provide a default value if undefined or null
-        quantity: 1, // Default quantity
-        itemcost: 0, // Set a default value
-        itemprice: 0, // Assuming selectedItem has 'price' field
-        discount: 0, // Default discount
-        tax: 0, // Assuming selectedItem has 'tax' field
-        sellingprice: selectedItem.lastsellingprice ?? 0, // Assign sellingprice from selectedItem with default value
-        linetotal: 0, // Assuming selectedItem has 'linetotal' field
-        lmu: selectedItem.lmu ?? 0, // Assuming selectedItem has 'lmu' field
-        lmd: selectedItem.lmd ? selectedItem.lmd.toString() : '', // Ensure lmd is a string
-        nbt: false, // Assuming selectedItem has 'nbt' field
-        vat: false, // Assuming selectedItem has 'vat' field
+        id: 0,
+        itemid: selectedItem.id,
+        invocieid: 0,
+        lineid: nextLineId,
+        itemcode: selectedItem.code ?? '',
+        itemname: selectedItem.name ?? '',
+        description: selectedItem.description ?? '',
+        unitofmeasurement: selectedItem.unitofmeasurement ?? '',
+        quantity: 1,
+        itemcost: 0,
+        itemprice: 0,
+        discount: 0,
+        tax: 0,
+        sellingprice: selectedItem.lastsellingprice ?? 0,
+        linetotal: selectedItem.lastsellingprice ?? 0,
+        lmu: selectedItem.lmu ?? 0,
+        lmd: selectedItem.lmd ? selectedItem.lmd.toString() : '',
+        nbt: false,
+        vat: false,
       });
       this.selectedItems.push({
         ...selectedItem,
-        discountPercentage: 0, // Default discount percentage
-        requestedQuantity: 1, // Default requested quantity
+        discountPercentage: 0,
+        requestedQuantity: 1,
       });
       // Clear the search input and suggestions
       (document.getElementById('field_item') as HTMLInputElement).value = '';
@@ -585,8 +635,8 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
   }
 
-  nextmillage: number | null = null; // To store the calculated next millage
-  selectedRadioValue: number | null = null; // To store the selected radio button value
+  nextmillage: number | null = null;
+  selectedRadioValue: number | null = null;
 
   // Handle changes in the millage input field
   onMillageChange(event: Event): void {
@@ -645,15 +695,57 @@ export class AutocarejobInstructionComponent implements OnInit {
     };
   }
 
-  printSummary() {
-    const printContent = document.getElementById('printSummary');
-    const originalContent = document.body.innerHTML;
+  mapFormTowork(formValue: any): IWorkshopvehiclework {
+    return {
+      id: formValue.id || null,
+      jobid: formValue.jobid || null,
+      vehicleid: formValue.vehicleid || null,
+      customerid: formValue.customerid || null,
+      customername: formValue.customername || '',
+      contactno: formValue.contactno || '',
+      vehicleno: formValue.vehicleno || '',
+      vehiclebrand: formValue.vehiclebrand || '',
+      vehiclemodel: formValue.vehiclemodel || '',
+      mileage: formValue.mileage || '',
+      addeddate: formValue.addeddate ? dayjs(formValue.addeddate) : null,
+      iscalltocustomer: formValue.iscalltocustomer || null,
+      remarks: formValue.remarks || '',
+      calldate: formValue.calldate ? dayjs(formValue.calldate) : null,
+      lmu: formValue.lmu || null,
+      lmd: formValue.lmd ? dayjs(formValue.lmd) : null,
+    };
+  }
 
-    if (printContent) {
-      document.body.innerHTML = printContent.innerHTML;
-      window.print();
-      document.body.innerHTML = originalContent;
-      window.location.reload(); // Reload to restore UI
+  printSummary() {
+    const printContents = document.getElementById('printSummary')?.innerHTML;
+    if (!printContents) {
+      console.error('Print section not found!');
+      return;
+    }
+
+    const printWindow = window.open('', '', 'width=800,height=900');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Print Summary</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .table { width: 100%; border-collapse: collapse; }
+            .table th, .table td { border: 1px solid black; padding: 8px; text-align: left; }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .d-flex { display: flex; justify-content: space-between; }
+            .mt-3 { margin-top: 20px; }
+            .border { border: 1px solid black; padding: 10px; }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
   }
 
@@ -661,7 +753,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.isSaving = true;
     let autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
 
-    autocarejob = { ...autocarejob, isjobclose: true, jobclosetime: dayjs() }; // Mark job as closed and set close time
+    autocarejob = { ...autocarejob };
 
     if (autocarejob.id !== null) {
       this.subscribeToSaveResponse(this.autocarejobService.update(autocarejob));
@@ -684,9 +776,9 @@ export class AutocarejobInstructionComponent implements OnInit {
       });
     }
     this.save();
-    // if (this.workshopVehicleWorkListComponent) {
-    //   this.workshopVehicleWorkListComponent.save();
-    // }
+    if (this.workshopVehicleWorkListComponent) {
+      this.workshopVehicleWorkListComponent.save();
+    }
   }
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
@@ -745,8 +837,8 @@ export class AutocarejobInstructionComponent implements OnInit {
             }, index * 500); // 500ms delay per request
           });
 
-          console.log('Updated itemsArray:', this.itemsArray);
-          console.log('arryyyyyyyyyyyyyyyyyyyyay service', this.serviceArray);
+          // console.log('Updated itemsArray:', this.itemsArray);
+          // console.log('arryyyyyyyyyyyyyyyyyyyyay service', this.serviceArray);
           this.onSaveSuccess();
         } else {
           console.error('Save response body is null');
