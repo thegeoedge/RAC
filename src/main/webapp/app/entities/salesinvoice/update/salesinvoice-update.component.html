@@ -1,6 +1,29 @@
-<div justify-content-right class="row">
-  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-    <h2 id="jhi-sales-invoice-heading" data-cy="SalesInvoiceCreateUpdateHeading">Sales Invoice</h2>
+<style>
+  .full-width-form {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .full-width-form .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  .full-width-form .row {
+    margin: 0;
+  }
+  .full-width-form .col-md-4, .full-width-form .col-md-6, .full-width-form .col-12 {
+    padding: 10px;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+<div justify-content-right class="row full-width-form">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="full-width-form">
+    <h2 id="jhi-sales-invoice-heading" data-cy="SalesInvoiceCreateUpdateHeading" class="p-3">Sales Invoice</h2>
 
     <jhi-alert-error></jhi-alert-error>
 
@@ -11,19 +34,19 @@
       </div>
     }
     <div class="container">
-      <div class="row">
+      <div class="row d-flex align-items-stretch">
         <!-- Customer Details Container -->
         <div class="col-md-4">
-          <div class="p-2 border rounded bg-light">
-            <h6 class="mb-2">Customer Details</h6>
+          <div class="p-2 border rounded bg-light h-100">
+            <h6 class="fw-bold text-primary">Customer Details</h6>
             <div class="mb-2">
               <label class="form-label" for="field_customerName">Customer Name</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                name="customername"
-                id="field_customername"
-                formControlName="customername"
+                name="customerName"
+                id="field_customerName"
+                formControlName="customerName"
               />
             </div>
             <div class="mb-2">
@@ -33,29 +56,29 @@
                 class="form-control form-control-sm"
                 name="amountOwing"
                 id="field_amountOwing"
-                formControlName="amountowing"
+                formControlName="amountOwing"
               />
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_vehicleNo">Vehicle No</label>
-              <input type="text" class="form-control form-control-sm" name="vehicleno" id="field_vehicleno" formControlName="vehicleno" />
+              <input type="text" class="form-control form-control-sm" name="vehicleNo" id="field_vehicleNo" formControlName="vehicleNo" />
             </div>
             <div class="mb-2">
-              <label class="form-label" for="field_invoicedate">Invoice Date</label>
+              <label class="form-label" for="field_invoiceDate">Invoice Date</label>
               <input
                 type="datetime-local"
                 class="form-control form-control-sm"
-                id="field_invoicedate"
-                name="invoicedate"
-                formControlName="invoicedate"
+                id="field_invoiceDate"
+                name="invoiceDate"
+                formControlName="invoiceDate"
               />
             </div>
           </div>
         </div>
 
         <div class="col-md-4">
-          <div class="p-2 border rounded bg-light">
-            <h6 class="mb-2">Item Details</h6>
+          <div class="p-2 border rounded bg-light h-100">
+            <h6 class="fw-bold text-primary">Item Details</h6>
             <div class="row">
               <!-- Left Column -->
               <div class="col-md-6">
@@ -65,7 +88,7 @@
                     type="text"
                     class="form-control form-control-sm"
                     id="field_code"
-                    formControlName="itemcode"
+                    formControlName="itemCode"
                     (input)="onItemCodeInput($event, i)"
                     (change)="onItemCodeSelect($event, i)"
                     [attr.list]="'autocomplete' + i"
@@ -94,7 +117,7 @@
               <div class="col-md-6">
                 <div class="mb-2">
                   <label class="form-label" for="field_buyQty">Buy Quantity</label>
-                  <input type="number" class="form-control form-control-sm" id="field_buyQty" (input)="onBuyQtyChange($event)" />
+                  <input type="number" class="form-control form-control-sm" id="field_buyQty" />
                 </div>
                 <div class="mb-2">
                   <label class="form-label me-2">Discount Option</label>
@@ -111,31 +134,31 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-primary" (click)="onAddItem()">Add Item</button>
+            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer" (click)="onAddItem()">Add Item</button>
           </div>
         </div>
 
         <!-- Final Payments Container -->
         <div class="col-md-4">
-          <div class="p-2 border rounded bg-light style= width: 355px;">
-            <h6 class="mb-2">Final Payments</h6>
-            <div class="row">
+          <div class="p-2 border rounded bg-light h-100">
+            <h6 class="fw-bold text-primary">Final Payments</h6>
+            <div class="row gx-3">
               <!-- Left Column -->
               <div class="col-md-6">
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label me-2" for="field_subTotal">Sub Total</label>
                   <input
                     type="number"
                     class="form-control form-control-sm"
                     name="subTotal"
                     id="field_subTotal"
-                    formControlName="subtotal"
+                    formControlName="subTotal"
                   />
                 </div>
 
-                <div class="mb-2">
-                  <label class="form-label me-2">Discount Option</label>
-                  <div>
+                <div class="mb-3">
+                  <label class="form-label">Discount Option</label>
+                  <div class="d-flex gap-2 align-items-center">
                     <input
                       type="radio"
                       name="discountOption"
@@ -158,8 +181,8 @@
                   </div>
                 </div>
 
-                <div class="mb-2">
-                  <label class="form-label me-2" for="field_valueDiscount">Discount Value</label>
+                <div class="mb-3">
+                  <label class="form-label" for="field_valueDiscount">Discount Value</label>
                   <input
                     type="number"
                     class="form-control form-control-sm"
@@ -174,61 +197,60 @@
 
               <!-- Right Column -->
               <div class="col-md-6">
-                <div class="row">
-                  <div class="col-md-6 mb-2">
-                    <label class="form-label me-2" for="field_nbtAmount">NBT</label>
+                <div class="row gx-2">
+                  <div class="col-6 mb-3">
+                    <label class="form-label" for="field_nbtAmount">NBT</label>
                     <input
                       type="number"
                       class="form-control form-control-sm"
                       name="nbtAmount"
                       id="field_nbtAmount"
-                      formControlName="nbtamount"
+                      formControlName="nbtAmount"
                     />
                   </div>
 
-                  <div class="col-md-6 mb-2">
-                    <label class="form-label me-2" for="field_vatAmount">VAT</label>
+                  <div class="col-6 mb-3">
+                    <label class="form-label" for="field_vatAmount">VAT</label>
                     <input
                       type="number"
                       class="form-control form-control-sm"
                       name="vatAmount"
                       id="field_vatAmount"
-                      formControlName="vatamount"
+                      formControlName="vatAmount"
                     />
                   </div>
                 </div>
 
-                <div class="mb-2">
-                  <label class="form-label me-2" for="field_totalTax">Tax</label>
+                <div class="mb-3">
+                  <label class="form-label" for="field_totalTax">Tax</label>
                   <input
                     type="number"
                     class="form-control form-control-sm"
                     name="totalTax"
                     id="field_totalTax"
-                    formControlName="totaltax"
+                    formControlName="totalTax"
                   />
                 </div>
 
-                <div class="mb-2">
+                <div class="mb-3">
                   <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="tax" id="field_tax" formControlName="totaltax" />
+                    <input type="checkbox" class="form-check-input" name="tax" id="field_tax" formControlName="totalTax" />
                     <label class="form-check-label" for="field_tax">Apply Tax</label>
                   </div>
                 </div>
 
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label me-2" for="field_netTotal">Net Total</label>
                   <input
                     type="number"
                     class="form-control form-control-sm"
                     name="netTotal"
                     id="field_netTotal"
-                    formControlName="nettotal"
+                    formControlName="netTotal"
                   />
                 </div>
               </div>
             </div>
-            <app-receipt-modal></app-receipt-modal>
           </div>
         </div>
       </div>
@@ -285,19 +307,16 @@
               <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
                 <jhi-sales-invoice-lines-update
                   [selectedItem]="selectedItem"
-                  [fetchedItems]="fetchedItems"
                   (totalUpdated)="receiveTotal($event, 'child1')"
                 ></jhi-sales-invoice-lines-update>
               </div>
               <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab">
                 <jhi-sales-invoice-service-charge-line-update
                   (totalUpdated)="receiveTotal($event, 'child2')"
-                  [fetchedServices]="fetchedServices"
                 ></jhi-sales-invoice-service-charge-line-update>
               </div>
               <div class="tab-pane fade" id="common-charges" role="tabpanel" aria-labelledby="common-charges-tab">
                 <jhi-sale-invoice-common-service-charge-update
-                  [fetchedServicesCommon]="fetchedServicesCommon"
                   (totalUpdated)="receiveTotal($event, 'child3')"
                 ></jhi-sale-invoice-common-service-charge-update>
               </div>

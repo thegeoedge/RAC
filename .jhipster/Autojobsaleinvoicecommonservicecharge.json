@@ -49,10 +49,8 @@
       "fieldType": "Float"
     }
   ],
-  "jpaMetamodelFiltering": true,
   "name": "Autojobsaleinvoicecommonservicecharge",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "searchEngine": "no"
 }

@@ -105,7 +105,5 @@ public class SalesinvoiceAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertSalesinvoiceUpdatableRelationshipsEquals(Salesinvoice expected, Salesinvoice actual) {
-        // empty method
-    }
+    public static void assertSalesinvoiceUpdatableRelationshipsEquals(Salesinvoice expected, Salesinvoice actual) {}
 }

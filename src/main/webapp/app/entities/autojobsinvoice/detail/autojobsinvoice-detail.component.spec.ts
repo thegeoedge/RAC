@@ -17,7 +17,7 @@ describe('Autojobsinvoice Management Detail Component', () => {
           [
             {
               path: '**',
-              loadComponent: () => import('./autojobsinvoice-detail.component').then(m => m.AutojobsinvoiceDetailComponent),
+              component: AutojobsinvoiceDetailComponent,
               resolve: { autojobsinvoice: () => of({ id: 123 }) },
             },
           ],

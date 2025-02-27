@@ -85,7 +85,5 @@ public class AutojobsinvoiceAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertAutojobsinvoiceUpdatableRelationshipsEquals(Autojobsinvoice expected, Autojobsinvoice actual) {
-        // empty method
-    }
+    public static void assertAutojobsinvoiceUpdatableRelationshipsEquals(Autojobsinvoice expected, Autojobsinvoice actual) {}
 }

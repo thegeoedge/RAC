@@ -77,10 +77,8 @@
       "fieldType": "Boolean"
     }
   ],
-  "jpaMetamodelFiltering": true,
   "name": "Autojobsinvoicelines",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "searchEngine": "no"
 }

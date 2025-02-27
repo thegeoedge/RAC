@@ -37,9 +37,7 @@
       "fieldType": "Float"
     }
   ],
-  "jpaMetamodelFiltering": true,
   "name": "SaleInvoiceCommonServiceChargeDummy",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "searchEngine": "no"
 }

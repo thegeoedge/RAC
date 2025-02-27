@@ -2,9 +2,6 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsinvoicelines;
 import com.heavenscode.rac.repository.AutojobsinvoicelinesRepository;
-import com.heavenscode.rac.service.AutojobsinvoicelinesQueryService;
-import com.heavenscode.rac.service.AutojobsinvoicelinesService;
-import com.heavenscode.rac.service.criteria.AutojobsinvoicelinesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -18,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -29,6 +27,7 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/autojobsinvoicelines")
+@Transactional
 public class AutojobsinvoicelinesResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsinvoicelinesResource.class);
@@ -38,20 +37,10 @@ public class AutojobsinvoicelinesResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final AutojobsinvoicelinesService autojobsinvoicelinesService;
-
     private final AutojobsinvoicelinesRepository autojobsinvoicelinesRepository;
 
-    private final AutojobsinvoicelinesQueryService autojobsinvoicelinesQueryService;
-
-    public AutojobsinvoicelinesResource(
-        AutojobsinvoicelinesService autojobsinvoicelinesService,
-        AutojobsinvoicelinesRepository autojobsinvoicelinesRepository,
-        AutojobsinvoicelinesQueryService autojobsinvoicelinesQueryService
-    ) {
-        this.autojobsinvoicelinesService = autojobsinvoicelinesService;
+    public AutojobsinvoicelinesResource(AutojobsinvoicelinesRepository autojobsinvoicelinesRepository) {
         this.autojobsinvoicelinesRepository = autojobsinvoicelinesRepository;
-        this.autojobsinvoicelinesQueryService = autojobsinvoicelinesQueryService;
     }
 
     /**
@@ -68,7 +57,7 @@ public class AutojobsinvoicelinesResource {
         if (autojobsinvoicelines.getId() != null) {
             throw new BadRequestAlertException("A new autojobsinvoicelines cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        autojobsinvoicelines = autojobsinvoicelinesService.save(autojobsinvoicelines);
+        autojobsinvoicelines = autojobsinvoicelinesRepository.save(autojobsinvoicelines);
         return ResponseEntity.created(new URI("/api/autojobsinvoicelines/" + autojobsinvoicelines.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString()))
             .body(autojobsinvoicelines);
@@ -101,7 +90,7 @@ public class AutojobsinvoicelinesResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        autojobsinvoicelines = autojobsinvoicelinesService.update(autojobsinvoicelines);
+        autojobsinvoicelines = autojobsinvoicelinesRepository.save(autojobsinvoicelines);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString()))
             .body(autojobsinvoicelines);
@@ -135,7 +124,67 @@ public class AutojobsinvoicelinesResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Autojobsinvoicelines> result = autojobsinvoicelinesService.partialUpdate(autojobsinvoicelines);
+        Optional<Autojobsinvoicelines> result = autojobsinvoicelinesRepository
+            .findById(autojobsinvoicelines.getId())
+            .map(existingAutojobsinvoicelines -> {
+                if (autojobsinvoicelines.getInvocieid() != null) {
+                    existingAutojobsinvoicelines.setInvocieid(autojobsinvoicelines.getInvocieid());
+                }
+                if (autojobsinvoicelines.getLineid() != null) {
+                    existingAutojobsinvoicelines.setLineid(autojobsinvoicelines.getLineid());
+                }
+                if (autojobsinvoicelines.getItemid() != null) {
+                    existingAutojobsinvoicelines.setItemid(autojobsinvoicelines.getItemid());
+                }
+                if (autojobsinvoicelines.getItemcode() != null) {
+                    existingAutojobsinvoicelines.setItemcode(autojobsinvoicelines.getItemcode());
+                }
+                if (autojobsinvoicelines.getItemname() != null) {
+                    existingAutojobsinvoicelines.setItemname(autojobsinvoicelines.getItemname());
+                }
+                if (autojobsinvoicelines.getDescription() != null) {
+                    existingAutojobsinvoicelines.setDescription(autojobsinvoicelines.getDescription());
+                }
+                if (autojobsinvoicelines.getUnitofmeasurement() != null) {
+                    existingAutojobsinvoicelines.setUnitofmeasurement(autojobsinvoicelines.getUnitofmeasurement());
+                }
+                if (autojobsinvoicelines.getQuantity() != null) {
+                    existingAutojobsinvoicelines.setQuantity(autojobsinvoicelines.getQuantity());
+                }
+                if (autojobsinvoicelines.getItemcost() != null) {
+                    existingAutojobsinvoicelines.setItemcost(autojobsinvoicelines.getItemcost());
+                }
+                if (autojobsinvoicelines.getItemprice() != null) {
+                    existingAutojobsinvoicelines.setItemprice(autojobsinvoicelines.getItemprice());
+                }
+                if (autojobsinvoicelines.getDiscount() != null) {
+                    existingAutojobsinvoicelines.setDiscount(autojobsinvoicelines.getDiscount());
+                }
+                if (autojobsinvoicelines.getTax() != null) {
+                    existingAutojobsinvoicelines.setTax(autojobsinvoicelines.getTax());
+                }
+                if (autojobsinvoicelines.getSellingprice() != null) {
+                    existingAutojobsinvoicelines.setSellingprice(autojobsinvoicelines.getSellingprice());
+                }
+                if (autojobsinvoicelines.getLinetotal() != null) {
+                    existingAutojobsinvoicelines.setLinetotal(autojobsinvoicelines.getLinetotal());
+                }
+                if (autojobsinvoicelines.getLmu() != null) {
+                    existingAutojobsinvoicelines.setLmu(autojobsinvoicelines.getLmu());
+                }
+                if (autojobsinvoicelines.getLmd() != null) {
+                    existingAutojobsinvoicelines.setLmd(autojobsinvoicelines.getLmd());
+                }
+                if (autojobsinvoicelines.getNbt() != null) {
+                    existingAutojobsinvoicelines.setNbt(autojobsinvoicelines.getNbt());
+                }
+                if (autojobsinvoicelines.getVat() != null) {
+                    existingAutojobsinvoicelines.setVat(autojobsinvoicelines.getVat());
+                }
+
+                return existingAutojobsinvoicelines;
+            })
+            .map(autojobsinvoicelinesRepository::save);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -147,31 +196,16 @@ public class AutojobsinvoicelinesResource {
      * {@code GET  /autojobsinvoicelines} : get all the autojobsinvoicelines.
      *
      * @param pageable the pagination information.
-     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Autojobsinvoicelines>> getAllAutojobsinvoicelines(
-        AutojobsinvoicelinesCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get Autojobsinvoicelines by criteria: {}", criteria);
-
-        Page<Autojobsinvoicelines> page = autojobsinvoicelinesQueryService.findByCriteria(criteria, pageable);
+        LOG.debug("REST request to get a page of Autojobsinvoicelines");
+        Page<Autojobsinvoicelines> page = autojobsinvoicelinesRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /autojobsinvoicelines/count} : count all the autojobsinvoicelines.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
-    @GetMapping("/count")
-    public ResponseEntity<Long> countAutojobsinvoicelines(AutojobsinvoicelinesCriteria criteria) {
-        LOG.debug("REST request to count Autojobsinvoicelines by criteria: {}", criteria);
-        return ResponseEntity.ok().body(autojobsinvoicelinesQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -183,7 +217,7 @@ public class AutojobsinvoicelinesResource {
     @GetMapping("/{id}")
     public ResponseEntity<Autojobsinvoicelines> getAutojobsinvoicelines(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Autojobsinvoicelines : {}", id);
-        Optional<Autojobsinvoicelines> autojobsinvoicelines = autojobsinvoicelinesService.findOne(id);
+        Optional<Autojobsinvoicelines> autojobsinvoicelines = autojobsinvoicelinesRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(autojobsinvoicelines);
     }
 
@@ -196,7 +230,7 @@ public class AutojobsinvoicelinesResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutojobsinvoicelines(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Autojobsinvoicelines : {}", id);
-        autojobsinvoicelinesService.delete(id);
+        autojobsinvoicelinesRepository.deleteById(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

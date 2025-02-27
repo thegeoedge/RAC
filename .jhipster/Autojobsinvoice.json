@@ -125,10 +125,8 @@
       "fieldType": "Integer"
     }
   ],
-  "jpaMetamodelFiltering": true,
   "name": "Autojobsinvoice",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "searchEngine": "no"
 }

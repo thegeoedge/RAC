@@ -61,7 +61,7 @@ export class PrintinvoiceComponent implements OnInit {
     });
   }
   getSalesSercolines(id: number): void {
-    this.salesInvoiceDummyService.fetchServiceCommondummy(id).subscribe({
+    this.salesInvoiceDummyService.fetchServiceCommon(id).subscribe({
       next: response => {
         console.log('Sales Service common Data:', response.body);
       },

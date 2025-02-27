@@ -32,7 +32,6 @@ describe('SaleInvoiceCommonServiceChargeDummy Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             ),
             snapshot: {
@@ -41,7 +40,6 @@ describe('SaleInvoiceCommonServiceChargeDummy Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
           },

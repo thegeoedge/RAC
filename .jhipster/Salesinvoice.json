@@ -205,10 +205,8 @@
       "fieldType": "String"
     }
   ],
-  "jpaMetamodelFiltering": true,
   "name": "Salesinvoice",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "searchEngine": "no"
 }

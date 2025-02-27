@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -80,13 +80,6 @@ export class AutojobsinvoiceService {
 
   compareAutojobsinvoice(o1: Pick<IAutojobsinvoice, 'id'> | null, o2: Pick<IAutojobsinvoice, 'id'> | null): boolean {
     return o1 && o2 ? this.getAutojobsinvoiceIdentifier(o1) === this.getAutojobsinvoiceIdentifier(o2) : o1 === o2;
-  }
-
-  findJobInvoicesByCustomerName(customerName: string): Observable<EntityArrayResponseType> {
-    const options = createRequestOption({ 'customername.equals': customerName, page: 0, size: 20 });
-    return this.http
-      .get<RestAutojobsinvoice[]>('http://localhost:9000/api/autojobsinvoices', { params: options, observe: 'response' })
-      .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
   addAutojobsinvoiceToCollectionIfMissing<Type extends Pick<IAutojobsinvoice, 'id'>>(

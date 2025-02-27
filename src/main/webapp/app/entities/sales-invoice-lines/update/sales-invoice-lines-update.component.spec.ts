@@ -16,7 +16,7 @@ describe('SalesInvoiceLines Management Update Component', () => {
   let activatedRoute: ActivatedRoute;
   let salesInvoiceLinesFormService: SalesInvoiceLinesFormService;
   let salesInvoiceLinesService: SalesInvoiceLinesService;
- 
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SalesInvoiceLinesUpdateComponent],

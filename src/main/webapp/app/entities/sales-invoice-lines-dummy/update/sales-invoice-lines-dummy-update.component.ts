@@ -13,7 +13,7 @@ import { SalesInvoiceLinesDummyService } from '../service/sales-invoice-lines-du
 import { SalesInvoiceLinesDummyFormService } from './sales-invoice-lines-dummy-form.service';
 import CommonModule from 'app/shared/shared.module';
 
-@Component({ 
+@Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-dummy-update',
   templateUrl: './sales-invoice-lines-dummy-update.component.html',

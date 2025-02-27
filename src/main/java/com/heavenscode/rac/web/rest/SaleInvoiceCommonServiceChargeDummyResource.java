@@ -2,9 +2,6 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.SaleInvoiceCommonServiceChargeDummy;
 import com.heavenscode.rac.repository.SaleInvoiceCommonServiceChargeDummyRepository;
-import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeDummyQueryService;
-import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeDummyService;
-import com.heavenscode.rac.service.criteria.SaleInvoiceCommonServiceChargeDummyCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -24,6 +22,7 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/sale-invoice-common-service-charge-dummies")
+@Transactional
 public class SaleInvoiceCommonServiceChargeDummyResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(SaleInvoiceCommonServiceChargeDummyResource.class);
@@ -33,20 +32,12 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final SaleInvoiceCommonServiceChargeDummyService saleInvoiceCommonServiceChargeDummyService;
-
     private final SaleInvoiceCommonServiceChargeDummyRepository saleInvoiceCommonServiceChargeDummyRepository;
 
-    private final SaleInvoiceCommonServiceChargeDummyQueryService saleInvoiceCommonServiceChargeDummyQueryService;
-
     public SaleInvoiceCommonServiceChargeDummyResource(
-        SaleInvoiceCommonServiceChargeDummyService saleInvoiceCommonServiceChargeDummyService,
-        SaleInvoiceCommonServiceChargeDummyRepository saleInvoiceCommonServiceChargeDummyRepository,
-        SaleInvoiceCommonServiceChargeDummyQueryService saleInvoiceCommonServiceChargeDummyQueryService
+        SaleInvoiceCommonServiceChargeDummyRepository saleInvoiceCommonServiceChargeDummyRepository
     ) {
-        this.saleInvoiceCommonServiceChargeDummyService = saleInvoiceCommonServiceChargeDummyService;
         this.saleInvoiceCommonServiceChargeDummyRepository = saleInvoiceCommonServiceChargeDummyRepository;
-        this.saleInvoiceCommonServiceChargeDummyQueryService = saleInvoiceCommonServiceChargeDummyQueryService;
     }
 
     /**
@@ -68,7 +59,7 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
                 "idexists"
             );
         }
-        saleInvoiceCommonServiceChargeDummy = saleInvoiceCommonServiceChargeDummyService.save(saleInvoiceCommonServiceChargeDummy);
+        saleInvoiceCommonServiceChargeDummy = saleInvoiceCommonServiceChargeDummyRepository.save(saleInvoiceCommonServiceChargeDummy);
         return ResponseEntity.created(
             new URI("/api/sale-invoice-common-service-charge-dummies/" + saleInvoiceCommonServiceChargeDummy.getId())
         )
@@ -110,7 +101,7 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        saleInvoiceCommonServiceChargeDummy = saleInvoiceCommonServiceChargeDummyService.update(saleInvoiceCommonServiceChargeDummy);
+        saleInvoiceCommonServiceChargeDummy = saleInvoiceCommonServiceChargeDummyRepository.save(saleInvoiceCommonServiceChargeDummy);
         return ResponseEntity.ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(
@@ -155,9 +146,37 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<SaleInvoiceCommonServiceChargeDummy> result = saleInvoiceCommonServiceChargeDummyService.partialUpdate(
-            saleInvoiceCommonServiceChargeDummy
-        );
+        Optional<SaleInvoiceCommonServiceChargeDummy> result = saleInvoiceCommonServiceChargeDummyRepository
+            .findById(saleInvoiceCommonServiceChargeDummy.getId())
+            .map(existingSaleInvoiceCommonServiceChargeDummy -> {
+                if (saleInvoiceCommonServiceChargeDummy.getInvoiceid() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setInvoiceid(saleInvoiceCommonServiceChargeDummy.getInvoiceid());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getLineid() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setLineid(saleInvoiceCommonServiceChargeDummy.getLineid());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getOptionid() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setOptionid(saleInvoiceCommonServiceChargeDummy.getOptionid());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getMainid() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setMainid(saleInvoiceCommonServiceChargeDummy.getMainid());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getCode() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setCode(saleInvoiceCommonServiceChargeDummy.getCode());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getName() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setName(saleInvoiceCommonServiceChargeDummy.getName());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getDescription() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setDescription(saleInvoiceCommonServiceChargeDummy.getDescription());
+                }
+                if (saleInvoiceCommonServiceChargeDummy.getValue() != null) {
+                    existingSaleInvoiceCommonServiceChargeDummy.setValue(saleInvoiceCommonServiceChargeDummy.getValue());
+                }
+
+                return existingSaleInvoiceCommonServiceChargeDummy;
+            })
+            .map(saleInvoiceCommonServiceChargeDummyRepository::save);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -168,29 +187,12 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
     /**
      * {@code GET  /sale-invoice-common-service-charge-dummies} : get all the saleInvoiceCommonServiceChargeDummies.
      *
-     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of saleInvoiceCommonServiceChargeDummies in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<SaleInvoiceCommonServiceChargeDummy>> getAllSaleInvoiceCommonServiceChargeDummies(
-        SaleInvoiceCommonServiceChargeDummyCriteria criteria
-    ) {
-        LOG.debug("REST request to get SaleInvoiceCommonServiceChargeDummies by criteria: {}", criteria);
-
-        List<SaleInvoiceCommonServiceChargeDummy> entityList = saleInvoiceCommonServiceChargeDummyQueryService.findByCriteria(criteria);
-        return ResponseEntity.ok().body(entityList);
-    }
-
-    /**
-     * {@code GET  /sale-invoice-common-service-charge-dummies/count} : count all the saleInvoiceCommonServiceChargeDummies.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
-    @GetMapping("/count")
-    public ResponseEntity<Long> countSaleInvoiceCommonServiceChargeDummies(SaleInvoiceCommonServiceChargeDummyCriteria criteria) {
-        LOG.debug("REST request to count SaleInvoiceCommonServiceChargeDummies by criteria: {}", criteria);
-        return ResponseEntity.ok().body(saleInvoiceCommonServiceChargeDummyQueryService.countByCriteria(criteria));
+    public List<SaleInvoiceCommonServiceChargeDummy> getAllSaleInvoiceCommonServiceChargeDummies() {
+        LOG.debug("REST request to get all SaleInvoiceCommonServiceChargeDummies");
+        return saleInvoiceCommonServiceChargeDummyRepository.findAll();
     }
 
     /**
@@ -203,7 +205,7 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
     public ResponseEntity<SaleInvoiceCommonServiceChargeDummy> getSaleInvoiceCommonServiceChargeDummy(@PathVariable("id") Long id) {
         LOG.debug("REST request to get SaleInvoiceCommonServiceChargeDummy : {}", id);
         Optional<SaleInvoiceCommonServiceChargeDummy> saleInvoiceCommonServiceChargeDummy =
-            saleInvoiceCommonServiceChargeDummyService.findOne(id);
+            saleInvoiceCommonServiceChargeDummyRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(saleInvoiceCommonServiceChargeDummy);
     }
 
@@ -216,7 +218,7 @@ public class SaleInvoiceCommonServiceChargeDummyResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSaleInvoiceCommonServiceChargeDummy(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete SaleInvoiceCommonServiceChargeDummy : {}", id);
-        saleInvoiceCommonServiceChargeDummyService.delete(id);
+        saleInvoiceCommonServiceChargeDummyRepository.deleteById(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

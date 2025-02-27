@@ -1,4 +1,5 @@
-<div class="d-flex justify-content-center">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="d-flex justify-content">
   <div class="col-8">
     <form name="editForm" novalidate [formGroup]="editForm">
       <h2 id="jhi-sale-invoice-common-service-charge-heading" data-cy="SaleInvoiceCommonServiceChargeCreateUpdateHeading">
@@ -108,7 +109,7 @@
                 />
               </td>
               <td>
-                <button type="button" class="btn btn-danger" (click)="removeServiceChargeDummy(i)">Remove</button>
+                <button  class="btn btn-danger" (click)="removeServiceChargeDummy(i)"><i class="fas fa-trash fs-5"></i></button>
               </td>
             </tr>
           </tbody>

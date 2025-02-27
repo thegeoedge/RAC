@@ -19,4 +19,3 @@ entity Autojobsinvoicelines {
     vat Boolean
 }
 paginate * with pagination
-filter all

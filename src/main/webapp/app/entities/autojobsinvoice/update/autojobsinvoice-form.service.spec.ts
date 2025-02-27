@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithNewData, sampleWithRequiredData } from '../autojobsinvoice.test-samples';
+import { sampleWithRequiredData, sampleWithNewData } from '../autojobsinvoice.test-samples';
 
 import { AutojobsinvoiceFormService } from './autojobsinvoice-form.service';
 

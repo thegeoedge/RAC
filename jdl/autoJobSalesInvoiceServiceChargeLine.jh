@@ -11,4 +11,3 @@ entity Autojobsalesinvoiceservicechargeline {
     serviceprice Float
 }
 paginate * with pagination
-filter all

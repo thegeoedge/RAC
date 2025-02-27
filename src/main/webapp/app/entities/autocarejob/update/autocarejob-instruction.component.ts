@@ -645,6 +645,23 @@ export class AutocarejobInstructionComponent implements OnInit {
     };
   }
 
+  mapFormToAutojobsaleinvoicecommonservicecharge(formValue: any): IAutojobsaleinvoicecommonservicecharge {
+    return {
+      id: formValue.id || null,
+      invoiceid: formValue.invoiceid || 0,
+      lineid: formValue.lineid || 0,
+      optionid: formValue.optionid || 0,
+      mainid: formValue.mainid || 0,
+      code: formValue.code || '',
+      name: formValue.name || '',
+      description: formValue.description || '',
+      value: formValue.value || 0,
+      addedbyid: formValue.addedbyid || 0,
+      discount: formValue.discount || 0,
+      serviceprice: formValue.serviceprice || 0,
+    };
+  }
+
   printSummary() {
     const printContent = document.getElementById('printSummary');
     const originalContent = document.body.innerHTML;
@@ -686,6 +703,15 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.save();
     // if (this.workshopVehicleWorkListComponent) {
     //   this.workshopVehicleWorkListComponent.save();
+    // }
+    // if (this.autojobsaleinvoicecommonservicechargeComponent) {
+    //   this.autojobsaleinvoicecommonservicechargeComponent.save();
+    // }
+    // if (this.autojobsinvoicelinesComponent) {
+    //   this.autojobsinvoicelinesComponent.save();
+    // }
+    // if (this.autojobsalesinvoiceservicechargelineComponent) {
+    //   this.autojobsalesinvoiceservicechargelineComponent.save();
     // }
   }
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
@@ -747,7 +773,6 @@ export class AutocarejobInstructionComponent implements OnInit {
 
           console.log('Updated itemsArray:', this.itemsArray);
           console.log('arryyyyyyyyyyyyyyyyyyyyay service', this.serviceArray);
-          this.onSaveSuccess();
         } else {
           console.error('Save response body is null');
         }
@@ -756,9 +781,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
-  }
+  //protected onSaveSuccess(): void {
+  //  this.previousState();
+  // }
 
   protected onSaveError(): void {
     // Api for inheritance.

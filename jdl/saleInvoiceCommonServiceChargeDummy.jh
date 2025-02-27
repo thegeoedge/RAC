@@ -9,4 +9,3 @@ entity SaleInvoiceCommonServiceChargeDummy {
   description String,
   value Float
 }
-filter all

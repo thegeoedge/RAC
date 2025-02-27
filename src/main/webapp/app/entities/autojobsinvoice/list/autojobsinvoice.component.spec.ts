@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, fakeAsync, inject, tick } from '@angular/core/testing';
-import { HttpHeaders, HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { sampleWithRequiredData } from '../autojobsinvoice.test-samples';
@@ -18,9 +19,8 @@ describe('Autojobsinvoice Management Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [AutojobsinvoiceComponent],
+      imports: [HttpClientTestingModule, AutojobsinvoiceComponent],
       providers: [
-        provideHttpClient(),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -32,7 +32,6 @@ describe('Autojobsinvoice Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             ),
             snapshot: {
@@ -41,7 +40,6 @@ describe('Autojobsinvoice Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
           },
@@ -93,7 +91,7 @@ describe('Autojobsinvoice Management Component', () => {
     it('Should forward to autojobsinvoiceService', () => {
       const entity = { id: 123 };
       jest.spyOn(service, 'getAutojobsinvoiceIdentifier');
-      const id = comp.trackId(entity);
+      const id = comp.trackId(0, entity);
       expect(service.getAutojobsinvoiceIdentifier).toHaveBeenCalledWith(entity);
       expect(id).toBe(entity.id);
     });
@@ -128,14 +126,6 @@ describe('Autojobsinvoice Management Component', () => {
 
     // THEN
     expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ sort: ['id,desc'] }));
-  });
-
-  it('should calculate the filter attribute', () => {
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
-    expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] }));
   });
 
   describe('delete', () => {

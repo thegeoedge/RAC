@@ -2,9 +2,6 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsaleinvoicecommonservicecharge;
 import com.heavenscode.rac.repository.AutojobsaleinvoicecommonservicechargeRepository;
-import com.heavenscode.rac.service.AutojobsaleinvoicecommonservicechargeQueryService;
-import com.heavenscode.rac.service.AutojobsaleinvoicecommonservicechargeService;
-import com.heavenscode.rac.service.criteria.AutojobsaleinvoicecommonservicechargeCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -18,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -29,6 +27,7 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/autojobsaleinvoicecommonservicecharges")
+@Transactional
 public class AutojobsaleinvoicecommonservicechargeResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsaleinvoicecommonservicechargeResource.class);
@@ -38,20 +37,12 @@ public class AutojobsaleinvoicecommonservicechargeResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final AutojobsaleinvoicecommonservicechargeService autojobsaleinvoicecommonservicechargeService;
-
     private final AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository;
 
-    private final AutojobsaleinvoicecommonservicechargeQueryService autojobsaleinvoicecommonservicechargeQueryService;
-
     public AutojobsaleinvoicecommonservicechargeResource(
-        AutojobsaleinvoicecommonservicechargeService autojobsaleinvoicecommonservicechargeService,
-        AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository,
-        AutojobsaleinvoicecommonservicechargeQueryService autojobsaleinvoicecommonservicechargeQueryService
+        AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository
     ) {
-        this.autojobsaleinvoicecommonservicechargeService = autojobsaleinvoicecommonservicechargeService;
         this.autojobsaleinvoicecommonservicechargeRepository = autojobsaleinvoicecommonservicechargeRepository;
-        this.autojobsaleinvoicecommonservicechargeQueryService = autojobsaleinvoicecommonservicechargeQueryService;
     }
 
     /**
@@ -73,7 +64,7 @@ public class AutojobsaleinvoicecommonservicechargeResource {
                 "idexists"
             );
         }
-        autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeService.save(autojobsaleinvoicecommonservicecharge);
+        autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeRepository.save(autojobsaleinvoicecommonservicecharge);
         return ResponseEntity.created(
             new URI("/api/autojobsaleinvoicecommonservicecharges/" + autojobsaleinvoicecommonservicecharge.getId())
         )
@@ -115,7 +106,7 @@ public class AutojobsaleinvoicecommonservicechargeResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeService.update(autojobsaleinvoicecommonservicecharge);
+        autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeRepository.save(autojobsaleinvoicecommonservicecharge);
         return ResponseEntity.ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(
@@ -160,9 +151,46 @@ public class AutojobsaleinvoicecommonservicechargeResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Autojobsaleinvoicecommonservicecharge> result = autojobsaleinvoicecommonservicechargeService.partialUpdate(
-            autojobsaleinvoicecommonservicecharge
-        );
+        Optional<Autojobsaleinvoicecommonservicecharge> result = autojobsaleinvoicecommonservicechargeRepository
+            .findById(autojobsaleinvoicecommonservicecharge.getId())
+            .map(existingAutojobsaleinvoicecommonservicecharge -> {
+                if (autojobsaleinvoicecommonservicecharge.getInvoiceid() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setInvoiceid(autojobsaleinvoicecommonservicecharge.getInvoiceid());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getLineid() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setLineid(autojobsaleinvoicecommonservicecharge.getLineid());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getOptionid() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setOptionid(autojobsaleinvoicecommonservicecharge.getOptionid());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getMainid() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setMainid(autojobsaleinvoicecommonservicecharge.getMainid());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getCode() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setCode(autojobsaleinvoicecommonservicecharge.getCode());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getName() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setName(autojobsaleinvoicecommonservicecharge.getName());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getDescription() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setDescription(autojobsaleinvoicecommonservicecharge.getDescription());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getValue() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setValue(autojobsaleinvoicecommonservicecharge.getValue());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getAddedbyid() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setAddedbyid(autojobsaleinvoicecommonservicecharge.getAddedbyid());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getDiscount() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setDiscount(autojobsaleinvoicecommonservicecharge.getDiscount());
+                }
+                if (autojobsaleinvoicecommonservicecharge.getServiceprice() != null) {
+                    existingAutojobsaleinvoicecommonservicecharge.setServiceprice(autojobsaleinvoicecommonservicecharge.getServiceprice());
+                }
+
+                return existingAutojobsaleinvoicecommonservicecharge;
+            })
+            .map(autojobsaleinvoicecommonservicechargeRepository::save);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -179,34 +207,16 @@ public class AutojobsaleinvoicecommonservicechargeResource {
      * {@code GET  /autojobsaleinvoicecommonservicecharges} : get all the autojobsaleinvoicecommonservicecharges.
      *
      * @param pageable the pagination information.
-     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsaleinvoicecommonservicecharges in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Autojobsaleinvoicecommonservicecharge>> getAllAutojobsaleinvoicecommonservicecharges(
-        AutojobsaleinvoicecommonservicechargeCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharges by criteria: {}", criteria);
-
-        Page<Autojobsaleinvoicecommonservicecharge> page = autojobsaleinvoicecommonservicechargeQueryService.findByCriteria(
-            criteria,
-            pageable
-        );
+        LOG.debug("REST request to get a page of Autojobsaleinvoicecommonservicecharges");
+        Page<Autojobsaleinvoicecommonservicecharge> page = autojobsaleinvoicecommonservicechargeRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /autojobsaleinvoicecommonservicecharges/count} : count all the autojobsaleinvoicecommonservicecharges.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
-    @GetMapping("/count")
-    public ResponseEntity<Long> countAutojobsaleinvoicecommonservicecharges(AutojobsaleinvoicecommonservicechargeCriteria criteria) {
-        LOG.debug("REST request to count Autojobsaleinvoicecommonservicecharges by criteria: {}", criteria);
-        return ResponseEntity.ok().body(autojobsaleinvoicecommonservicechargeQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -219,7 +229,7 @@ public class AutojobsaleinvoicecommonservicechargeResource {
     public ResponseEntity<Autojobsaleinvoicecommonservicecharge> getAutojobsaleinvoicecommonservicecharge(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge : {}", id);
         Optional<Autojobsaleinvoicecommonservicecharge> autojobsaleinvoicecommonservicecharge =
-            autojobsaleinvoicecommonservicechargeService.findOne(id);
+            autojobsaleinvoicecommonservicechargeRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(autojobsaleinvoicecommonservicecharge);
     }
 
@@ -232,7 +242,7 @@ public class AutojobsaleinvoicecommonservicechargeResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutojobsaleinvoicecommonservicecharge(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Autojobsaleinvoicecommonservicecharge : {}", id);
-        autojobsaleinvoicecommonservicechargeService.delete(id);
+        autojobsaleinvoicecommonservicechargeRepository.deleteById(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
