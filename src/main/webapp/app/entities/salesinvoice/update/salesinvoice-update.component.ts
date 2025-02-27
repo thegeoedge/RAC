@@ -25,6 +25,7 @@ import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/servi
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
+import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.component';
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -36,6 +37,7 @@ import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsal
     SalesInvoiceLinesUpdateComponent,
     SaleInvoiceCommonServiceChargeUpdateComponent,
     SalesInvoiceServiceChargeLineUpdateComponent,
+    ReceiptModalComponent,
   ],
 })
 export class SalesinvoiceUpdateComponent implements OnInit {
