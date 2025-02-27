@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsalesinvoiceservicechargeline;
 import com.heavenscode.rac.repository.AutojobsalesinvoiceservicechargelineRepository;
+import com.heavenscode.rac.service.AutojobsalesinvoiceservicechargelineQueryService;
+import com.heavenscode.rac.service.AutojobsalesinvoiceservicechargelineService;
+import com.heavenscode.rac.service.criteria.AutojobsalesinvoiceservicechargelineCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,7 +29,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/autojobsalesinvoiceservicechargelines")
-@Transactional
 public class AutojobsalesinvoiceservicechargelineResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsalesinvoiceservicechargelineResource.class);
@@ -37,12 +38,20 @@ public class AutojobsalesinvoiceservicechargelineResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final AutojobsalesinvoiceservicechargelineService autojobsalesinvoiceservicechargelineService;
+
     private final AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository;
 
+    private final AutojobsalesinvoiceservicechargelineQueryService autojobsalesinvoiceservicechargelineQueryService;
+
     public AutojobsalesinvoiceservicechargelineResource(
-        AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository
+        AutojobsalesinvoiceservicechargelineService autojobsalesinvoiceservicechargelineService,
+        AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository,
+        AutojobsalesinvoiceservicechargelineQueryService autojobsalesinvoiceservicechargelineQueryService
     ) {
+        this.autojobsalesinvoiceservicechargelineService = autojobsalesinvoiceservicechargelineService;
         this.autojobsalesinvoiceservicechargelineRepository = autojobsalesinvoiceservicechargelineRepository;
+        this.autojobsalesinvoiceservicechargelineQueryService = autojobsalesinvoiceservicechargelineQueryService;
     }
 
     /**
@@ -64,7 +73,7 @@ public class AutojobsalesinvoiceservicechargelineResource {
                 "idexists"
             );
         }
-        autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineRepository.save(autojobsalesinvoiceservicechargeline);
+        autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineService.save(autojobsalesinvoiceservicechargeline);
         return ResponseEntity.created(new URI("/api/autojobsalesinvoiceservicechargelines/" + autojobsalesinvoiceservicechargeline.getId()))
             .headers(
                 HeaderUtil.createEntityCreationAlert(
@@ -104,7 +113,7 @@ public class AutojobsalesinvoiceservicechargelineResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineRepository.save(autojobsalesinvoiceservicechargeline);
+        autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineService.update(autojobsalesinvoiceservicechargeline);
         return ResponseEntity.ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(
@@ -149,47 +158,9 @@ public class AutojobsalesinvoiceservicechargelineResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Autojobsalesinvoiceservicechargeline> result = autojobsalesinvoiceservicechargelineRepository
-            .findById(autojobsalesinvoiceservicechargeline.getId())
-            .map(existingAutojobsalesinvoiceservicechargeline -> {
-                if (autojobsalesinvoiceservicechargeline.getInvoiceid() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setInvoiceid(autojobsalesinvoiceservicechargeline.getInvoiceid());
-                }
-                if (autojobsalesinvoiceservicechargeline.getLineid() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setLineid(autojobsalesinvoiceservicechargeline.getLineid());
-                }
-                if (autojobsalesinvoiceservicechargeline.getOptionid() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setOptionid(autojobsalesinvoiceservicechargeline.getOptionid());
-                }
-                if (autojobsalesinvoiceservicechargeline.getServicename() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setServicename(autojobsalesinvoiceservicechargeline.getServicename());
-                }
-                if (autojobsalesinvoiceservicechargeline.getServicediscription() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setServicediscription(
-                        autojobsalesinvoiceservicechargeline.getServicediscription()
-                    );
-                }
-                if (autojobsalesinvoiceservicechargeline.getValue() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setValue(autojobsalesinvoiceservicechargeline.getValue());
-                }
-                if (autojobsalesinvoiceservicechargeline.getAddedbyid() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setAddedbyid(autojobsalesinvoiceservicechargeline.getAddedbyid());
-                }
-                if (autojobsalesinvoiceservicechargeline.getIscustomersrvice() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setIscustomersrvice(
-                        autojobsalesinvoiceservicechargeline.getIscustomersrvice()
-                    );
-                }
-                if (autojobsalesinvoiceservicechargeline.getDiscount() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setDiscount(autojobsalesinvoiceservicechargeline.getDiscount());
-                }
-                if (autojobsalesinvoiceservicechargeline.getServiceprice() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setServiceprice(autojobsalesinvoiceservicechargeline.getServiceprice());
-                }
-
-                return existingAutojobsalesinvoiceservicechargeline;
-            })
-            .map(autojobsalesinvoiceservicechargelineRepository::save);
+        Optional<Autojobsalesinvoiceservicechargeline> result = autojobsalesinvoiceservicechargelineService.partialUpdate(
+            autojobsalesinvoiceservicechargeline
+        );
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -201,16 +172,34 @@ public class AutojobsalesinvoiceservicechargelineResource {
      * {@code GET  /autojobsalesinvoiceservicechargelines} : get all the autojobsalesinvoiceservicechargelines.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsalesinvoiceservicechargelines in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Autojobsalesinvoiceservicechargeline>> getAllAutojobsalesinvoiceservicechargelines(
+        AutojobsalesinvoiceservicechargelineCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get a page of Autojobsalesinvoiceservicechargelines");
-        Page<Autojobsalesinvoiceservicechargeline> page = autojobsalesinvoiceservicechargelineRepository.findAll(pageable);
+        LOG.debug("REST request to get Autojobsalesinvoiceservicechargelines by criteria: {}", criteria);
+
+        Page<Autojobsalesinvoiceservicechargeline> page = autojobsalesinvoiceservicechargelineQueryService.findByCriteria(
+            criteria,
+            pageable
+        );
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /autojobsalesinvoiceservicechargelines/count} : count all the autojobsalesinvoiceservicechargelines.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countAutojobsalesinvoiceservicechargelines(AutojobsalesinvoiceservicechargelineCriteria criteria) {
+        LOG.debug("REST request to count Autojobsalesinvoiceservicechargelines by criteria: {}", criteria);
+        return ResponseEntity.ok().body(autojobsalesinvoiceservicechargelineQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -223,7 +212,7 @@ public class AutojobsalesinvoiceservicechargelineResource {
     public ResponseEntity<Autojobsalesinvoiceservicechargeline> getAutojobsalesinvoiceservicechargeline(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline : {}", id);
         Optional<Autojobsalesinvoiceservicechargeline> autojobsalesinvoiceservicechargeline =
-            autojobsalesinvoiceservicechargelineRepository.findById(id);
+            autojobsalesinvoiceservicechargelineService.findOne(id);
         return ResponseUtil.wrapOrNotFound(autojobsalesinvoiceservicechargeline);
     }
 
@@ -236,7 +225,7 @@ public class AutojobsalesinvoiceservicechargelineResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutojobsalesinvoiceservicechargeline(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Autojobsalesinvoiceservicechargeline : {}", id);
-        autojobsalesinvoiceservicechargelineRepository.deleteById(id);
+        autojobsalesinvoiceservicechargelineService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

@@ -11,6 +11,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { ISalesInvoiceLines } from 'app/entities/sales-invoice-lines/sales-invoice-lines.model';
 import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-common-service-charge/sale-invoice-common-service-charge.model';
 import { ISalesInvoiceServiceChargeLine } from 'app/entities/sales-invoice-service-charge-line/sales-invoice-service-charge-line/sales-invoice-service-charge-line.model';
+import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
 import { ISalesinvoice } from '../salesinvoice.model';
 import { SalesinvoiceService } from '../service/salesinvoice.service';
 import { SalesinvoiceFormService, SalesinvoiceFormGroup } from './salesinvoice-form.service';
@@ -21,7 +22,10 @@ import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { IInventory } from 'app/entities/inventory/inventory.model';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
-
+import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
+import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
+import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
+import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.component';
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -33,6 +37,7 @@ import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/servi
     SalesInvoiceLinesUpdateComponent,
     SaleInvoiceCommonServiceChargeUpdateComponent,
     SalesInvoiceServiceChargeLineUpdateComponent,
+    ReceiptModalComponent,
   ],
 })
 export class SalesinvoiceUpdateComponent implements OnInit {
@@ -47,6 +52,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   @ViewChild(SaleInvoiceCommonServiceChargeUpdateComponent)
   SaleInvoiceCommonServiceChargesUpdateComponent!: SaleInvoiceCommonServiceChargeUpdateComponent;
   protected salesInvoiceService = inject(SalesinvoiceService);
+  autojobinvoice = inject(AutojobsinvoiceService);
   protected vehicletypesService = inject(VehicletypeService);
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
@@ -56,6 +62,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   filteredItems: IInventory[][] = [];
   ISalesInvoiceLines: ISalesInvoiceLines[] = [];
   ISalesInvoiceServiceChargeLine: ISalesInvoiceServiceChargeLine[] = [];
+  NewAutojobsalesinvoiceservicechargeline: NewAutojobsalesinvoiceservicechargeline[] = [];
   ISaleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge[] = [];
   // Initialize editForm with SalesinvoiceFormService
   editForm: SalesinvoiceFormGroup = this.salesinvoiceFormService.createSalesinvoiceFormGroup();
@@ -65,23 +72,27 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   i: number = 0;
 
   ngOnInit(): void {
-    this.activatedRoute.data.subscribe(({ salesinvoice }) => {
-      const id = salesinvoice['id'];
-      this.salesinvoice = salesinvoice;
-      if (salesinvoice) {
-        this.updateForm(salesinvoice);
-        this.loadSalesInvoiceDummy(id);
-      }
-      this.servicelines(id);
-      this.servicecommonlines(id);
-      console.log('Query idddddddd:', id);
-      this.invoicelines(id);
+    console.log('starttt');
+
+    // this.servicelines(id);
+    // this.servicecommonlines(id);
+    // this.invoicelines(id);
+    // Extract ID from query params in case it's not in route data
+    this.activatedRoute.queryParams.subscribe(params => {
+      console.log('Query Params ID:', params['id']);
+      this.loadSalesInvoiceDummy(params['id']);
+      this.invoicelines(params['id']);
+      this.servicelines(params['id']);
+      this.servicecommonlines(params['id']);
     });
+
     this.loadVehicleTypes();
+
     // Subscribe to form control valueChanges
-    this.editForm.get('valueDiscount')?.valueChanges.subscribe(() => this.calculateDiscount());
-    this.editForm.get('subTotal')?.valueChanges.subscribe(() => this.calculateDiscount());
+    this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
+    this.editForm.get('subtotal')?.valueChanges.subscribe(() => this.calculateDiscount());
   }
+
   vehicletypes: IVehicletype[] = [];
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
@@ -97,13 +108,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.calculateDiscount(); // Log the updated value to the console
     // Call the function to calculate discount
   }
-  buyQuantity: number = 0; // Store the buy quantity value
+  buyquantity: number = 0; // Store the buy quantity value
 
   // Function to handle changes in the quantity field
   onBuyQtyChange(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    this.buyQuantity = Number(inputElement.value);
-    console.log('Buy Quantity:', this.buyQuantity);
+    this.buyquantity = Number(inputElement.value);
+    console.log('Buy Quantity:', this.buyquantity);
   }
 
   onsubtotalValueChange(event: any): void {
@@ -203,19 +214,19 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   private servicelines(id: number): void {
     this.salesInvoiceService.fetchService(id).subscribe(
-      (res: HttpResponse<ISalesInvoiceServiceChargeLine[]>) => {
+      (res: HttpResponse<NewAutojobsalesinvoiceservicechargeline[]>) => {
         if (res.body && res.body.length > 0) {
           // Clear previous fetched items before adding new ones
           this.fetchedServices = [];
 
           res.body.forEach(item => {
             this.fetchedServices.push({
-              itemname: item.serviceName ?? '',
+              itemname: item.servicename ?? '',
 
               sellingprice: item.value ?? 0,
             });
           });
-
+          console.log(this.fetchedServices);
           // Log the complete array of fetched items
           console.log('Fetched Itemssssssssssssssssss:', res.body);
         } else {
@@ -234,6 +245,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.salesInvoiceService.fetchInvoiceLines(id).subscribe(
       (res: HttpResponse<ISalesInvoiceLines[]>) => {
         if (res.body && res.body.length > 0) {
+          console.log('counts', res.body);
           // Clear previous fetched items before adding new ones
           this.fetchedItems = [];
 
@@ -258,38 +270,37 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   private loadSalesInvoiceDummy(id: number): void {
-    this.salesInvoiceService.find(id).subscribe(response => {
-      const salesInvoiceDummy = response.body;
-      console.log('Retrieved data:', salesInvoiceDummy);
-      if (salesInvoiceDummy) {
-        // Create a new object and assign customername to customerName
-        const transformedData = {
-          ...salesInvoiceDummy,
-          id: null as unknown as number,
-          customerName: (salesInvoiceDummy as any).customername,
-          vehicleNo: (salesInvoiceDummy as any).vehicleno,
-          customerAddress: (salesInvoiceDummy as any).customeraddress,
-          // Assigning API response field to the correct model field
-          subTotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
-          netTotal: Number((salesInvoiceDummy as any).nettotal) || 0, // Replace "8888" with a dynamic value
-          totalTax: Number((salesInvoiceDummy as any).totaltax) || 0,
-          totalDiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
-          originalInvoiceId: (salesInvoiceDummy as any).id ? Number((salesInvoiceDummy as any).id) : null,
-          originalInvoiceCode: (salesInvoiceDummy as any).code, // Convert ID to number safely
-          amountOwing: Number((salesInvoiceDummy as any).amountowing) || 0,
-        };
+    console.log('iddddd', id);
+    this.salesInvoiceService.fetchJobInvoice(id).subscribe(response => {
+      const salesInvoiceDummy = response.body[0];
+      console.log('Retrieved dataaaaaaaaaaaaa:', response);
+      console.log('Retrieved dataaaaaaaaaaaaa:', salesInvoiceDummy);
 
-        this.updateForm(transformedData);
-      }
+      const customerNameValue = this.editForm.get('customername')?.value || '';
+      // Create a new object and assign customername to customerName
+      const transformedData = {
+        id: null as unknown as number,
+        customername: (salesInvoiceDummy as any).customername,
+        vehicleno: (salesInvoiceDummy as any).vehicleno,
+        customeraddress: (salesInvoiceDummy as any).customeraddress,
+
+        subtotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
+        nettotal: Number((salesInvoiceDummy as any).nettotal) || 0, // Replace "8888" with a dynamic value
+        totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,
+        totaldiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
+      };
+
+      this.updateForm(transformedData);
+      console.log('Transformed Data:', transformedData);
     });
   }
 
-  selectedItem: { name: string; availablequantity: number; lastsellingprice: number } | null = null;
+  selectedItem: { code: string; name: string; availablequantity: number; lastsellingprice: number } | null = null;
 
   itemname: string = ''; // Variable to hold the selected item's name
   availablequantity: number = 0;
   lastsellingprice: number = 0;
-
+  code: string = '';
   onItemCodeSelect(event: Event, index: number): void {
     const inputElement = event.target as HTMLInputElement;
     const selectedCode = inputElement.value;
@@ -302,6 +313,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.itemname = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
+      this.code = selectedItem.code ?? '';
     } else {
       console.warn('No matching item found for:', selectedCode);
       this.itemname = ''; // Clear itemName if no match is found
@@ -310,20 +322,22 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
+      code: this.code,
       name: this.itemname,
-      availablequantity: this.buyQuantity,
+      availablequantity: this.buyquantity,
       lastsellingprice: this.lastsellingprice,
     };
 
     // Log the selected item to the console
     console.log('Selected Item:', this.selectedItem);
-    console.log('Returned Buy Quantity:', this.buyQuantity);
+    console.log('Returned Buy Quantity:', this.buyquantity);
     // Call the function to get the buy quantity
 
     // Optionally reset the inputs after adding
     this.itemname = '';
     this.availablequantity = 0;
     this.lastsellingprice = 0;
+    this.code = '';
   }
 
   onItemCodeInput(event: Event, index: number): void {
@@ -381,6 +395,9 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         if (response.status === 201) {
           if (response.body) {
             console.log('Sales invoice created:', response.body.id);
+            console.log('Full response body on creation:', response.body); // Log full response body on creation
+
+            // Call save from the child components if available
             if (this.salesInvoiceLinesUpdateComponent) {
               this.salesInvoiceLinesUpdateComponent.save(response.body.id); // Call save from the child component
             }
@@ -390,11 +407,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
             if (this.SaleInvoiceCommonServiceChargesUpdateComponent) {
               this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id); // Call save from the child component
             }
+            // alert("sucess?")
           }
         } else if (response.status === 200) {
           console.log('Sales invoice updated:', response.body);
+          console.log('Full response body on update:', response.body); // Log full response body on update
         }
-        this.onSaveSuccess();
+        // Uncomment if you have an onSaveSuccess method for successful operations
+        // this.onSaveSuccess();
       },
       error: err => {
         console.error('Error Response:', err); // Log the error response

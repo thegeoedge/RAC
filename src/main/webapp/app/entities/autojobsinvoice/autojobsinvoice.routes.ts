@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { AutojobsinvoiceComponent } from './list/autojobsinvoice.component';
-import { AutojobsinvoiceDetailComponent } from './detail/autojobsinvoice-detail.component';
-import { AutojobsinvoiceUpdateComponent } from './update/autojobsinvoice-update.component';
 import AutojobsinvoiceResolve from './route/autojobsinvoice-routing-resolve.service';
 
 const autojobsinvoiceRoute: Routes = [
   {
     path: '',
-    component: AutojobsinvoiceComponent,
+    loadComponent: () => import('./list/autojobsinvoice.component').then(m => m.AutojobsinvoiceComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: AutojobsinvoiceDetailComponent,
+    loadComponent: () => import('./detail/autojobsinvoice-detail.component').then(m => m.AutojobsinvoiceDetailComponent),
     resolve: {
       autojobsinvoice: AutojobsinvoiceResolve,
     },
@@ -26,7 +23,7 @@ const autojobsinvoiceRoute: Routes = [
   },
   {
     path: 'new',
-    component: AutojobsinvoiceUpdateComponent,
+    loadComponent: () => import('./update/autojobsinvoice-update.component').then(m => m.AutojobsinvoiceUpdateComponent),
     resolve: {
       autojobsinvoice: AutojobsinvoiceResolve,
     },
@@ -34,7 +31,7 @@ const autojobsinvoiceRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: AutojobsinvoiceUpdateComponent,
+    loadComponent: () => import('./update/autojobsinvoice-update.component').then(m => m.AutojobsinvoiceUpdateComponent),
     resolve: {
       autojobsinvoice: AutojobsinvoiceResolve,
     },

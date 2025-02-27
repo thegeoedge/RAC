@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    @if (autojobsinvoice()) {
+    @if (autojobsinvoice(); as autojobsinvoiceRef) {
       <div>
         <h2 data-cy="autojobsinvoiceDetailsHeading"><span>Autojobsinvoice</span></h2>
 
@@ -13,127 +13,127 @@
         <dl class="row-md jh-entity-details">
           <dt><span>ID</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.id }}</span>
+            <span>{{ autojobsinvoiceRef.id }}</span>
           </dd>
           <dt><span>Code</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.code }}</span>
+            <span>{{ autojobsinvoiceRef.code }}</span>
           </dd>
           <dt><span>Invoicedate</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.invoicedate | formatMediumDatetime }}</span>
+            <span>{{ autojobsinvoiceRef.invoicedate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Createddate</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.createddate | formatMediumDatetime }}</span>
+            <span>{{ autojobsinvoiceRef.createddate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Jobid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.jobid }}</span>
+            <span>{{ autojobsinvoiceRef.jobid }}</span>
           </dd>
           <dt><span>Quoteid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.quoteid }}</span>
+            <span>{{ autojobsinvoiceRef.quoteid }}</span>
           </dd>
           <dt><span>Orderid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.orderid }}</span>
+            <span>{{ autojobsinvoiceRef.orderid }}</span>
           </dd>
           <dt><span>Delieverydate</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.delieverydate | formatMediumDatetime }}</span>
+            <span>{{ autojobsinvoiceRef.delieverydate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Autojobsrepid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.autojobsrepid }}</span>
+            <span>{{ autojobsinvoiceRef.autojobsrepid }}</span>
           </dd>
           <dt><span>Autojobsrepname</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.autojobsrepname }}</span>
+            <span>{{ autojobsinvoiceRef.autojobsrepname }}</span>
           </dd>
           <dt><span>Delieverfrom</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.delieverfrom }}</span>
+            <span>{{ autojobsinvoiceRef.delieverfrom }}</span>
           </dd>
           <dt><span>Customerid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.customerid }}</span>
+            <span>{{ autojobsinvoiceRef.customerid }}</span>
           </dd>
           <dt><span>Customername</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.customername }}</span>
+            <span>{{ autojobsinvoiceRef.customername }}</span>
           </dd>
           <dt><span>Customeraddress</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.customeraddress }}</span>
+            <span>{{ autojobsinvoiceRef.customeraddress }}</span>
           </dd>
           <dt><span>Deliveryaddress</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.deliveryaddress }}</span>
+            <span>{{ autojobsinvoiceRef.deliveryaddress }}</span>
           </dd>
           <dt><span>Subtotal</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.subtotal }}</span>
+            <span>{{ autojobsinvoiceRef.subtotal }}</span>
           </dd>
           <dt><span>Totaltax</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.totaltax }}</span>
+            <span>{{ autojobsinvoiceRef.totaltax }}</span>
           </dd>
           <dt><span>Totaldiscount</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.totaldiscount }}</span>
+            <span>{{ autojobsinvoiceRef.totaldiscount }}</span>
           </dd>
           <dt><span>Nettotal</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.nettotal }}</span>
+            <span>{{ autojobsinvoiceRef.nettotal }}</span>
           </dd>
           <dt><span>Message</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.message }}</span>
+            <span>{{ autojobsinvoiceRef.message }}</span>
           </dd>
           <dt><span>Lmu</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.lmu }}</span>
+            <span>{{ autojobsinvoiceRef.lmu }}</span>
           </dd>
           <dt><span>Lmd</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.lmd | formatMediumDatetime }}</span>
+            <span>{{ autojobsinvoiceRef.lmd | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Paidamount</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.paidamount }}</span>
+            <span>{{ autojobsinvoiceRef.paidamount }}</span>
           </dd>
           <dt><span>Amountowing</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.amountowing }}</span>
+            <span>{{ autojobsinvoiceRef.amountowing }}</span>
           </dd>
           <dt><span>Isactive</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.isactive }}</span>
+            <span>{{ autojobsinvoiceRef.isactive }}</span>
           </dd>
           <dt><span>Locationid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.locationid }}</span>
+            <span>{{ autojobsinvoiceRef.locationid }}</span>
           </dd>
           <dt><span>Locationcode</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.locationcode }}</span>
+            <span>{{ autojobsinvoiceRef.locationcode }}</span>
           </dd>
           <dt><span>Referencecode</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.referencecode }}</span>
+            <span>{{ autojobsinvoiceRef.referencecode }}</span>
           </dd>
           <dt><span>Createdbyid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.createdbyid }}</span>
+            <span>{{ autojobsinvoiceRef.createdbyid }}</span>
           </dd>
           <dt><span>Createdbyname</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.createdbyname }}</span>
+            <span>{{ autojobsinvoiceRef.createdbyname }}</span>
           </dd>
           <dt><span>Autocarecompanyid</span></dt>
           <dd>
-            <span>{{ autojobsinvoice()!.autocarecompanyid }}</span>
+            <span>{{ autojobsinvoiceRef.autocarecompanyid }}</span>
           </dd>
         </dl>
 
@@ -141,7 +141,7 @@
           <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
         </button>
 
-        <button type="button" [routerLink]="['/autojobsinvoice', autojobsinvoice()!.id, 'edit']" class="btn btn-primary">
+        <button type="button" [routerLink]="['/autojobsinvoice', autojobsinvoiceRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
         </button>
       </div>

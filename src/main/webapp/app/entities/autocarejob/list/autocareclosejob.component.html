@@ -418,6 +418,11 @@
                       <span class="d-none d-md-inline">instruction</span>
                     </a>
 
+                    <a [routerLink]="['/autocarejob', autocarejob.id, 'history']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                      <fa-icon icon="tasks"></fa-icon>
+                      <span class="d-none d-md-inline">History</span>
+                    </a>
+
                     <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                       <fa-icon icon="times"></fa-icon>
                       <span class="d-none d-md-inline">Delete</span>

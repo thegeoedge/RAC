@@ -1,4 +1,6 @@
 <div class="row">
+  <div class="col-md-3"></div>
+
   <div class="col-md-9">
     <h1 class="display-4 animate-slideIn">
       <img src="content/images/rac.jpg" alt="JHipster Family Member" class="image-resize" />
@@ -7,19 +9,38 @@
     </h1>
   </div>
 
- 
+  <style>
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(5);
+        opacity: 1;
+      }
+    }
+
+    .animate-slideIn {
+      animation: slideIn 1s ease-in-out forwards;
+      display: inline-block; /* Ensure transform applies properly */
+    }
+  </style>
+
   <style>
     .image-resize {
       width: 150px; /* Adjust the width */
       height: auto; /* Keep the aspect ratio */
     }
   </style>
-<div>
+
+  <div>
     @if (account() !== null) {
-        <jhi-autocareopenjob></jhi-autocareopenjob>
+      <div class="alert alert-success">
         @if (account()) {
           <span id="home-logged-message" *ngIf="false">You are logged in as user &quot;{{ account()!.login }}&quot;.</span>
         }
+      </div>
     } @else {
       <div class="alert alert-warning">
         <span>If you want to </span>

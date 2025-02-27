@@ -169,7 +169,6 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
     console.log('Total Fetched Value:', this.totalfetch);
     this.calculateTotal(this.totalfetch); // Emit total to parent
   }
-  
 
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)

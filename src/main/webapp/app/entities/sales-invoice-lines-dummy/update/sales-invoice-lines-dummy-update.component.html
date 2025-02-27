@@ -1,5 +1,4 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<div class="d-flex justify-content">
+<div class="d-flex justify-content-center">
   <form name="editForm" novalidate [formGroup]="editForm">
     <h2 id="jhi-sales-invoice-lines-dummy-heading" data-cy="SalesInvoiceLinesDummyCreateUpdateHeading" *ngIf="showCodeField"></h2>
 
@@ -43,7 +42,6 @@
               <input
                 formControlName="itemCode"
                 type="text"
-                class="form-control border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 w-48"
                 (input)="onItemCodeInput($event, i)"
                 (change)="onItemCodeSelect($event, i)"
                 [attr.list]="'autocomplete' + i"
@@ -69,8 +67,8 @@
             <td *ngIf="showCodeField"><input type="datetime-local" class="form-control" formControlName="lmd" /></td>
             <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="nbt" /></td>
             <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="vat" /></td>
-            <td class="text-center">
-              <button type="button" (click)="removeInvoiceLine(i)" class="btn btn-link text-danger p-0"><i class="fas fa-trash fs-5"></i></button>
+            <td>
+              <button type="button" (click)="removeInvoiceLine(i)" class="btn btn-danger">Remove</button>
             </td>
           </tr>
         </tbody>

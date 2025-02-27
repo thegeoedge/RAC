@@ -15,8 +15,8 @@ public class Autojobsinvoice implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "code")
