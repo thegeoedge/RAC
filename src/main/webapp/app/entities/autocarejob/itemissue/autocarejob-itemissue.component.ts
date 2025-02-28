@@ -11,11 +11,11 @@ import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.m
 import { ICustomervehicle } from 'app/entities/customervehicle/customervehicle.model';
 import { CustomervehicleService } from 'app/entities/customervehicle/service/customervehicle.service';
 import { CustomerService } from 'app/entities/customer/service/customer.service';
-import { ICustomer } from 'app/entities/customer/customer.model';
+
 import { AutocareappointmentService } from 'app/entities/autocareappointment/service/autocareappointment.service';
 import { IAutocareappointment } from 'app/entities/autocareappointment/autocareappointment.model';
 import { AutocarejobService } from '../service/autocarejob.service';
-
+import { AutojobsinvoicelinebatchesService } from 'app/entities/autojobsinvoicelinebatches/service/autojobsinvoicelinebatches.service';
 import { AutocarejobFormService, AutocarejobFormGroup } from '../update/autocarejob-form.service';
 import { AutojobsinvoiceUpdateComponent } from 'app/entities/autojobsinvoice/update/autojobsinvoice-update.component';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
@@ -44,6 +44,7 @@ export class AutocarejobitemissueComponent implements OnInit {
   customervehicles: ICustomervehicle[] = [];
   customerDetails: any | null = null;
   autocareappointments: IAutocareappointment[] = [];
+  jobinvoicelinebatches = inject(AutojobsinvoicelinebatchesService);
   protected autocarejobService = inject(AutocarejobService);
   protected autocarejobFormService = inject(AutocarejobFormService);
   autojobsinvoiceService = inject(AutojobsinvoiceService);
@@ -80,23 +81,6 @@ export class AutocarejobitemissueComponent implements OnInit {
     window.history.back();
   }
 
-  filteredVehicles: IAutocareappointment[] = [];
-
-  onVehicleSearch(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const searchTerm = input.value;
-
-    if (searchTerm.length > 2) {
-      // Use the new service method to fetch matching results
-      this.autocareappointmentService.findByVehicleNumber(searchTerm).subscribe(response => {
-        this.filteredVehicles = response.body || [];
-      });
-    } else {
-      // Clear the suggestions if input is too short
-      this.filteredVehicles = [];
-    }
-  }
-
   autojobsInvoicesMap: {
     [key: number]: {
       invoice: IAutojobsinvoice;
@@ -130,9 +114,48 @@ export class AutocarejobitemissueComponent implements OnInit {
   }
 
   //issue an item
-  issueItem(item: any): void {
-    this.issuedItems.push(item);
-    console.log(this.issuedItems);
+  issueItem(issuedItem: any): void {
+    if (!issuedItem) {
+      console.warn('Invalid item selection.');
+      return;
+    }
+
+    const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
+    const nextbatchlineid = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.batchlineid), 0) + 1 : 1;
+    const newItem = {
+      id: 0,
+      lineid: nextLineId,
+      batchlineid: nextbatchlineid,
+      itemid: issuedItem.id,
+      code: issuedItem.code ?? '',
+      batchid: 0,
+      batchcode: '',
+      txdate: dayjs().toISOString(),
+      manufacturedate: dayjs().toISOString(),
+      expireddate: dayjs().toISOString(),
+      qty: 1,
+      cost: 0,
+      price: 0,
+      notes: issuedItem.description ?? '',
+      lmu: 0,
+      lmd: dayjs().toISOString(),
+      nbt: false,
+      vat: false,
+      discount: 0,
+      total: issuedItem.lastsellingprice ?? 0,
+      issued: false,
+      issuedby: 0,
+      issueddatetime: dayjs().toISOString(),
+      addedbyid: 0,
+      canceloptid: 0,
+      cancelopt: '',
+      cancelby: 0,
+    };
+
+    this.itemsArray.push(newItem);
+    this.issuedItems.push({ ...issuedItem });
+
+    console.log('Issued Items:', this.itemsArray);
   }
 
   //Cancel issued item
@@ -147,17 +170,68 @@ export class AutocarejobitemissueComponent implements OnInit {
     }
   }
 
-  searchedCustomer: ICustomer | null = null;
+  itemsArray: Array<{
+    id: number;
+    lineid: number;
+    batchlineid: number;
+    itemid: number;
+    code: string;
+    batchid: number;
+    batchcode: string;
+    txdate: string;
+    manufacturedate: string;
+    expireddate: string;
+    qty: number;
+    cost: number;
+    price: number;
+    notes: string;
+    lmu: number;
+    lmd: string;
+    nbt: boolean;
+    vat: boolean;
+    discount: number;
+    total: number;
+    issued: boolean;
+    issuedby: number;
+    issueddatetime: string;
+    addedbyid: number;
+    canceloptid: number;
+    cancelopt: string;
+    cancelby: number;
+  }> = [];
+
+  saveAll(): void {
+    if (this.itemsArray.length === 0) {
+      console.warn('No items to save.');
+      return;
+    }
+
+    this.isSaving = true;
+
+    this.itemsArray.forEach(item => {
+      const itemWithDayjsDates = {
+        ...item,
+        txdate: dayjs(item.txdate).toISOString(),
+        manufacturedate: dayjs(item.manufacturedate).toISOString(),
+        expireddate: dayjs(item.expireddate).toISOString(),
+        lmd: dayjs(item.lmd).toISOString(),
+        issueddatetime: dayjs(item.issueddatetime).toISOString(),
+      };
+
+      // this.jobinvoicelinebatches.create(itemWithDayjsDates).subscribe({
+      //   next: createResponse => {
+      //     console.log('item created successfully:', createResponse);
+      //   },
+      //   error: createError => {
+      //     console.error('Error creating service:', createError.body);
+      //   }
+      // });
+    });
+  }
 
   save(): void {
     this.isSaving = true;
     const autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
-    autocarejob.jobtypeid = this.editForm.get('jobtypeid')?.value;
-    autocarejob.vehicleid = this.editForm.get('vehicleid')?.value;
-  }
-
-  protected onSaveSuccess(): void {
-    this.previousState();
   }
 
   protected onSaveError(): void {
