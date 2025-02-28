@@ -1,6 +1,6 @@
 <div>
   <h2 id="page-heading" data-cy="AutojobsinvoicelinesHeading">
-    <span>Autojobsinvoicelines</span>
+    <span>Autojobs Invoice Lines</span>
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
@@ -15,7 +15,7 @@
         [routerLink]="['/autojobsinvoicelines/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Autojobsinvoicelines</span>
+        <span>Create a new Autojobs Invoice lines</span>
       </button>
     </div>
   </h2>
@@ -28,7 +28,7 @@
 
   @if (autojobsinvoicelines?.length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span>No Autojobsinvoicelines found</span>
+      <span>No Autojobs Invoice Lines found</span>
     </div>
   }
 

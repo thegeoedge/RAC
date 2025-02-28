@@ -1,10 +1,10 @@
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center align-items-center min-vh-100">
   <div class="col-10">
     <div class="row">
       <!-- Left Side: Form -->
       <div class="col-6">
         <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-          <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading">Create Autocarejob</h2>
+          <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading">Create Autocare Job</h2>
 
           <div>
             <jhi-alert-error></jhi-alert-error>
@@ -36,7 +36,7 @@
 
             <div class="row">
               <div class="mb-3 col-6">
-                <label class="form-label" for="field_vehiclenumber">Vehiclenumber</label>
+                <label class="form-label" for="field_vehiclenumber">Vehicle Number</label>
                 <input
                   type="text"
                   class="form-control"
@@ -63,7 +63,7 @@
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="field_jobtypename">Jobtypename</label>
+              <label class="form-label" for="field_jobtypename">Job Type Name</label>
               <select
                 class="form-control"
                 name="jobtypename"
@@ -114,7 +114,7 @@
         </div> -->
 
             <div class="mb-3">
-              <label class="form-label" for="field_customername">Customername</label>
+              <label class="form-label" for="field_customername">Customer Name</label>
               <input
                 type="text"
                 class="form-control"
@@ -127,7 +127,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label" for="field_customertel">Customer Tel</label>
+              <label class="form-label" for="field_customertel">Customer Telphone Number</label>
               <input
                 type="text"
                 class="form-control"
@@ -164,7 +164,7 @@
         </div> -->
 
             <div class="mb-3">
-              <label class="form-label" for="field_jobdate">Jobdate</label>
+              <label class="form-label" for="field_jobdate">Job Date</label>
               <div class="d-flex">
                 <input
                   id="field_jobdate"
@@ -278,7 +278,7 @@
               id="save-entity"
               data-cy="entityCreateSaveButton"
               [disabled]="editForm.invalid || isSaving"
-              class="btn btn-primary"
+              class="btn btn-success"
             >
               <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
             </button>

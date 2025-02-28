@@ -1,9 +1,44 @@
-<div>
+<style>
+  /* Responsive table styling */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Compact table styling */
+  .table-sm th,
+  .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Striped rows for better readability */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Button group styling */
+  .btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Ensure the table fits within the container */
+  .container-fluid {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  /* Add spacing between buttons */
+  .btn-group .btn {
+    margin-right: 0.25rem;
+  }
+</style>
+<div class="container-fluid">
   <h2 id="page-heading" data-cy="AutocarejobHeading">
-    <span>Autocarejobs</span>
+    <span>Autocare Jobs</span>
 
     <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+      <button class="btn btn-info me-2 ms-3" (click)="load()" [disabled]="isLoading">
         <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
         <span>Refresh list</span>
       </button>
@@ -15,7 +50,7 @@
         [routerLink]="['/autocarejob/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Autocarejob</span>
+        <span>Create a new Autocare Job</span>
       </button>
     </div>
   </h2>
@@ -31,8 +66,8 @@
   }
 
   @if (autocarejobs && autocarejobs.length > 0) {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
+    <div class="table-responsive" id="entities">
+      <table class="table table-striped table-sm" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
             <th scope="col" jhiSortBy="id">
@@ -44,21 +79,21 @@
             </th>
             <th scope="col" jhiSortBy="jobnumber">
               <div class="d-flex">
-                <span>Jobnumber</span>
+                <span>Job No</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="vehicleid" *ngIf="false">
               <div class="d-flex">
-                <span>Vehicleid</span>
+                <span>Vehicle Id</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="vehiclenumber">
               <div class="d-flex">
-                <span>Vehiclenumber</span>
+                <span>Vehicle No</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -72,7 +107,7 @@
             </th>
             <th scope="col" jhiSortBy="nextmillage">
               <div class="d-flex">
-                <span>Nextmillage</span>
+                <span>Next Millage</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -100,7 +135,7 @@
             </th>
             <th scope="col" jhiSortBy="jobtypename">
               <div class="d-flex">
-                <span>Jobtypename</span>
+                <span>Job Type Name</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -212,7 +247,7 @@
             </th>
             <th scope="col" jhiSortBy="customername">
               <div class="d-flex">
-                <span>Customername</span>
+                <span>Customer Name</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -240,7 +275,7 @@
             </th>
             <th scope="col" jhiSortBy="jobdate">
               <div class="d-flex">
-                <span>Jobdate</span>
+                <span>Job Date</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -400,14 +435,17 @@
                 <div class="btn-group">
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye"></fa-icon>
+
                   </a>
 
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt"></fa-icon>
+
                   </a>
 
                   <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times"></fa-icon>
+
                   </button>
                 </div>
               </td>
