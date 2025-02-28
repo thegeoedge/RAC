@@ -76,9 +76,10 @@
                     <td>
                       <select [(ngModel)]="line.selectedAction" class="form-select form-select-sm">
                         <option value="return">By Customer</option>
-                        <option value="damage">By Manager</option>
-                        <option value="replace">By Admin</option>
-                        <option value="other">Other</option>
+                        <option value="Service advicer">Service advicer</option>
+                        <option value="manager">Manager</option>
+                        <option value="product defect">product defect</option>
+                        <option value="not available">not available</option>
                       </select>
                     </td>
                     <td style="font-size: 0.75rem">
@@ -119,6 +120,7 @@
                   </tr>
                 </tbody>
               </table>
+              <!-- <button class="btn btn-primary btn-sm mt-2" (click)="saveAll()">Save All</button> -->
             </div>
           </div>
         </div>
