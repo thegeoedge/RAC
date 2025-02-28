@@ -1,142 +1,144 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+<div class="row justify-content-center">
+  <div class="col-md-8">
     @if (autojobsinvoice(); as autojobsinvoiceRef) {
-      <div>
-        <h2 data-cy="autojobsinvoiceDetailsHeading"><span>Autojobsinvoice</span></h2>
-
-        <hr />
-
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+        <h2 data-cy="autojobsinvoiceDetailsHeading"><span>Auto Jobs Invoice</span></h2>
+        </div>
+        <div class="card-body">
         <jhi-alert-error></jhi-alert-error>
 
         <jhi-alert></jhi-alert>
 
-        <dl class="row-md jh-entity-details">
-          <dt><span>ID</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.id }}</span>
-          </dd>
-          <dt><span>Code</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.code }}</span>
-          </dd>
-          <dt><span>Invoicedate</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.invoicedate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Createddate</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.createddate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Jobid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.jobid }}</span>
-          </dd>
-          <dt><span>Quoteid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.quoteid }}</span>
-          </dd>
-          <dt><span>Orderid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.orderid }}</span>
-          </dd>
-          <dt><span>Delieverydate</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.delieverydate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Autojobsrepid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.autojobsrepid }}</span>
-          </dd>
-          <dt><span>Autojobsrepname</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.autojobsrepname }}</span>
-          </dd>
-          <dt><span>Delieverfrom</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.delieverfrom }}</span>
-          </dd>
-          <dt><span>Customerid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.customerid }}</span>
-          </dd>
-          <dt><span>Customername</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.customername }}</span>
-          </dd>
-          <dt><span>Customeraddress</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.customeraddress }}</span>
-          </dd>
-          <dt><span>Deliveryaddress</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.deliveryaddress }}</span>
-          </dd>
-          <dt><span>Subtotal</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.subtotal }}</span>
-          </dd>
-          <dt><span>Totaltax</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.totaltax }}</span>
-          </dd>
-          <dt><span>Totaldiscount</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.totaldiscount }}</span>
-          </dd>
-          <dt><span>Nettotal</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.nettotal }}</span>
-          </dd>
-          <dt><span>Message</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.message }}</span>
-          </dd>
-          <dt><span>Lmu</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.lmu }}</span>
-          </dd>
-          <dt><span>Lmd</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.lmd | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Paidamount</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.paidamount }}</span>
-          </dd>
-          <dt><span>Amountowing</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.amountowing }}</span>
-          </dd>
-          <dt><span>Isactive</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.isactive }}</span>
-          </dd>
-          <dt><span>Locationid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.locationid }}</span>
-          </dd>
-          <dt><span>Locationcode</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.locationcode }}</span>
-          </dd>
-          <dt><span>Referencecode</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.referencecode }}</span>
-          </dd>
-          <dt><span>Createdbyid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.createdbyid }}</span>
-          </dd>
-          <dt><span>Createdbyname</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.createdbyname }}</span>
-          </dd>
-          <dt><span>Autocarecompanyid</span></dt>
-          <dd>
-            <span>{{ autojobsinvoiceRef.autocarecompanyid }}</span>
-          </dd>
+        <dl class="row jh-entity-details">
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.id }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Code:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.code }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Invoice Date:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.invoicedate | formatMediumDatetime }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Created Date:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.createddate | formatMediumDatetime }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Job Id:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.jobid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Quote Id:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.quoteid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Order Id:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.orderid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Delivery Date:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.delieverydate | formatMediumDatetime }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Autojobs Rep ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.autojobsrepid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Autojobs Rep Name:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.autojobsrepname }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Deliver From:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.delieverfrom }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Customer ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.customerid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Customer Name:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.customername }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Customer Address:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.customeraddress }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Delivery Address:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.deliveryaddress }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Sub Total:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.subtotal }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Total Tax:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.totaltax }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Total Discount:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.totaldiscount }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Net Total:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.nettotal }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Message:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.message }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Lmu:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.lmu }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Lmd:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.lmd | formatMediumDatetime }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Paid Amount:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.paidamount }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Amount Owing:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.amountowing }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Is Active:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.isactive }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Location ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.locationid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Location Code:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.locationcode }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Reference Code:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.referencecode }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Created By ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.createdbyid }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Created By Name:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.createdbyname }}</span></dd>
+          </div>
+          <div class="col-md-6 d-flex">
+            <dt class="me-2"><span>Autocare Company ID:</span></dt>
+            <dd><span>{{ autojobsinvoiceRef.autocarecompanyid }}</span></dd>
+          </div>
         </dl>
-
+        
+        <div class="d-flex justify-content-between mt-4">
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
         </button>
@@ -144,7 +146,10 @@
         <button type="button" [routerLink]="['/autojobsinvoice', autojobsinvoiceRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
         </button>
+        </div>
       </div>
+    </div>
     }
   </div>
+</div>
 </div>

@@ -1,9 +1,44 @@
-<div>
+<style>
+  /* Responsive table styling */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Compact table styling */
+  .table-sm th,
+  .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Striped rows for better readability */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Button group styling */
+  .btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Ensure the table fits within the container */
+  .container-fluid {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  /* Add spacing between buttons */
+  .btn-group .btn {
+    margin-right: 0.25rem;
+  }
+</style>
+<div class="container-fluid">
   <h2 id="page-heading" data-cy="AutojobsinvoiceHeading">
-    <span>Autojobsinvoices</span>
+    <span>Auto Jobs Invoices</span>
 
     <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+      <button class="btn btn-info me-2 ms-3" (click)="load()" [disabled]="isLoading">
         <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
         <span>Refresh list</span>
       </button>
@@ -15,7 +50,7 @@
         [routerLink]="['/autojobsinvoice/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Autojobsinvoice</span>
+        <span>Create a new Autojobs Invoice</span>
       </button>
     </div>
   </h2>
@@ -28,7 +63,7 @@
 
   @if (autojobsinvoices?.length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span>No Autojobsinvoices found</span>
+      <span>No Autojobs Invoices found</span>
     </div>
   }
 
@@ -37,13 +72,6 @@
       <table class="table table-striped" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span>ID</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
             <th scope="col" jhiSortBy="code">
               <div class="d-flex">
                 <span>Code</span>
@@ -51,156 +79,44 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="invoicedate">
-              <div class="d-flex">
-                <span>Invoicedate</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createddate">
-              <div class="d-flex">
-                <span>Createddate</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="jobid">
-              <div class="d-flex">
-                <span>Jobid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="quoteid">
-              <div class="d-flex">
-                <span>Quoteid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="orderid">
-              <div class="d-flex">
-                <span>Orderid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
             <th scope="col" jhiSortBy="delieverydate">
               <div class="d-flex">
-                <span>Delieverydate</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autojobsrepid">
-              <div class="d-flex">
-                <span>Autojobsrepid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autojobsrepname">
-              <div class="d-flex">
-                <span>Autojobsrepname</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="delieverfrom">
-              <div class="d-flex">
-                <span>Delieverfrom</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="customerid">
-              <div class="d-flex">
-                <span>Customerid</span>
+                <span>Delievery Date</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="customername">
               <div class="d-flex">
-                <span>Customername</span>
+                <span>Customer Name</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="customeraddress">
               <div class="d-flex">
-                <span>Customeraddress</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="deliveryaddress">
-              <div class="d-flex">
-                <span>Deliveryaddress</span>
+                <span>Customer Address</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="subtotal">
               <div class="d-flex">
-                <span>Subtotal</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="totaltax">
-              <div class="d-flex">
-                <span>Totaltax</span>
+                <span>Sub Total</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="totaldiscount">
               <div class="d-flex">
-                <span>Totaldiscount</span>
+                <span>Total Discount</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="nettotal">
               <div class="d-flex">
-                <span>Nettotal</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="message">
-              <div class="d-flex">
-                <span>Message</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lmu">
-              <div class="d-flex">
-                <span>Lmu</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lmd">
-              <div class="d-flex">
-                <span>Lmd</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="paidamount">
-              <div class="d-flex">
-                <span>Paidamount</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="amountowing">
-              <div class="d-flex">
-                <span>Amountowing</span>
+                <span>Net Total</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
@@ -212,87 +128,24 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="locationid">
-              <div class="d-flex">
-                <span>Locationid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="locationcode">
-              <div class="d-flex">
-                <span>Locationcode</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="referencecode">
-              <div class="d-flex">
-                <span>Referencecode</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
             <th scope="col" jhiSortBy="createdbyid">
               <div class="d-flex">
-                <span>Createdbyid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
+                <span>Action</span>
               </div>
             </th>
-            <th scope="col" jhiSortBy="createdbyname">
-              <div class="d-flex">
-                <span>Createdbyname</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autocarecompanyid">
-              <div class="d-flex">
-                <span>Autocarecompanyid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
           @for (autojobsinvoice of autojobsinvoices; track trackId(autojobsinvoice)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'view']">{{ autojobsinvoice.id }}</a>
-              </td>
-              <td>{{ autojobsinvoice.code }}</td>
-              <td>{{ autojobsinvoice.invoicedate | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.createddate | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.jobid }}</td>
-              <td>{{ autojobsinvoice.quoteid }}</td>
-              <td>{{ autojobsinvoice.orderid }}</td>
+              <td [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'view']">{{ autojobsinvoice.code }}</td>
               <td>{{ autojobsinvoice.delieverydate | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.autojobsrepid }}</td>
-              <td>{{ autojobsinvoice.autojobsrepname }}</td>
-              <td>{{ autojobsinvoice.delieverfrom }}</td>
-              <td>{{ autojobsinvoice.customerid }}</td>
               <td>{{ autojobsinvoice.customername }}</td>
               <td>{{ autojobsinvoice.customeraddress }}</td>
-              <td>{{ autojobsinvoice.deliveryaddress }}</td>
               <td>{{ autojobsinvoice.subtotal }}</td>
-              <td>{{ autojobsinvoice.totaltax }}</td>
               <td>{{ autojobsinvoice.totaldiscount }}</td>
               <td>{{ autojobsinvoice.nettotal }}</td>
-              <td>{{ autojobsinvoice.message }}</td>
-              <td>{{ autojobsinvoice.lmu }}</td>
-              <td>{{ autojobsinvoice.lmd | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.paidamount }}</td>
-              <td>{{ autojobsinvoice.amountowing }}</td>
               <td>{{ autojobsinvoice.isactive }}</td>
-              <td>{{ autojobsinvoice.locationid }}</td>
-              <td>{{ autojobsinvoice.locationcode }}</td>
-              <td>{{ autojobsinvoice.referencecode }}</td>
-              <td>{{ autojobsinvoice.createdbyid }}</td>
-              <td>{{ autojobsinvoice.createdbyname }}</td>
-              <td>{{ autojobsinvoice.autocarecompanyid }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <a
@@ -301,7 +154,7 @@
                     data-cy="entityDetailsButton"
                   >
                     <fa-icon icon="eye"></fa-icon>
-                    <span class="d-none d-md-inline">View</span>
+                    <!-- <span class="d-none d-md-inline">View</span> -->
                   </a>
                   <a
                     [routerLink]="['/salesinvoice', 'new']"
@@ -310,20 +163,20 @@
                     [queryParams]="{ id: autojobsinvoice.id }"
                   >
                     <fa-icon icon="book"></fa-icon>
-                    <span class="d-none d-md-inline">invoice</span>
+                    <!-- <span class="d-none d-md-inline">invoice</span> -->
                   </a>
                   <a
                     [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'edit']"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-warning btn-sm"
                     data-cy="entityEditButton"
                   >
                     <fa-icon icon="pencil-alt"></fa-icon>
-                    <span class="d-none d-md-inline">Edit</span>
+                    <!-- <span class="d-none d-md-inline">Edit</span> -->
                   </a>
 
                   <button type="submit" (click)="delete(autojobsinvoice)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times"></fa-icon>
-                    <span class="d-none d-md-inline">Delete</span>
+                    <!-- <span class="d-none d-md-inline">Delete</span> -->
                   </button>
                 </div>
               </td>
