@@ -38,70 +38,20 @@
   </head>
   <body>
     <div class="invoice-container">
-      <table class="header-table">
-        <tr>
-          <td><strong *ngIf="false">Customer Name & Address:</strong> NANNIYAVA</td>
-          <td><strong *ngIf="false">Invoice No:</strong> STL-60176</td>
-        </tr>
-        <tr>
-          <td><strong *ngIf="false">Vehicle No:</strong> 20-</td>
-          <td><strong *ngIf="false">Invoice Type:</strong> Cash</td>
-        </tr>
-        <tr>
-          <td><strong *ngIf="false">Current Service:</strong> 31/03/2021</td>
-          <td><strong *ngIf="false">Next Service:</strong> 41465</td>
-        </tr>
-      </table>
-
       <table>
-        <tr *ngIf="false">
+        <tr>
           <th>Description</th>
           <th>Discount</th>
           <th>Qty</th>
           <th>Unit Price</th>
           <th>Total Amount</th>
         </tr>
-        <tr>
-          <td>SAKURA OIL FILTER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>550.00</td>
-          <td>550.00</td>
-        </tr>
-        <tr>
-          <td>WURTH WINDSCREEN CLEANER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>190.00</td>
-          <td>190.00</td>
-        </tr>
-        <tr>
-          <td>AC FILTER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>1900.00</td>
-          <td>1900.00</td>
-        </tr>
-        <tr>
-          <td>BOSCH WIPER BLADE</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>1900.00</td>
-          <td>1900.00</td>
-        </tr>
-        <tr>
-          <td>FULL SERVICE CHARGE</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>3600.00</td>
-          <td>3600.00</td>
-        </tr>
-        <tr>
-          <td>PLASTIC CARE TREATMENT</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>190.00</td>
-          <td>190.00</td>
+        <tr *ngFor="let item of invoiceItems">
+          <td>{{ item.itemName }}</td>
+          <td>{{ item.itemCost }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.sellingPrice }}</td>
+          <td>{{ item.lineTotal }}</td>
         </tr>
       </table>
 

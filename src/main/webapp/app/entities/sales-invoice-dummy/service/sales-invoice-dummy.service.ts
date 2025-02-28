@@ -38,9 +38,11 @@ export class SalesInvoiceDummyService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-dummies');
   protected resourceUrli = this.applicationConfigService.getEndpointFor('api/salesinvoices');
-  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines'); // Set the endpoint for invoice lines
+  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines');
+  protected resourceInvoiceLinesUrld = this.applicationConfigService.getEndpointFor('/api/sales-invoice-lines-dummies'); // Set the endpoint for invoice lines
   protected resourceInvoiceLinesUrli = this.applicationConfigService.getEndpointFor('api/sales-invoice-service-charge-lines');
 
+  protected resourceInvoiceLinesUrlsd = this.applicationConfigService.getEndpointFor(' /api/sales-invoice-service-charge-line-dummies');
   protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
   protected resourceInvoiceLinesUrlsercomd = this.applicationConfigService.getEndpointFor(
     '/api/sale-invoice-common-service-charge-dummies',
@@ -49,6 +51,10 @@ export class SalesInvoiceDummyService {
   fetchService(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceId.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+  }
+  fetchServicedummy(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceId.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsd}`, { params: options, observe: 'response' });
   }
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceId.equals': id });
@@ -62,6 +68,10 @@ export class SalesInvoiceDummyService {
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+  }
+  fetchInvoiceLinesdummies(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceId.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrld}`, { params: options, observe: 'response' });
   }
   create(salesInvoiceDummy: NewSalesInvoiceDummy): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesInvoiceDummy);
