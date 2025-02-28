@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, catchError, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 import { IInventory } from 'app/entities/inventory/inventory.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
@@ -56,6 +57,24 @@ export class SalesinvoiceService {
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+  }
+  fetchReceiptCode(): Observable<HttpResponse<any>> {
+    return this.http.get<HttpResponse<any>>('/api/receipts?page=0&size=20&sort=id,desc', { observe: 'response' });
+  }
+
+  fetchReceiptAccountId(name: string): Observable<HttpResponse<any>> {
+    const url = `/api/accounts?name.equals=${encodeURIComponent(name)}`;
+    console.log('Request URL:', url); // Log the request URL for debugging purposes
+    return this.http.get<HttpResponse<any>>(url, { observe: 'response' }).pipe(
+      map(response => {
+        console.log('Response Data:', response.body); // Log the response body to see the fetched data
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error fetching account:', error); // Log any errors in the console
+        throw error;
+      }),
+    );
   }
 
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
