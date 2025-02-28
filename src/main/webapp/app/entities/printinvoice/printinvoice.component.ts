@@ -11,7 +11,7 @@ import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-i
 })
 export class PrintinvoiceComponent implements OnInit {
   protected salesInvoiceDummyService = inject(SalesInvoiceDummyService);
-
+  invoice: any;
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -40,18 +40,29 @@ export class PrintinvoiceComponent implements OnInit {
       },
     });
   }
+  //: any[] = []; // Initialize an array to store invoice lines
+  invoiceItems: any[] = [
+    { itemName: 'Oil Filter', itemCost: 5, quantity: 2, sellingPrice: 15, lineTotal: 30 },
+    { itemName: 'Brake Pads', itemCost: 10, quantity: 1, sellingPrice: 50, lineTotal: 40 },
+    { itemName: 'Spark Plugs', itemCost: 2, quantity: 4, sellingPrice: 10, lineTotal: 32 },
+    { itemName: 'Engine Oil', itemCost: 8, quantity: 2, sellingPrice: 25, lineTotal: 34 },
+    { itemName: 'Air Filter', itemCost: 6, quantity: 1, sellingPrice: 20, lineTotal: 14 },
+  ];
   getSalesInvoicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchInvoiceLines(id).subscribe({
+    this.salesInvoiceDummyService.fetchInvoiceLinesdummies(id).subscribe({
       next: response => {
         console.log('Sales Invoice lines Data:', response.body);
+        this.invoiceItems = response.body; // Assign response to invoiceItems
+        console.log(this.invoiceItems);
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
       },
     });
   }
+
   getSalesServicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchService(id).subscribe({
+    this.salesInvoiceDummyService.fetchServicedummy(id).subscribe({
       next: response => {
         console.log('Sales Service lines Data:', response.body);
       },
