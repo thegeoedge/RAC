@@ -80,6 +80,9 @@ export class VoucherPaymentsDetailsService {
   }
 
   getVoucherPaymentsDetailsIdentifier(voucherPaymentsDetails: Pick<IVoucherPaymentsDetails, 'id'>): number {
+    if (voucherPaymentsDetails.id === null) {
+      throw new Error('VoucherPaymentsDetails id is null');
+    }
     return voucherPaymentsDetails.id;
   }
 
