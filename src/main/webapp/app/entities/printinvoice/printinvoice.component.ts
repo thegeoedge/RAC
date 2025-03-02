@@ -1,11 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-invoice-dummy.service';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'jhi-printinvoice',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './printinvoice.component.html',
   styleUrl: './printinvoice.component.scss',
 })
@@ -41,25 +41,30 @@ export class PrintinvoiceComponent implements OnInit {
     });
   }
   //: any[] = []; // Initialize an array to store invoice lines
-  invoiceItems: any[] = [
-    { itemName: 'Oil Filter', itemCost: 5, quantity: 2, sellingPrice: 15, lineTotal: 30 },
-    { itemName: 'Brake Pads', itemCost: 10, quantity: 1, sellingPrice: 50, lineTotal: 40 },
-    { itemName: 'Spark Plugs', itemCost: 2, quantity: 4, sellingPrice: 10, lineTotal: 32 },
-    { itemName: 'Engine Oil', itemCost: 8, quantity: 2, sellingPrice: 25, lineTotal: 34 },
-    { itemName: 'Air Filter', itemCost: 6, quantity: 1, sellingPrice: 20, lineTotal: 14 },
-  ];
+
   getSalesInvoicelines(id: number): void {
     this.salesInvoiceDummyService.fetchInvoiceLinesdummies(id).subscribe({
       next: response => {
         console.log('Sales Invoice lines Data:', response.body);
-        this.invoiceItems = response.body; // Assign response to invoiceItems
-        console.log(this.invoiceItems);
+
+        // Ensure response.body is an array before assigning
+        if (Array.isArray(response.body)) {
+          this.invoiceItems = response.body; // Directly assign the response
+        } else {
+          console.error('Invalid data format: Expected an array', response.body);
+          this.invoiceItems = []; // Reset to avoid issues
+        }
+
+        console.log('Updated Invoice Items:', this.invoiceItems);
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
       },
     });
   }
+
+  // Initialize as an empty array
+  invoiceItems: any[] = [];
 
   getSalesServicelines(id: number): void {
     this.salesInvoiceDummyService.fetchServicedummy(id).subscribe({
