@@ -8,16 +8,15 @@ import java.time.Instant;
  * A WorkshopVehicleWorkList.
  */
 @Entity
-@Table(name = "workshop_vehicle_work_list")
+@Table(name = "workshopvehicleworklist")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class WorkshopVehicleWorkList implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "vehicleworkid")

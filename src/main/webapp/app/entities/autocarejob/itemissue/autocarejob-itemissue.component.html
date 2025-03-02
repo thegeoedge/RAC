@@ -44,11 +44,11 @@
     <!-- Tab panes -->
     <div class="tab-content mt-3">
       <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-        <div *ngIf="allInvoiceLines.length > 0; else noData">
+        <div>
           <div class="card mb-3">
             <div class="card-body shadow">
               <h6>Available Items:</h6>
-              <table class="table table-bordered">
+              <table class="table table-bordered" *ngIf="allInvoiceLines.length > 0; else noData">
                 <thead>
                   <tr>
                     <th>Item Code</th>
@@ -120,7 +120,7 @@
                   </tr>
                 </tbody>
               </table>
-              <!-- <button class="btn btn-primary btn-sm mt-2" (click)="saveAll()">Save All</button> -->
+              <button class="btn btn-primary btn-sm mt-2" (click)="saveitem()">Save Item</button>
             </div>
           </div>
         </div>

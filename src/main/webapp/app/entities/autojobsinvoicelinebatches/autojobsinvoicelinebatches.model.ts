@@ -30,4 +30,4 @@ export interface IAutojobsinvoicelinebatches {
   cancelby?: number | null;
 }
 
-export type NewAutojobsinvoicelinebatches = Omit<IAutojobsinvoicelinebatches, 'id'> & { id: null };
+export type NewAutojobsinvoicelinebatches = Omit<IAutojobsinvoicelinebatches, 'id'> & { id: null | number };

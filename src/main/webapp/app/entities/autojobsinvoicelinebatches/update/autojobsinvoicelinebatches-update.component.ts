@@ -44,8 +44,10 @@ export class AutojobsinvoicelinebatchesUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const autojobsinvoicelinebatches = this.autojobsinvoicelinebatchesFormService.getAutojobsinvoicelinebatches(this.editForm);
-    if (autojobsinvoicelinebatches.id !== null) {
-      this.subscribeToSaveResponse(this.autojobsinvoicelinebatchesService.update(autojobsinvoicelinebatches));
+    if (autojobsinvoicelinebatches.id !== null && autojobsinvoicelinebatches.id !== undefined) {
+      this.subscribeToSaveResponse(
+        this.autojobsinvoicelinebatchesService.update(autojobsinvoicelinebatches as IAutojobsinvoicelinebatches),
+      );
     } else {
       this.subscribeToSaveResponse(this.autojobsinvoicelinebatchesService.create(autojobsinvoicelinebatches));
     }

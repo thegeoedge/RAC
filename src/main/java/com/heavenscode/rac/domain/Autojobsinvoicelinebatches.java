@@ -15,9 +15,7 @@ public class Autojobsinvoicelinebatches implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Integer id;
 
     @Column(name = "lineid")

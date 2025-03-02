@@ -66,9 +66,7 @@ public class AutojobsinvoicelinebatchesResource {
         @RequestBody Autojobsinvoicelinebatches autojobsinvoicelinebatches
     ) throws URISyntaxException {
         LOG.debug("REST request to save Autojobsinvoicelinebatches : {}", autojobsinvoicelinebatches);
-        if (autojobsinvoicelinebatches.getId() != null) {
-            throw new BadRequestAlertException("A new autojobsinvoicelinebatches cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         autojobsinvoicelinebatches = autojobsinvoicelinebatchesService.save(autojobsinvoicelinebatches);
         return ResponseEntity.created(new URI("/api/autojobsinvoicelinebatches/" + autojobsinvoicelinebatches.getId()))
             .headers(
