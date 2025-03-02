@@ -64,9 +64,7 @@ public class VoucherLinesResource {
     @PostMapping("")
     public ResponseEntity<VoucherLines> createVoucherLines(@RequestBody VoucherLines voucherLines) throws URISyntaxException {
         LOG.debug("REST request to save VoucherLines : {}", voucherLines);
-        if (voucherLines.getId() != null) {
-            throw new BadRequestAlertException("A new voucherLines cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         voucherLines = voucherLinesService.save(voucherLines);
         return ResponseEntity.created(new URI("/api/voucher-lines/" + voucherLines.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, voucherLines.getId().toString()))
