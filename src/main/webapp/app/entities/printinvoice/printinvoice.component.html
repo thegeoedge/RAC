@@ -39,20 +39,24 @@
   <body>
     <div class="invoice-container">
       <table>
-        <tr>
-          <th>Description</th>
-          <th>Discount</th>
-          <th>Qty</th>
-          <th>Unit Price</th>
-          <th>Total Amount</th>
-        </tr>
-        <tr *ngFor="let item of invoiceItems">
-          <td>{{ item.itemName }}</td>
-          <td>{{ item.itemCost }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>{{ item.sellingPrice }}</td>
-          <td>{{ item.lineTotal }}</td>
-        </tr>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Discount</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of invoiceItems">
+            <td>{{ item.itemName }}</td>
+            <td>{{ item.discount }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.sellingPrice }}</td>
+            <td>{{ item.lineTotal }}</td>
+          </tr>
+        </tbody>
       </table>
 
       <div class="total-section">
