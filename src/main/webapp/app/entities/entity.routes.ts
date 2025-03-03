@@ -31,6 +31,10 @@ const routes: Routes = [
     loadChildren: () => import('./printinvoice/printinvoice.module').then(m => m.PrintInvoiceRoutingModule),
   },
   {
+    path: 'printsalesinvoice',
+    loadChildren: () => import('./printsalesinvoice/printsalesinvoice.module').then(m => m.PrintSalesInvoiceRoutingModule),
+  },
+  {
     path: 'vehicletype',
     data: { pageTitle: 'Vehicletypes' },
     loadChildren: () => import('./vehicletype/vehicletype.routes'),
