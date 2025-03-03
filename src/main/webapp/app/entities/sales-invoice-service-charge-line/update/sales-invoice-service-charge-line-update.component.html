@@ -87,7 +87,7 @@
       </div>
 
       <div class="mt-3" *ngIf="false">
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" style="flex: 1;" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
         </button>
 
@@ -97,6 +97,7 @@
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
           class="btn btn-primary"
+          style="flex: 1;"
         >
           <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
         </button>

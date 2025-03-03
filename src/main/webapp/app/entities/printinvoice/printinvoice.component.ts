@@ -1,11 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-invoice-dummy.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'jhi-printinvoice',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './printinvoice.component.html',
   styleUrl: './printinvoice.component.scss',
 })

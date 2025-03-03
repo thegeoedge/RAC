@@ -20,6 +20,26 @@
     width: 100%;
     height: 100%;
   }
+  .custom-cancel-btn,
+.custom-save-btn {
+  width: 50%; /* Each button takes half the width */
+  border: none;
+  font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button-container {
+  display: flex;
+  width: 100%; /* Ensures full width */
+  gap: 4px; /* Minimal spacing between buttons */
+  padding: 10px;
+}
+input[type=number]{ 
+    text-align: right;
+  }
 </style>
 <div justify-content-right class="row full-width-form">
   <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="full-width-form">
@@ -135,7 +155,7 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer" (click)="onAddItem()">Add Item</button>
+            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer;width: 100%;" (click)="onAddItem()">Add Item</button>
           </div>
         </div>
 
@@ -618,8 +638,8 @@
       />
     </div>
 
-    <div>
-      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+    <div class="button-container">
+      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" style="flex: 1;" (click)="previousState()">
         <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
       </button>
 
@@ -628,7 +648,8 @@
         id="save-entity"
         data-cy="entityCreateSaveButton"
         [disabled]="editForm.invalid || isSaving"
-        class="btn btn-success"
+        class="btn btn-success custom-cancel-btn"
+        style="flex: 1;"
       >
         <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
       </button>

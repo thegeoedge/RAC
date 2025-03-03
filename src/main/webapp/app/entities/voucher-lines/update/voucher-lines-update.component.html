@@ -74,13 +74,15 @@
               {{ accountId }}
             </td>
             <td>
-              <button type="button" class="btn btn-danger" (click)="removeVoucherLine(i)">Remove</button>
+              <button type="button" class="btn btn-danger" (click)="removeVoucherLine(i)"> 
+                <fa-icon icon="times"></fa-icon>
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <button type="button" class="btn btn-secondary" (click)="addVoucherLine()">Add Line</button>
+      <button type="button" class="btn btn-info" (click)="addVoucherLine()">Add Line</button>
     </div>
 
     <div></div>
