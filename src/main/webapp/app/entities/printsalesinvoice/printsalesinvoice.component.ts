@@ -97,4 +97,25 @@ export class PrintsalesinvoiceComponent implements OnInit {
       },
     });
   }
+
+  getTotalAmount(): number {
+    let total = 0;
+
+    // Sum up invoiceItems line totals
+    if (this.invoiceItems) {
+      total += this.invoiceItems.reduce((sum, item) => sum + (item.linetotal || 0), 0);
+    }
+
+    // Sum up invoiceChargeItems service prices
+    if (this.invoiceChargeItems) {
+      total += this.invoiceChargeItems.reduce((sum, item) => sum + (item.servicePrice || 0), 0);
+    }
+
+    // Sum up invoicecommonChargeItems values
+    if (this.invoicecommonChargeItems) {
+      total += this.invoicecommonChargeItems.reduce((sum, item) => sum + (item.value || 0), 0);
+    }
+
+    return total;
+  }
 }
