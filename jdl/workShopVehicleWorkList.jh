@@ -10,3 +10,4 @@ entity Workshopvehicleworklist {
     estimatevalue Float
 }
 paginate * with pagination
+filter all

@@ -50,6 +50,9 @@ import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojo
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
 import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopvehiclework.model';
 import { SalesInvoiceLinesDummyService } from 'app/entities/sales-invoice-lines-dummy/service/sales-invoice-lines-dummy.service';
+import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
+import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
+
 
 @Component({
   standalone: true,
@@ -80,6 +83,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   searchname = inject(SalesInvoiceLinesDummyService);
   jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
   jobservice = inject(AutojobsalesinvoiceservicechargelineService);
+  vehiclework = inject(WorkshopvehicleworkService);
+  vehicleworklist = inject(WorkshopVehicleWorkListService);
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
@@ -102,7 +107,6 @@ export class AutocarejobInstructionComponent implements OnInit {
   selectedVehicleTypeId: number | null = null;
   filteredBillingServiceOptionValues: IBillingserviceoptionvalues[] = [];
   workshopworklist: IWorkshopworklist[] = [];
-  selectedworkItems: IWorkshopworklist[] = [];
 
   // Variables for service selection and total calculation
   selectedServices: IBillingserviceoptionvalues[] = [];
@@ -462,11 +466,108 @@ export class AutocarejobInstructionComponent implements OnInit {
     });
   }
 
-  onworkServiceSelectionChange(item: any, event: any): void {
+  workArray: Array<{
+    id: number;
+    jobid: number;
+    vehicleid: number;
+    customerid: number;
+    customername: string;
+    contactno: string;
+    vehicleno: string;
+    vehiclebrand: string;
+    vehiclemodel: string;
+    mileage: string;
+    addeddate: string;
+    iscalltocustomer: boolean;
+    remarks: string;
+    calldate: string;
+    lmu: number;
+    lmd: string;
+  }> = [];
+
+  worklistArray: Array<{
+    id: number;
+    vehicleworkid: number;
+    lineid: number;
+    workid: number;
+    workshopwork: string;
+    isjobdone: boolean;
+    jobdonedate: string;
+    jobnumber: string;
+    jobvalue: number;
+    estimatevalue: number;
+  }> = [];
+
+  id: number = 0;
+  selectedworkItems: Array<IWorkshopworklist> = []; // Assuming this is defined elsewhere]
+
+  onworkServiceSelectionChange(item: IWorkshopworklist, event: any) {
     if (event.target.checked) {
+      const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.selectedworkItems.push(item);
+      this.workArray.push({
+        id: 0,
+        jobid: this.editForm.controls.id.value ?? 0,
+        vehicleid: Number(this.editForm.get('vehicleid')?.value) || 0,
+        customerid: Number(this.editForm.get('customerid')?.value) || 0,
+        customername: this.editForm.get('customername')?.value || '',
+        contactno: this.editForm.get('contactno')?.value || '',
+        vehicleno: this.editForm.get('vehicleno')?.value || '',
+        vehiclebrand: '',
+        vehiclemodel: '',
+        mileage: this.nextmillage?.toString() || '',
+        addeddate: dayjs('2025-02-27T16:44:59.467Z').format(),
+        iscalltocustomer: false,
+        remarks: '0',
+        calldate: dayjs('2025-02-27T16:44:59.467Z').format(),
+        lmu: 0,
+        lmd: dayjs('2025-02-27T16:44:59.467Z').format(),
+      });
+
+      this.worklistArray.push({
+        id: 0,
+        vehicleworkid: this.id,
+        lineid: nextLineId,
+        workid: item.id,
+        workshopwork: item.workshopwork ?? '',
+        isjobdone: false,
+        jobdonedate: '',
+        jobnumber: '',
+        jobvalue: 0,
+        estimatevalue: 0,
+      });
     } else {
       this.selectedworkItems = this.selectedworkItems.filter(selectedworkItem => selectedworkItem !== item);
+
+      this.workArray = this.workArray.filter(work => work.jobid !== this.editForm.controls.id.value);
+    }
+    console.log('workshop items:', this.selectedworkItems);
+  }
+
+  onworkSelectionChange(service: ICommonserviceoption, event: any) {
+    if (event.target.checked) {
+      const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
+      this.selectedworkItems.push(service);
+
+      this.commonServiceArray.push({
+        invoiceid: 0,
+        lineid: nextLineId,
+        optionid: service.id,
+        mainid: 0,
+        code: service.code || '',
+        name: service.name || '',
+        description: service.description || 'No description',
+        value: service.value ?? 0,
+        addedbyid: 0,
+        discount: 0,
+        serviceprice: 0,
+      });
+    } else {
+      // Remove service from selectedcommonServices if unchecked
+      this.selectedworkItems = this.selectedworkItems.filter(s => s.id !== service.id);
+
+      // Remove service from commonServiceArray
+      this.commonServiceArray = this.commonServiceArray.filter(s => s.optionid !== service.id);
     }
   }
 
@@ -698,27 +799,6 @@ export class AutocarejobInstructionComponent implements OnInit {
     };
   }
 
-  mapFormTowork(formValue: any): IWorkshopvehiclework {
-    return {
-      id: formValue.id || null,
-      jobid: formValue.jobid || null,
-      vehicleid: formValue.vehicleid || null,
-      customerid: formValue.customerid || null,
-      customername: formValue.customername || '',
-      contactno: formValue.contactno || '',
-      vehicleno: formValue.vehicleno || '',
-      vehiclebrand: formValue.vehiclebrand || '',
-      vehiclemodel: formValue.vehiclemodel || '',
-      mileage: formValue.mileage || '',
-      addeddate: formValue.addeddate ? dayjs(formValue.addeddate) : null,
-      iscalltocustomer: formValue.iscalltocustomer || null,
-      remarks: formValue.remarks || '',
-      calldate: formValue.calldate ? dayjs(formValue.calldate) : null,
-      lmu: formValue.lmu || null,
-      lmd: formValue.lmd ? dayjs(formValue.lmd) : null,
-    };
-  }
-
   printSummary() {
     const printContents = document.getElementById('printSummary')?.innerHTML;
     if (!printContents) {
@@ -765,6 +845,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
   }
   invoid: number = 0;
+  workid: number = 0;
   saveAll(): void {
     if (this.autojobsinvoiceComponent) {
       this.autojobsinvoiceComponent.save().subscribe({
@@ -773,6 +854,14 @@ export class AutocarejobInstructionComponent implements OnInit {
           // Do something with the invoice ID from the component
           this.invoid = invoiceIdFromComponent;
         },
+        // if (this.workshopVehicleWorkComponent) {
+        //   this.workshopVehicleWorkComponent.save().subscribe({
+        //     next: IdFromComponent => {
+        //       console.log('Invoice ID returned from autojobsinvoiceComponent.save():', invoiceIdFromComponent);
+        //       // Do something with the invoice ID from the component
+        //       this.invoid = invoiceIdFromComponent;
+        //     },
+
         error: error => {
           console.error('Component save failed:', error);
         },
@@ -838,6 +927,35 @@ export class AutocarejobInstructionComponent implements OnInit {
                 error: createError => console.error(`Error for item ${index + 1}:`, createError),
               });
             }, index * 500); // 500ms delay per request
+          });
+
+          this.workArray.forEach(item => {
+            this.vehiclework.create({ ...item, id: null, lmd: dayjs(), addeddate: dayjs(), calldate: dayjs() }).subscribe({
+              next: createResponse => {
+                if (createResponse.body) {
+                  console.log('work created successfully:', createResponse.body.id);
+                  this.id = createResponse.body.id;
+                  console.log('vehicleid:', this.id);
+
+                  this.worklistArray.forEach(item => {
+                    console.log('worklist:', this.worklistArray);
+                    this.vehicleworklist.create({ ...item, vehicleworkid: this.id, id: null, jobdonedate: dayjs() }).subscribe({
+                      next: createResponse => {
+                        console.log('worklist created successfully:', createResponse);
+                      },
+                      error: createError => {
+                        console.error('Error creating worklist:', createError.body);
+                      },
+                    });
+                  });
+                } else {
+                  console.error('Error: createResponse.body is null');
+                }
+              },
+              error: createError => {
+                console.error('Error creating work:', createError.body);
+              },
+            });
           });
 
           // console.log('Updated itemsArray:', this.itemsArray);

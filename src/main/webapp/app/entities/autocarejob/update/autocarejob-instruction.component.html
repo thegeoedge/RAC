@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   </head>
   <body>
-    <div class="container mt-2">
+    <div class="container-fluid mt-2">
       <h2 class="mb-1">AutoCare Advisor Instruction</h2>
       <br />
       <!-- Row for Form and Summary -->
@@ -119,7 +119,7 @@
                     <legend class="w-auto px-2">Vehicle</legend>
                     <div class="row">
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_vehiclenumber">Vehiclenumber</label>
+                        <label class="form-label" for="field_vehiclenumber">Vehicle Number</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -140,7 +140,7 @@
                       </div>
 
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_jobtypename">Jobtypename</label>
+                        <label class="form-label" for="field_jobtypename">Job Type Name</label>
                         <select
                           class="form-control form-control-sm"
                           name="jobtypename"
@@ -149,7 +149,7 @@
                           formControlName="jobtypename"
                         >
                           <option value="Full Service and Other Services">Full Service and Other Services</option>
-                          <option value="Detailing services">Detailing services</option>
+                          <option value="Detailing services">Detailing Services</option>
                           <option value="Performance Care">Performance Care</option>
                           <option value="Oil and Fluid Change">Oil and Fluid Change</option>
                         </select>
@@ -158,7 +158,7 @@
 
                     <div class="row">
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_customername">Customername</label>
+                        <label class="form-label" for="field_customername">Customer Name</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -170,7 +170,7 @@
                       </div>
 
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_customertel">Customer Tel</label>
+                        <label class="form-label" for="field_customertel">Customer Telephone</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -182,7 +182,7 @@
                       </div>
                     </div>
                     <div class="row">
-                      <div class="row align-items-center border p-3">
+                      <div class="row align-items-center p-3">
                         <div class="mb-3 col-6">
                           <label class="form-label" for="field_millage">Millage</label>
                           <input
@@ -288,7 +288,7 @@
                       </div>
 
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_nextgearoilmilage">Next gear oilmilage</label>
+                        <label class="form-label" for="field_nextgearoilmilage">Next Gear Oil Milage</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -305,7 +305,7 @@
                     <legend class="w-auto px-2">Instructions</legend>
                     <div class="row">
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_specialrquirments">Special rquirments</label>
+                        <label class="form-label" for="field_specialrquirments">Special Requirements</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -317,7 +317,7 @@
                       </div>
 
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_specialinstructions">Special instructions</label>
+                        <label class="form-label" for="field_specialinstructions">Special Instructions</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -343,7 +343,7 @@
                       </div>
 
                       <div class="mb-3 col-6">
-                        <label class="form-label" for="field_nextserviceinstructions">Next service instructions</label>
+                        <label class="form-label" for="field_nextserviceinstructions">Next Service Instructions</label>
                         <input
                           type="text"
                           class="form-control form-control-sm"
@@ -359,7 +359,7 @@
                   <fieldset class="border p-3">
                     <legend class="w-auto px-2">Last Service</legend>
                     <div class="mb-3">
-                      <label class="form-label" for="field_lastserviceinstructions">Last service instructions</label>
+                      <label class="form-label" for="field_lastserviceinstructions">Last Service Instructions</label>
                       <!-- <input
                         type="text"
                         class="form-control"
@@ -408,7 +408,7 @@
                       </datalist>
                     </div>
                     <div class="mb-3 col-6">
-                      <label class="form-label" for="field_jobtypename">Jobtypename</label>
+                      <label class="form-label" for="field_jobtypename">Job type Name</label>
                       <select
                         class="form-control form-control-sm"
                         name="jobtypename"
@@ -492,7 +492,7 @@
                 <!-- Toggle button for subcategories -->
                 <div class="d-flex align-items-center mt-3" style="cursor: pointer" (click)="toggleSubcategories()">
                   <span [ngClass]="{ 'rotate-arrow': subcategoriesVisible }"> </span>
-                  <h5 class="ms-2 mb-0">service options</h5>
+                  <h5 class="ms-2 mb-0">Service Options</h5>
                 </div>
 
                 <!-- Subcategories section -->
@@ -720,9 +720,40 @@
             </div>
 
             <!-- Form 5 -->
-            <div class="tab-pane fade" id="form5" role="tabpanel" aria-labelledby="form5-tab">
-              <jhi-workshopvehiclework-update [formData]="mapFormTowork(editForm.value)"></jhi-workshopvehiclework-update>
+            <div class="tab-pane fade" id="form5" role="tabpanel" aria-labelledby="form5-tab"></div>
+          </div>
+          <fieldset class="border p-3 mt-3">
+            <legend class="w-auto px-2">Workshop work Services</legend>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd">
+              <table class="table table-bordered">
+                <thead class="thead-dark">
+                  <tr>
+                    <th>Workshop work</th>
+                    <th>Work Description</th>
+                    <th>Select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of workshopworklist">
+                    <td>{{ item.workshopwork }}</td>
+                    <td>{{ item.workshopworkdescription }}</td>
+                    <td>
+                      <input type="checkbox" (change)="onworkServiceSelectionChange(item, $event)" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </fieldset>
+
+          <!-- Display selected items -->
+          <div class="mt-3">
+            <h4>Selected Items:</h4>
+            <ul>
+              <li *ngFor="let selectedItem of selectedworkItems">
+                {{ selectedItem.workshopwork }}
+              </li>
+            </ul>
           </div>
         </div>
         <!-- Right Side: Summary -->

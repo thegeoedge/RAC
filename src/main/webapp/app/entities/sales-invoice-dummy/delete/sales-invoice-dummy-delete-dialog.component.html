@@ -1,3 +1,22 @@
+<style>
+.custom-cancel-btn,
+.custom-save-btn {
+  width: 50%; /* Each button takes half the width */
+  border: none;
+  font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button-container {
+  display: flex;
+  width: 100%; /* Ensures full width */
+  gap: 2px; /* Minimal spacing between buttons */
+}
+
+</style>
 @if (salesInvoiceDummy) {
   <form name="deleteForm" (ngSubmit)="confirmDelete(salesInvoiceDummy.id!)">
     <div class="modal-header">
@@ -10,11 +29,11 @@
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+      <button type="button" class="btn btn-secondary custom-cancel-btn" data-dismiss="modal" (click)="cancel()">
         <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
       </button>
 
-      <button id="jhi-confirm-delete-salesInvoiceDummy" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+      <button id="jhi-confirm-delete-salesInvoiceDummy" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger custom-save-btn">
         <fa-icon icon="times"></fa-icon>&nbsp;<span>Delete</span>
       </button>
     </div>

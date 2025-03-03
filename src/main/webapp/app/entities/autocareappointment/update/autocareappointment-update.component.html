@@ -1,5 +1,23 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<style>
+.custom-cancel-btn,
+.custom-save-btn {
+  width: 50%; /* Each button takes half the width */
+  border: none;
+  font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+.button-container {
+  display: flex;
+  width: 100%; /* Ensures full width */
+  gap: 3px; /* Minimal spacing between buttons */
+}
+
+</style>
+<div class="d-flex container-fluid">
+  <div class="col-12">
     <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <h2 id="jhi-autocareappointment-heading" data-cy="AutocareappointmentCreateUpdateHeading">Add or Edit a Service Appointment</h2>
 
@@ -561,8 +579,8 @@
         </div>
         <br />
         <br />
-        <div>
-          <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+        <div class="button-container">
+          <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" (click)="previousState()">
             <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
           </button>
 
@@ -571,7 +589,9 @@
             id="save-entity"
             data-cy="entityCreateSaveButton"
             [disabled]="editForm.invalid || isSaving"
-            class="btn btn-success"
+
+            class="btn btn-success custom-save-btn"
+
           >
             <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
           </button>

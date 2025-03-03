@@ -2,18 +2,16 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-invoice-dummy.service';
 import { CommonModule } from '@angular/common';
-
 @Component({
-  selector: 'jhi-printinvoice',
+  selector: 'jhi-printsalesinvoice',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './printinvoice.component.html',
-  styleUrl: './printinvoice.component.scss',
+  templateUrl: './printsalesinvoice.component.html',
+  styleUrl: './printsalesinvoice.component.scss',
 })
-export class PrintinvoiceComponent implements OnInit {
-  protected salesInvoiceDummyService = inject(SalesInvoiceDummyService);
-  invoice: any;
-  constructor(private route: ActivatedRoute) {}
+export class PrintsalesinvoiceComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  protected salesInvoiceService = inject(SalesInvoiceDummyService);
 
   ngOnInit(): void {
     // Get 'id' from the query params
@@ -29,10 +27,8 @@ export class PrintinvoiceComponent implements OnInit {
       }
     });
   }
-
-  // Function to fetch invoice data
   getSalesInvoice(id: number): void {
-    this.salesInvoiceDummyService.find(id).subscribe({
+    this.salesInvoiceService.find(id).subscribe({
       next: response => {
         console.log('Sales Invoice Data:', response.body);
       },
@@ -44,7 +40,7 @@ export class PrintinvoiceComponent implements OnInit {
   //: any[] = []; // Initialize an array to store invoice lines
 
   getSalesInvoicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchInvoiceLinesdummies(id).subscribe({
+    this.salesInvoiceService.fetchInvoiceLines(id).subscribe({
       next: response => {
         console.log('Sales Invoice lines Data:', response.body);
 
@@ -66,11 +62,19 @@ export class PrintinvoiceComponent implements OnInit {
 
   // Initialize as an empty array
   invoiceItems: any[] = [];
+  invoiceChargeItems: any[] = [];
+  invoicecommonChargeItems: any[] = [];
 
   getSalesServicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchServicedummy(id).subscribe({
+    this.salesInvoiceService.fetchService(id).subscribe({
       next: response => {
         console.log('Sales Service lines Data:', response.body);
+        if (Array.isArray(response.body)) {
+          this.invoiceChargeItems = response.body; // Directly assign the response
+        } else {
+          console.error('Invalid data format: Expected an array', response.body);
+          this.invoiceChargeItems = []; // Reset to avoid issues
+        }
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
@@ -78,13 +82,40 @@ export class PrintinvoiceComponent implements OnInit {
     });
   }
   getSalesSercolines(id: number): void {
-    this.salesInvoiceDummyService.fetchServiceCommondummy(id).subscribe({
+    this.salesInvoiceService.fetchServiceCommon(id).subscribe({
       next: response => {
         console.log('Sales Service common Data:', response.body);
+        if (Array.isArray(response.body)) {
+          this.invoicecommonChargeItems = response.body; // Directly assign the response
+        } else {
+          console.error('Invalid data format: Expected an array', response.body);
+          this.invoicecommonChargeItems = []; // Reset to avoid issues
+        }
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
       },
     });
+  }
+
+  getTotalAmount(): number {
+    let total = 0;
+
+    // Sum up invoiceItems line totals
+    if (this.invoiceItems) {
+      total += this.invoiceItems.reduce((sum, item) => sum + (item.linetotal || 0), 0);
+    }
+
+    // Sum up invoiceChargeItems service prices
+    if (this.invoiceChargeItems) {
+      total += this.invoiceChargeItems.reduce((sum, item) => sum + (item.servicePrice || 0), 0);
+    }
+
+    // Sum up invoicecommonChargeItems values
+    if (this.invoicecommonChargeItems) {
+      total += this.invoicecommonChargeItems.reduce((sum, item) => sum + (item.value || 0), 0);
+    }
+
+    return total;
   }
 }
