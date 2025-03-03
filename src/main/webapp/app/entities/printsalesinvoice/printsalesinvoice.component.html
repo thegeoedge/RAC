@@ -85,9 +85,9 @@
       </table>
 
       <div class="total-section">
-        <p><strong>Sub Total:</strong> 9075.00</p>
+        <p><strong>Sub Total:</strong> {{ getTotalAmount() | number: '1.2-2' }}</p>
         <p><strong>Discount:</strong> 0.00</p>
-        <p><strong>Net Total:</strong> 9075.00</p>
+        <p><strong>Net Total:</strong> {{ getTotalAmount() | number: '1.2-2' }}</p>
       </div>
     </div>
   </body>
