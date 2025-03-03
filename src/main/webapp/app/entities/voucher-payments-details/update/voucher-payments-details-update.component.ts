@@ -44,17 +44,20 @@ export class VoucherPaymentsDetailsUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const voucherPaymentsDetails = this.voucherPaymentsDetailsFormService.getVoucherPaymentsDetails(this.editForm);
-    if (voucherPaymentsDetails.id !== null) {
-      this.subscribeToSaveResponse(this.voucherPaymentsDetailsService.update(voucherPaymentsDetails));
-    } else {
-      this.subscribeToSaveResponse(this.voucherPaymentsDetailsService.create(voucherPaymentsDetails));
-    }
+
+    this.subscribeToSaveResponse(this.voucherPaymentsDetailsService.create(voucherPaymentsDetails));
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IVoucherPaymentsDetails>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      next: response => {
+        console.log('Save Responszzzzzzzzzze:', response); // Log the full response
+        this.onSaveSuccess();
+      },
+      error: error => {
+        console.error('Save Error:', error); // Log the error response
+        this.onSaveError();
+      },
     });
   }
 

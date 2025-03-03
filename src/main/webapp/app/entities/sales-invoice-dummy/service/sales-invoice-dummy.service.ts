@@ -38,18 +38,25 @@ export class SalesInvoiceDummyService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-dummies');
   protected resourceUrli = this.applicationConfigService.getEndpointFor('api/salesinvoices');
-  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines'); // Set the endpoint for invoice lines
+  protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines');
+  protected resourceInvoiceLinesUrld = this.applicationConfigService.getEndpointFor('/api/sales-invoice-lines-dummies'); // Set the endpoint for invoice lines
   protected resourceInvoiceLinesUrli = this.applicationConfigService.getEndpointFor('api/sales-invoice-service-charge-lines');
 
+  protected resourceInvoiceLinesUrlsd = this.applicationConfigService.getEndpointFor(' /api/sales-invoice-service-charge-line-dummies');
   protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
   protected resourceInvoiceLinesUrlsercomd = this.applicationConfigService.getEndpointFor(
     '/api/sale-invoice-common-service-charge-dummies',
   );
-
+  //service charge
   fetchService(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceId.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
   }
+  fetchServicedummy(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceId.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsd}`, { params: options, observe: 'response' });
+  }
+  //common service charge
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceId.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
@@ -58,10 +65,14 @@ export class SalesInvoiceDummyService {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercomd}`, { params: options, observe: 'response' });
   }
-
+  //invoicelines
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+  }
+  fetchInvoiceLinesdummies(id: number): Observable<HttpResponse<any>> {
+    const options = createRequestOption({ 'invoiceId.equals': id });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrld}`, { params: options, observe: 'response' });
   }
   create(salesInvoiceDummy: NewSalesInvoiceDummy): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesInvoiceDummy);
@@ -87,7 +98,7 @@ export class SalesInvoiceDummyService {
       })
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
-
+  //invoice
   find(id: number): Observable<EntityResponseType> {
     return this.http
       .get<RestSalesInvoiceDummy>(`${this.resourceUrli}/${id}`, { observe: 'response' })

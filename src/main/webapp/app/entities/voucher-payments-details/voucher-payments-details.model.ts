@@ -1,7 +1,7 @@
 import dayjs from 'dayjs/esm';
 
 export interface IVoucherPaymentsDetails {
-  id: number;
+  id: number | null;
   lineID?: number | null;
   paymentAmount?: number | null;
   totalVoucherAmount?: number | null;
@@ -30,4 +30,4 @@ export interface IVoucherPaymentsDetails {
   isBankReconciliation?: boolean | null;
 }
 
-export type NewVoucherPaymentsDetails = Omit<IVoucherPaymentsDetails, 'id'> & { id: null };
+export type NewVoucherPaymentsDetails = Omit<IVoucherPaymentsDetails, 'id'> & { id: null | number };

@@ -58,6 +58,8 @@
             (change)="onCheckboxChange($event, option)"
             class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
           />
+
+        </div>
         </div>
         </div>
 
@@ -69,7 +71,7 @@
               <th *ngIf="false">Line ID</th>
               <th *ngIf="false">Option ID</th>
               <th *ngIf="false">Main ID</th>
-              <th>Code</th>
+              <th *ngIf="false">Code</th>
               <th>Name</th>
               <th>Description</th>
               <th>Value</th>
@@ -113,7 +115,7 @@
                   </option>
                 </datalist>
               </td>
-              
+
               <td>
                 <input type="text" class="form-control" formControlName="description" />
               </td>

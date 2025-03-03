@@ -18,6 +18,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'jhi-voucher-update',
   templateUrl: './voucher-update.component.html',
   imports: [SharedModule, FormsModule, ReactiveFormsModule, VoucherLinesUpdateComponent],
+  providers: [VoucherLinesUpdateComponent],
   // Make sure this is included
 })
 export class VoucherUpdateComponent implements OnInit {
@@ -26,6 +27,7 @@ export class VoucherUpdateComponent implements OnInit {
   voucher: IVoucher | null = null;
   accountId: number = 0;
   name: string = '';
+  id: number = 0;
   originalamount: number = 0;
   amount: number = 0;
   code: String = '';
@@ -37,6 +39,7 @@ export class VoucherUpdateComponent implements OnInit {
   protected formBuilder = inject(FormBuilder);
   protected voucherFormService = inject(VoucherFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  //voucherline=inject(VoucherLinesUpdateComponent);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: VoucherFormGroup = this.voucherFormService.createVoucherFormGroup();
@@ -51,6 +54,11 @@ export class VoucherUpdateComponent implements OnInit {
           this.loadSalesInvoiceDummy(id);
         }
         console.log('Query id:', id);
+        console.log('Current form values on init:', this.editForm.value);
+        this.editForm.get('totalAmount')?.valueChanges.subscribe(value => {
+          console.log('Total Amount changed:', value);
+          console.log('Full Form Values:', this.editForm.value); // Log full form
+        });
       });
 
       if (voucher) {
@@ -102,6 +110,7 @@ export class VoucherUpdateComponent implements OnInit {
 
           this.voucherCode = `${prefix}${number}`; // Set the new code to voucherCode
           console.log('New Voucher Code:', this.voucherCode);
+          this.editForm.get('code')?.setValue(this.voucherCode);
         } else {
           console.warn('Invalid voucher code format:', lastCode);
         }
@@ -169,20 +178,34 @@ export class VoucherUpdateComponent implements OnInit {
     window.history.back();
   }
 
-  save(): void {
+  save(): Promise<number | null> {
     this.isSaving = true;
     const voucher = this.voucherFormService.getVoucher(this.editForm);
     if (voucher.id !== null) {
-      this.subscribeToSaveResponse(this.voucherService.update(voucher));
+      return this.subscribeToSaveResponse(this.voucherService.update(voucher));
     } else {
-      this.subscribeToSaveResponse(this.voucherService.create(voucher));
+      return this.subscribeToSaveResponse(this.voucherService.create(voucher));
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IVoucher>>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IVoucher>>): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+      result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
+        next: response => {
+          if (response.body) {
+            console.log('Save Success:', response.body.id); // Log the response in the console
+            resolve(response.body.id); // Resolve the promise with the id
+          } else {
+            console.warn('Save response body is null');
+            resolve(null); // Resolve with null if body is null
+          }
+        },
+        error: error => {
+          console.error('Save Error:', error); // Log the error in the console
+          this.onSaveError();
+          reject(error); // Reject the promise in case of an error
+        },
+      });
     });
   }
 

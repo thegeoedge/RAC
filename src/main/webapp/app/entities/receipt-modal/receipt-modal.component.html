@@ -40,23 +40,23 @@
                   <label class="form-label d-block">Select an Option</label>
                   <div class="d-flex gap-3">
                     <div>
-                      <input type="radio" name="option" id="option1" value="1" (change)="selectedOption = 1" />
+                      <input type="radio" name="option" id="option1" value="1" (change)="onOptionChange(1)" />
                       <label for="option1">Cash</label>
                     </div>
                     <div>
-                      <input type="radio" name="option" id="option2" value="2" (change)="selectedOption = 2" />
+                      <input type="radio" name="option" id="option2" value="2" (change)="onOptionChange(2)" />
                       <label for="option2">Credit</label>
                     </div>
                     <div>
-                      <input type="radio" name="option" id="option3" value="3" (change)="selectedOption = 3" />
+                      <input type="radio" name="option" id="option3" value="3" (change)="onOptionChange(3)" />
                       <label for="option3">Cheque</label>
                     </div>
                     <div>
-                      <input type="radio" name="option" id="option4" value="4" (change)="selectedOption = 4" />
+                      <input type="radio" name="option" id="option4" value="4" (change)="onOptionChange(4)" />
                       <label for="option4">Card/Other</label>
                     </div>
                     <div>
-                      <input type="radio" name="option" id="option5" value="5" (change)="selectedOption = 5" />
+                      <input type="radio" name="option" id="option5" value="5" (change)="onOptionChange(5)" />
                       <label for="option5">Bank</label>
                     </div>
                   </div>
@@ -64,13 +64,21 @@
 
                 <!-- Input Fields for Option 1 -->
                 <div *ngIf="selectedOption === 1">
-                  <div class="mb-3">
-                    <label class="form-label" for="field_input1">Cash</label>
-                    <input type="text" class="form-control" name="inputA" id="field_input1" data-cy="inputA" />
+                  <div>
+                    <label class="form-label" for="{{ field_input1 }}">Cash</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="inputA"
+                      [id]="field_input1"
+                      data-cy="inputA"
+                      (input)="onItemCodeInput($event)"
+                    />
                   </div>
+
                   <div class="mb-3">
                     <label class="form-label" for="field_input2">Balance</label>
-                    <input type="text" class="form-control" name="inputB" id="field_input2" data-cy="inputB" />
+                    <input type="text" class="form-control" name="inputB" id="field_input2" data-cy="inputB" [value]="balance" />
                   </div>
                 </div>
 

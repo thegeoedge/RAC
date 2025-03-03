@@ -30,7 +30,11 @@ export class VoucherLinesService {
   protected applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/voucher-lines');
+  private apiUrl = 'api/voucher-payments-details'; // The endpoint for saving payment details
 
+  createay(paymentDetails: any): Observable<HttpResponse<any>> {
+    return this.http.post<any>(this.apiUrl, paymentDetails, { observe: 'response' });
+  }
   create(voucherLines: NewVoucherLines): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(voucherLines);
     return this.http

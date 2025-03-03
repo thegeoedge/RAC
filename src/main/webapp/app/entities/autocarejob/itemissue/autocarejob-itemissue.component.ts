@@ -1,9 +1,11 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import dayjs from 'dayjs'; // Import Dayjs
+// import dayjs from 'dayjs'; // Import Dayjs
+import dayjs from 'dayjs/esm';
+
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IAutocarejob } from '../autocarejob.model';
@@ -11,11 +13,11 @@ import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.m
 import { ICustomervehicle } from 'app/entities/customervehicle/customervehicle.model';
 import { CustomervehicleService } from 'app/entities/customervehicle/service/customervehicle.service';
 import { CustomerService } from 'app/entities/customer/service/customer.service';
-import { ICustomer } from 'app/entities/customer/customer.model';
+
 import { AutocareappointmentService } from 'app/entities/autocareappointment/service/autocareappointment.service';
 import { IAutocareappointment } from 'app/entities/autocareappointment/autocareappointment.model';
 import { AutocarejobService } from '../service/autocarejob.service';
-
+import { AutojobsinvoicelinebatchesService } from 'app/entities/autojobsinvoicelinebatches/service/autojobsinvoicelinebatches.service';
 import { AutocarejobFormService, AutocarejobFormGroup } from '../update/autocarejob-form.service';
 import { AutojobsinvoiceUpdateComponent } from 'app/entities/autojobsinvoice/update/autojobsinvoice-update.component';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
@@ -44,6 +46,7 @@ export class AutocarejobitemissueComponent implements OnInit {
   customervehicles: ICustomervehicle[] = [];
   customerDetails: any | null = null;
   autocareappointments: IAutocareappointment[] = [];
+  jobinvoicelinebatches = inject(AutojobsinvoicelinebatchesService);
   protected autocarejobService = inject(AutocarejobService);
   protected autocarejobFormService = inject(AutocarejobFormService);
   autojobsinvoiceService = inject(AutojobsinvoiceService);
@@ -56,6 +59,7 @@ export class AutocarejobitemissueComponent implements OnInit {
   salesinvoicelineService = inject(SalesInvoiceLinesService);
   protected activatedRoute = inject(ActivatedRoute);
   protected customervehicleService = inject(CustomervehicleService);
+  protected router = inject(Router);
   protected customerService = inject(CustomerService);
   protected autocareappointmentService = inject(AutocareappointmentService);
   issuedItems: any[] = []; // Items that are issued
@@ -80,23 +84,6 @@ export class AutocarejobitemissueComponent implements OnInit {
     window.history.back();
   }
 
-  filteredVehicles: IAutocareappointment[] = [];
-
-  onVehicleSearch(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const searchTerm = input.value;
-
-    if (searchTerm.length > 2) {
-      // Use the new service method to fetch matching results
-      this.autocareappointmentService.findByVehicleNumber(searchTerm).subscribe(response => {
-        this.filteredVehicles = response.body || [];
-      });
-    } else {
-      // Clear the suggestions if input is too short
-      this.filteredVehicles = [];
-    }
-  }
-
   autojobsInvoicesMap: {
     [key: number]: {
       invoice: IAutojobsinvoice;
@@ -109,6 +96,7 @@ export class AutocarejobitemissueComponent implements OnInit {
       .flatMap(invoice => invoice.invoiceLines)
       .filter(line => !this.issuedItems.some(issued => issued.id === line.id));
   }
+  id: number = 0;
 
   fetchhistory(): void {
     this.autojobsinvoiceService.query({ 'jobid.equals': this.autocarejob?.id }).subscribe((res: HttpResponse<IAutojobsinvoice[]>) => {
@@ -119,7 +107,10 @@ export class AutocarejobitemissueComponent implements OnInit {
             invoice,
             invoiceLines: [],
           };
-
+          if (res.body && res.body.length > 0) {
+            console.log('items', res.body[0].id);
+            this.id = res.body[0].id;
+          }
           // Fetch Invoice Lines
           this.autojobsinvoicelinesService.query({ 'invocieid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
             this.autojobsInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
@@ -129,10 +120,82 @@ export class AutocarejobitemissueComponent implements OnInit {
     });
   }
 
+  itemsArray: Array<{
+    id: number;
+    lineid: number;
+    batchlineid: number;
+    itemid: number;
+    code: string;
+    batchid: number;
+    batchcode: string;
+    txdate: string;
+    manufacturedate: string;
+    expireddate: string;
+    qty: number;
+    cost: number;
+    price: number;
+    notes: string;
+    lmu: number;
+    lmd: string;
+    nbt: boolean;
+    vat: boolean;
+    discount: number;
+    total: number;
+    issued: boolean;
+    issuedby: number;
+    issueddatetime: string;
+    addedbyid: number;
+    canceloptid: number;
+    cancelopt: string;
+    cancelby: number;
+  }> = [];
+
   //issue an item
-  issueItem(item: any): void {
-    this.issuedItems.push(item);
-    console.log(this.issuedItems);
+  issueItem(issuedItem: any): void {
+    if (!issuedItem) {
+      console.warn('Invalid item selection.');
+      return;
+    }
+
+    const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
+    const nextbatchlineid = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.batchlineid), 0) + 1 : 1;
+
+    const newItem = {
+      id: this.id,
+      lineid: nextLineId,
+      batchlineid: nextbatchlineid,
+      itemid: issuedItem.id,
+      code: issuedItem.code ?? '',
+      batchid: 0,
+      batchcode: '',
+      txdate: dayjs('2025-02-27T16:44:59.467Z').format(),
+      manufacturedate: dayjs('2025-02-27T16:44:59.467Z').format(),
+      expireddate: dayjs('2025-02-27T16:44:59.467Z').format(),
+      qty: 1,
+      cost: 0,
+      price: 0,
+      notes: issuedItem.description ?? '',
+      lmu: 0,
+      lmd: dayjs('2025-02-27T16:44:59.467Z').format(),
+      nbt: false,
+      vat: false,
+      discount: 0,
+      total: issuedItem.lastsellingprice ?? 0,
+      issued: false,
+      issuedby: 0,
+      issueddatetime: dayjs('2025-02-27T16:44:59.467Z').format(),
+      addedbyid: 0,
+      canceloptid: 0,
+      cancelopt: '',
+      cancelby: 0,
+    };
+
+    this.itemsArray.push({
+      ...newItem,
+    });
+    this.issuedItems.push({ ...issuedItem });
+
+    console.log('Issued Items:', this.itemsArray);
   }
 
   //Cancel issued item
@@ -147,21 +210,44 @@ export class AutocarejobitemissueComponent implements OnInit {
     }
   }
 
-  searchedCustomer: ICustomer | null = null;
+  saveitem(): void {
+    if (this.itemsArray.length === 0) {
+      console.warn('No items to save.');
+      return;
+    }
+
+    this.isSaving = true;
+
+    this.itemsArray.forEach(item =>
+      this.jobinvoicelinebatches
+        .create({
+          ...item,
+          id: this.id,
+          txdate: dayjs(),
+          manufacturedate: dayjs(),
+          expireddate: dayjs(),
+          lmd: dayjs(),
+          issueddatetime: dayjs(),
+        })
+        .subscribe({
+          next: createResponse => {
+            console.log('item created successfully:', createResponse);
+            this.router.navigate(['autocarejob/autocareopenjob']);
+          },
+          error: createError => {
+            console.error('Error creating service:', createError.body);
+          },
+        }),
+    );
+  }
+
+  // protected onSaveError(): void {
+  //   // Api for inheritance.
+  // }
 
   save(): void {
     this.isSaving = true;
     const autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
-    autocarejob.jobtypeid = this.editForm.get('jobtypeid')?.value;
-    autocarejob.vehicleid = this.editForm.get('vehicleid')?.value;
-  }
-
-  protected onSaveSuccess(): void {
-    this.previousState();
-  }
-
-  protected onSaveError(): void {
-    // Api for inheritance.
   }
 
   protected onSaveFinalize(): void {
