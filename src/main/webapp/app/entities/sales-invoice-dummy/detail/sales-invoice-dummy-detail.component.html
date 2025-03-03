@@ -1,3 +1,20 @@
+<style>
+  .custom-back-btn,
+  .custom-edit-btn {
+    width: 50%; /* Each button takes half the width */
+    border: none;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .button-container {
+    display: flex;
+    width: 100%; /* Ensures full width */
+    gap: 3px; /* Minimal spacing between buttons */
+  }
+  </style>
 <div class="d-flex justify-content-center">
   <div class="col-8">
     @if (salesInvoiceDummy(); as salesInvoiceDummyRef) {
@@ -173,13 +190,16 @@
           </dd>
         </dl>
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
-        </button>
-
-        <button type="button" [routerLink]="['/sales-invoice-dummy', salesInvoiceDummyRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
-        </button>
+        <div class="button-container">
+          <button type="submit" (click)="previousState()" class="btn btn-secondary custom-back-btn" data-cy="entityDetailsBackButton">
+            <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+          </button>
+  
+          <button type="button" [routerLink]="['/sales-invoice-dummy', salesInvoiceDummyRef.id, 'edit']" class="btn btn-primary custom-edit-btn">
+            <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+          </button>
+        </div>
+       
       </div>
     }
   </div>
