@@ -44,6 +44,15 @@ export class AutocareappointmentService {
       .post<RestAutocareappointment>(this.resourceUrl, copy, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
+  fetchDate(date: string): Observable<HttpResponse<IAutocareappointment[]>> {
+    const formattedDate = dayjs(date).startOf('day').toISOString(); // Convert to ISO format
+
+    const url = `${this.resourceUrl}?conformdate.greaterThan=${formattedDate}&page=0&size=20`;
+
+    console.log('Fetching data for date:', formattedDate); // Debugging log
+
+    return this.http.get<IAutocareappointment[]>(url, { observe: 'response' });
+  }
 
   update(autocareappointment: IAutocareappointment): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(autocareappointment);

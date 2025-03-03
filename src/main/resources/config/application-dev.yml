@@ -32,9 +32,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:sqlserver://localhost:5434;database=ozi;encrypt=false
-    username: sa
-    password: YourStrong!Passw0rd
+    url: jdbc:sqlserver://88.223.92.162:1433;database=RACNEW;encrypt=false
+    username: SA
+    password: yourStrong(!)Password
     hikari:
       poolName: Hikari
       auto-commit: false
@@ -80,7 +80,7 @@ jhipster:
   security:
     authentication:
       jwt:
-        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+        # This token must be encoded using Base64 and be at least 256 bits long (you can type openssl rand -base64 64 on your command line to generate a 512 bits one)
         base64-secret: YjUwYWYwNzkzMTE5YmE3ZWJjYmUxNDMxYzAxZDEzNWNlYTUwMTVkMmRmMDM1MDQyZTRmZWRhNzJiMTQ1YWVlYjMyNDIxZmVhNDM0ZjY4NjU0YjU0MDJhZDk0NmJiNjQ3MmJjMDJmZWU5N2RlYjBkMjhmNDJlOGRhZDRhZjM1MDQ=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400

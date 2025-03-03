@@ -45,6 +45,12 @@ export class SalesInvoiceLinesDummyService {
       .get<IInventory[]>(url, { observe: 'response' })
       .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));
   }
+  getElementsByUserInputName(userInputCode: string): Observable<EntityArrayResponseType> {
+    const url = this.applicationConfigService.getEndpointFor(`api/inventories?name.contains=${userInputCode}&page=0&size=20`);
+    return this.http
+      .get<IInventory[]>(url, { observe: 'response' })
+      .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));
+  }
   update(salesInvoiceLinesDummy: ISalesInvoiceLinesDummy): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesInvoiceLinesDummy);
     return this.http
