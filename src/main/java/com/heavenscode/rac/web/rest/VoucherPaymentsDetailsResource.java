@@ -65,9 +65,7 @@ public class VoucherPaymentsDetailsResource {
     public ResponseEntity<VoucherPaymentsDetails> createVoucherPaymentsDetails(@RequestBody VoucherPaymentsDetails voucherPaymentsDetails)
         throws URISyntaxException {
         LOG.debug("REST request to save VoucherPaymentsDetails : {}", voucherPaymentsDetails);
-        if (voucherPaymentsDetails.getId() != null) {
-            throw new BadRequestAlertException("A new voucherPaymentsDetails cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         voucherPaymentsDetails = voucherPaymentsDetailsService.save(voucherPaymentsDetails);
         return ResponseEntity.created(new URI("/api/voucher-payments-details/" + voucherPaymentsDetails.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, voucherPaymentsDetails.getId().toString()))

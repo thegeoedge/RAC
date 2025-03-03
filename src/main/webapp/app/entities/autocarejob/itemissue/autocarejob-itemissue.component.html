@@ -44,11 +44,11 @@
     <!-- Tab panes -->
     <div class="tab-content mt-3">
       <div class="tab-pane fade show active" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-        <div *ngIf="allInvoiceLines.length > 0; else noData">
+        <div>
           <div class="card mb-3">
             <div class="card-body shadow">
               <h6>Available Items:</h6>
-              <table class="table table-bordered">
+              <table class="table table-bordered" *ngIf="allInvoiceLines.length > 0; else noData">
                 <thead>
                   <tr>
                     <th>Item Code</th>
@@ -76,9 +76,10 @@
                     <td>
                       <select [(ngModel)]="line.selectedAction" class="form-select form-select-sm">
                         <option value="return">By Customer</option>
-                        <option value="damage">By Manager</option>
-                        <option value="replace">By Admin</option>
-                        <option value="other">Other</option>
+                        <option value="Service advicer">Service advicer</option>
+                        <option value="manager">Manager</option>
+                        <option value="product defect">product defect</option>
+                        <option value="not available">not available</option>
                       </select>
                     </td>
                     <td style="font-size: 0.75rem">
@@ -119,6 +120,7 @@
                   </tr>
                 </tbody>
               </table>
+              <button class="btn btn-primary btn-sm mt-2" (click)="saveitem()">Save Item</button>
             </div>
           </div>
         </div>

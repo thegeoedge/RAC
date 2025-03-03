@@ -31,6 +31,10 @@ const routes: Routes = [
     loadChildren: () => import('./printinvoice/printinvoice.module').then(m => m.PrintInvoiceRoutingModule),
   },
   {
+    path: 'printsalesinvoice',
+    loadChildren: () => import('./printsalesinvoice/printsalesinvoice.module').then(m => m.PrintSalesInvoiceRoutingModule),
+  },
+  {
     path: 'vehicletype',
     data: { pageTitle: 'Vehicletypes' },
     loadChildren: () => import('./vehicletype/vehicletype.routes'),
@@ -315,6 +319,11 @@ const routes: Routes = [
     path: 'receipt-lines',
     data: { pageTitle: 'ReceiptLines' },
     loadChildren: () => import('./receipt-lines/receipt-lines.routes'),
+  },
+  {
+    path: 'autojobsinvoicelinebatches',
+    data: { pageTitle: 'Autojobsinvoicelinebatches' },
+    loadChildren: () => import('./autojobsinvoicelinebatches/autojobsinvoicelinebatches.routes'),
   },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];

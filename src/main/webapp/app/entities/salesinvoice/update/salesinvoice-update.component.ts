@@ -42,6 +42,7 @@ import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.
 })
 export class SalesinvoiceUpdateComponent implements OnInit {
   isSaving = false;
+  selectedReceipt: String = 'hello world';
   salesinvoice: ISalesinvoice | null = null;
   showCodeField: boolean = false;
   @ViewChild(SalesInvoiceLinesUpdateComponent) salesInvoiceLinesUpdateComponent!: SalesInvoiceLinesUpdateComponent;
@@ -69,7 +70,26 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   discountOption: string = 'percentage'; // Default value
   discountValue: number = 0;
   subTotal: number = 0;
+  totalamount: number = 0;
   i: number = 0;
+  customername: string = '';
+  customeraddress: string = '';
+  vehicleno: string = '';
+  receiptdate: Date = new Date();
+  term: string = '';
+  date: Date = new Date();
+  amount: number = 0;
+  checkdate: Date = new Date();
+  checkno: string = '';
+  bank: string = '';
+  totalamountinword: string = '';
+  comments: string = '';
+  customerid: number = 0;
+  isactive: boolean = true;
+  deposited: boolean = true;
+  createdby: number = 0;
+
+  newcode: string = '';
 
   ngOnInit(): void {
     console.log('starttt');
@@ -87,6 +107,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
 
     this.loadVehicleTypes();
+    this.fetchReceiptCode();
 
     // Subscribe to form control valueChanges
     this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
@@ -99,6 +120,45 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.vehicletypes = res.body || [];
       console.log('Loaded Vehicle Types:', this.vehicletypes); // Display the loaded vehicle types in the console
     });
+  }
+
+  fetchReceiptCode(): void {
+    this.salesInvoiceService.fetchReceiptCode().subscribe(
+      (response: HttpResponse<any>) => {
+        console.log('Full Response:', response);
+        console.log('Status:', response.status);
+        console.log('Headers:', response.headers);
+
+        let originalCode = response.body[0]?.code || '';
+        console.log('Original Code:', originalCode);
+
+        // Extract the numeric part and increment by 1
+        let newCode = originalCode.replace(/\d+$/, (match: string) => String(Number(match) + 1));
+
+        console.log('Updated Code:', newCode);
+        this.newcode = newCode;
+      },
+      error => {
+        console.error('Error fetching receipt data:', error);
+      },
+    );
+  }
+  fetchaccountid(name: string): void {
+    this.salesInvoiceService.fetchReceiptAccountId(name).subscribe(
+      (response: HttpResponse<any>) => {
+        console.log('Full Response:', response);
+        console.log('Status:', response.status);
+        console.log('Headersssssssssssssssssss:', response.headers);
+
+        let originalCode = response.body || '';
+        console.log('Original eeeeeeeeeeeee:', originalCode);
+
+        // Extract the numeric part and increment by 1
+      },
+      error => {
+        console.error('Error fetching receipt data:', error);
+      },
+    );
   }
 
   onDiscountValueChange(event: any): void {
@@ -174,6 +234,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     }
 
     this.subTotal = this.total1 + this.total2 + this.total3; // Combine the totals
+    this.totalamount = this.subTotal;
     console.log('Total1:', this.total1, 'Total2:', this.total2, 'SubTotal:', this.subTotal);
 
     this.editForm.patchValue({
@@ -275,6 +336,25 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       const salesInvoiceDummy = response.body[0];
       console.log('Retrieved dataaaaaaaaaaaaa:', response);
       console.log('Retrieved dataaaaaaaaaaaaa:', salesInvoiceDummy);
+
+      this.fetchaccountid(salesInvoiceDummy.customername);
+      this.customername = salesInvoiceDummy.customername;
+      this.customeraddress = salesInvoiceDummy.customeraddress;
+      this.vehicleno = salesInvoiceDummy.vehicleno;
+      this.receiptdate = salesInvoiceDummy.receiptdate;
+      this.term = salesInvoiceDummy.term;
+      this.date = salesInvoiceDummy.date;
+      this.amount = salesInvoiceDummy.amount;
+      this.checkdate = salesInvoiceDummy.checkdate;
+      this.checkno = salesInvoiceDummy.checkno;
+      this.bank = salesInvoiceDummy.bank;
+      this.totalamountinword = salesInvoiceDummy.totalamountinword;
+      this.comments = salesInvoiceDummy.comments;
+      this.customerid = salesInvoiceDummy.customerid;
+      this.isactive = salesInvoiceDummy.isactive;
+      this.deposited = salesInvoiceDummy.deposited;
+      this.createdby = salesInvoiceDummy.createdby;
+      this.totalamount = salesInvoiceDummy.totalamount;
 
       const customerNameValue = this.editForm.get('customername')?.value || '';
       // Create a new object and assign customername to customerName

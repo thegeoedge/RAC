@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class PrintinvoiceComponent implements OnInit {
   protected salesInvoiceDummyService = inject(SalesInvoiceDummyService);
-
+  invoice: any;
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -41,18 +41,34 @@ export class PrintinvoiceComponent implements OnInit {
       },
     });
   }
+  //: any[] = []; // Initialize an array to store invoice lines
+
   getSalesInvoicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchInvoiceLines(id).subscribe({
+    this.salesInvoiceDummyService.fetchInvoiceLinesdummies(id).subscribe({
       next: response => {
         console.log('Sales Invoice lines Data:', response.body);
+
+        // Ensure response.body is an array before assigning
+        if (Array.isArray(response.body)) {
+          this.invoiceItems = response.body; // Directly assign the response
+        } else {
+          console.error('Invalid data format: Expected an array', response.body);
+          this.invoiceItems = []; // Reset to avoid issues
+        }
+
+        console.log('Updated Invoice Items:', this.invoiceItems);
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
       },
     });
   }
+
+  // Initialize as an empty array
+  invoiceItems: any[] = [];
+
   getSalesServicelines(id: number): void {
-    this.salesInvoiceDummyService.fetchService(id).subscribe({
+    this.salesInvoiceDummyService.fetchServicedummy(id).subscribe({
       next: response => {
         console.log('Sales Service lines Data:', response.body);
       },

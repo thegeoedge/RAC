@@ -59,10 +59,11 @@
                 type="number"
                 class="form-control"
                 formControlName="amountReceived"
-                [value]="i === 0 ? amount : line.get('amountReceived')?.value"
-                (input)="calculateAmountOwing(i, line.value)"
+                [value]="i === 0 ? amount : voucherlinesArray.at(i).get('amountReceived')?.value"
+                (input)="onAmountReceivedChange(i)"
               />
             </td>
+
             <td *ngIf="false">
               <input type="number" class="form-control" formControlName="lmu" />
             </td>
@@ -72,6 +73,7 @@
             <td>{{ name }}</td>
             <td *ngIf="false">
               {{ accountId }}
+              <input type="number" class="form-control" formControlName="accountId" [value]="accountId" />
             </td>
             <td>
               <button type="button" class="btn btn-danger" (click)="removeVoucherLine(i)"> 
@@ -85,6 +87,7 @@
       <button type="button" class="btn btn-info" (click)="addVoucherLine()">Add Line</button>
     </div>
 
+    <fa-icon #smallSaveButton (click)="save()" icon="save"></fa-icon>&nbsp;<span>Save</span>
     <div></div>
   </form>
 </div>

@@ -183,116 +183,120 @@
               </div>
             </div>
           </div> -->
-
           <div
-            class="nav-tabs"
-            id="accordionExample"
             style="
-              display: flex;
-
-              justify-content: flex-start;
-              gap: 12px;
-              border-bottom: 2px solid #ccc;
-              padding: 12px 16px;
-              background-color: #f8f9fa;
+              width: 100%;
+              max-width: 1200px; /* Adjust width as needed */
+              height: 800px; /* Set a fixed height */
+              overflow-y: auto; /* Enable vertical scrolling */
+              border: 1px solid #ccc;
+              padding: 10px;
+              background-color: #ffffff;
+              border-radius: 8px;
             "
           >
             <div
-              *ngFor="let hoistType of hoistTypeData; let i = index"
-              class="accordion-item"
+              class="nav-tabs"
+              id="accordionExample"
               style="
-                padding: 10px 18px;
-                border-radius: 5px 5px 0 0;
-                border: 1px solid transparent;
-                transition: all 0.3s ease-in-out;
-                color: #363637;
-                font-weight: bold;
-                text-decoration: none;
+                display: flex;
+                justify-content: flex-start;
+                gap: 12px;
+                border-bottom: 2px solid #ccc;
+                padding: 12px 16px;
+                background-color: #f8f9fa;
               "
-              onmouseover="this.style.border='1px solid  black'; this.style.backgroundColor='#e9ecef';"
-              onmouseout="this.style.border='1px solid transparent'; this.style.backgroundColor='transparent';"
-              (mouseover)="openAccordion(i)"
             >
-              <h2 class="accordion-header" [id]="'heading' + i">
-                <button
-                  class="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  (mouseover)="openAccordion(i)"
-                  [attr.data-bs-target]="'#collapse' + i"
-                  [attr.aria-expanded]="i === 0 ? 'true' : 'false'"
-                  [attr.aria-controls]="'collapse' + i"
-                  style="
-                    transition:
-                      background-color 0.3s ease,
-                      border-color 0.3s ease;
-                  "
-                >
-                  {{ hoistType.hoisttype }}
-                </button>
-              </h2>
               <div
-                [id]="'collapse' + i"
-                class="accordion-collapse collapse"
-                [class.show]="i === 0"
-                [attr.aria-labelledby]="'heading' + i"
-                data-bs-parent="#accordionExample"
-                [ngClass]="{ show: i === openIndex }"
-                (mouseover)="openAccordion(i)"
+                *ngFor="let hoistType of hoistTypeData; let i = index"
+                class="accordion-item"
+                style="
+                  padding: 10px 18px;
+                  border-radius: 5px 5px 0 0;
+                  border: 1px solid black;
+                  transition: all 0.3s ease-in-out;
+                  color: #363637;
+                  font-weight: bold;
+                  text-decoration: none;
+                  background-color: #e9ecef;
+                "
               >
-                <div class="accordion-body" style="display: flex">
-                  <div *ngFor="let hoist of hoistData" class="mb-3">
-                    <ng-container *ngIf="hoist.hoisttypeid === hoistType.id">
-                      <p>Hoist {{ hoist.id }}</p>
+                <h2 class="accordion-header" [id]="'heading' + i">
+                  <button
+                    class="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    [attr.data-bs-target]="'#collapse' + i"
+                    [attr.aria-expanded]="'true'"
+                    [attr.aria-controls]="'collapse' + i"
+                    style="
+                      transition:
+                        background-color 0.3s ease,
+                        border-color 0.3s ease;
+                    "
+                  >
+                    {{ hoistType.hoisttype }}
+                  </button>
+                </h2>
+                <div
+                  [id]="'collapse' + i"
+                  class="accordion-collapse collapse show"
+                  [attr.aria-labelledby]="'heading' + i"
+                  data-bs-parent="#accordionExample"
+                >
+                  <div class="accordion-body" style="display: flex">
+                    <div *ngFor="let hoist of hoistData" class="mb-3">
+                      <ng-container *ngIf="hoist.hoisttypeid === hoistType.id">
+                        <p>Hoist {{ hoist.id }}</p>
 
-                      <!-- Nested accordion for time slots -->
-                      <div class="accordion" [id]="'hoistAccordion' + hoist.id">
-                        <div class="accordion-item">
-                          <h2 class="accordion-header" [id]="'headingHoist' + hoist.id">
-                            <button
-                              class="accordion-button collapsed"
-                              type="button"
-                              data-bs-toggle="collapse"
-                              [attr.data-bs-target]="'#collapseHoist' + hoist.id"
-                              [attr.aria-expanded]="false"
-                              [attr.aria-controls]="'collapseHoist' + hoist.id"
+                        <!-- Nested accordion for time slots -->
+                        <div class="accordion" [id]="'hoistAccordion' + hoist.id">
+                          <div class="accordion-item">
+                            <h2 class="accordion-header" [id]="'headingHoist' + hoist.id">
+                              <button
+                                class="accordion-button"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                [attr.data-bs-target]="'#collapseHoist' + hoist.id"
+                                [attr.aria-expanded]="'true'"
+                                [attr.aria-controls]="'collapseHoist' + hoist.id"
+                              >
+                                Show Timeslots
+                              </button>
+                            </h2>
+                            <div
+                              [id]="'collapseHoist' + hoist.id"
+                              class="accordion-collapse collapse show"
+                              [attr.aria-labelledby]="'headingHoist' + hoist.id"
+                              [attr.data-bs-parent]="'#hoistAccordion' + hoist.id"
                             >
-                              Show Timeslots
-                            </button>
-                          </h2>
-                          <div
-                            [id]="'collapseHoist' + hoist.id"
-                            class="accordion-collapse collapse show"
-                            [attr.aria-labelledby]="'headingHoist' + hoist.id"
-                            [attr.data-bs-parent]="'#hoistAccordion' + hoist.id"
-                          >
-                            <div class="accordion-body" style="display: flex">
-                              <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                                <ng-container *ngFor="let timetable of timetableData">
-                                  <ng-container *ngIf="timetable.hoisttypename === hoistType.hoisttype">
-                                    <button
-                                      type="button"
-                                      style="width: 100px"
-                                      (click)="selectTime(timetable, hoist.id)"
-                                      class="btn btn-primary custom-hover"
-                                    >
-                                      {{ timetable.hoisttime | date: 'hh:mm' : '+0000' }}
-                                      <!-- {{ timetable.hoisttime }} -->
-                                    </button>
-                                    <style>
-                                      .custom-hover:hover {
-                                        background-color: #e1ae2e !important; /* Change to your preferred color */
-                                        color: white !important;
-                                      }
-                                    </style>
+                              <div class="accordion-body" style="display: flex">
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                                  <ng-container *ngFor="let timetable of timetableData">
+                                    <ng-container *ngIf="timetable.hoisttypename === hoistType.hoisttype">
+                                      <button
+                                        type="button"
+                                        style="width: 100px"
+                                        (click)="selectTime(timetable, hoist.id)"
+                                        class="btn btn-primary custom-hover"
+                                      >
+                                        {{ timetable.hoisttime | date: 'hh:mm' : '+0000' }}
+                                      </button>
+                                      <style>
+                                        .custom-hover:hover {
+                                          background-color: #e1ae2e !important;
+                                          color: white !important;
+                                        }
+                                      </style>
+                                    </ng-container>
                                   </ng-container>
-                                </ng-container>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </ng-container>
+                      </ng-container>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -585,7 +589,9 @@
             id="save-entity"
             data-cy="entityCreateSaveButton"
             [disabled]="editForm.invalid || isSaving"
+
             class="btn btn-success custom-save-btn"
+
           >
             <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
           </button>

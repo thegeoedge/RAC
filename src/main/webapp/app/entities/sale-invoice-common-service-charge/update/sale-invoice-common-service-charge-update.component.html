@@ -37,7 +37,8 @@
 }
 
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 <div class="d-flex justify-content">
   <div class="col-12">
     <form name="editForm" novalidate [formGroup]="editForm">
@@ -50,6 +51,7 @@
       <div class="w-full px-4">
         <jhi-alert-error></jhi-alert-error>
         <div class="w-full space-y-3">
+
           <div *ngFor="let option of commonServiceOptions" class="flex items-center gap-4 p-3 border border-gray-200/50 rounded-lg shadow-sm hover:shadow-md transition bg-white w-full">
             <label class="text-base font-medium text-gray-800 flex-1">{{ option.name }}</label>
           <input
@@ -58,6 +60,7 @@
             (change)="onCheckboxChange($event, option)"
             class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
           />
+
         </div>
         </div>
 
@@ -69,7 +72,7 @@
               <th *ngIf="false">Line ID</th>
               <th *ngIf="false">Option ID</th>
               <th *ngIf="false">Main ID</th>
-              <th>Code</th>
+              <th *ngIf="false">Code</th>
               <th>Name</th>
               <th>Description</th>
               <th>Value</th>
@@ -113,7 +116,7 @@
                   </option>
                 </datalist>
               </td>
-              
+
               <td>
                 <input type="text" class="form-control" formControlName="description" />
               </td>
@@ -122,6 +125,7 @@
               </td>
               <td class="text-center">
                 <button  type="button" class="btn btn-link text-danger p-0" (click)="removeServiceChargeDummy(i)"><i class="fas fa-trash fs-5"></i></button>
+
               </td>
             </tr>
           </tbody>
@@ -140,6 +144,7 @@
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
           class="btn btn-success custom-save-btn"
+
         >
           <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
         </button>

@@ -20,6 +20,7 @@
     width: 100%;
     height: 100%;
   }
+
   .custom-cancel-btn,
 .custom-save-btn {
   width: 50%; /* Each button takes half the width */
@@ -40,6 +41,7 @@
 input[type=number]{ 
     text-align: right;
   }
+
 </style>
 <div justify-content-right class="row full-width-form">
   <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="full-width-form">
@@ -156,6 +158,7 @@ input[type=number]{
               </div>
             </div>
             <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer;width: 100%;" (click)="onAddItem()">Add Item</button>
+
           </div>
         </div>
 
@@ -650,6 +653,7 @@ input[type=number]{
         [disabled]="editForm.invalid || isSaving"
         class="btn btn-success custom-cancel-btn"
         style="flex: 1;"
+
       >
         <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
       </button>

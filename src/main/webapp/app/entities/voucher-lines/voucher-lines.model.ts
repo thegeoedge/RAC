@@ -15,4 +15,4 @@ export interface IVoucherLines {
   accountId?: number | null;
 }
 
-export type NewVoucherLines = Omit<IVoucherLines, 'id'> & { id: null };
+export type NewVoucherLines = Omit<IVoucherLines, 'id'> & { id: null | number };

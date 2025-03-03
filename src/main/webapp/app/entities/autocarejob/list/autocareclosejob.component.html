@@ -33,7 +33,9 @@
     margin-right: 0.25rem;
   }
 </style>
-<div  class="container-fluid">
+
+<div class="container-fluid">
+
   <h2 id="page-heading" data-cy="AutocarejobHeading">
     <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
       <input type="text" class="form-control w-25" [(ngModel)]="searchText" (input)="filterJobs()" placeholder="Search by Vehicle Number" />
@@ -446,7 +448,9 @@
 
                     <a
                       [routerLink]="['/autocarejob', autocarejob.id, 'instructions']"
-                      class="btn btn-dark btn-sm"
+
+                      class="btn btn-warning btn-sm"
+
                       data-cy="entityEditButton"
                     >
                       <fa-icon icon="tasks"></fa-icon>
@@ -456,6 +460,17 @@
                     <a [routerLink]="['/autocarejob', autocarejob.id, 'history']" class="btn btn-warning btn-sm" data-cy="entityEditButton">
                       <fa-icon icon="tasks"></fa-icon>
                       <!-- <span class="d-none d-md-inline">History</span> -->
+
+                    </a>
+
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'itemissue']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                    >
+                      <fa-icon icon="asterisk"></fa-icon>
+                      <!-- <span class="d-none d-md-inline"> Item</span> -->
+
                     </a>
 
                     <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">

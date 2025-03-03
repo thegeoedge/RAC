@@ -21,6 +21,7 @@
     height: 100%;
   }
 
+
   .custom-cancel-btn,
 .custom-save-btn {
   width: 50%; /* Each button takes half the width */
@@ -38,6 +39,7 @@
   gap: 4px; /* Minimal spacing between buttons */
   padding: 15px;
 }
+
 
 </style>
 <div justify-content-right class="row full-width-form">
@@ -154,6 +156,7 @@
               </div>
             </div>
             <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer; width: 100%;" (click)="onAddItem()">Add Item</button>
+
           </div>
         </div>
 
@@ -162,6 +165,7 @@
           <div class="p-2 border rounded bg-light h-100">
             <h6 class="fw-bold text-primary">Final Payments</h6>
             <div class="row gx-3">
+
               <!-- Left Column -->
               <div class="col-md-6">
                 <div class="mb-3">
@@ -270,7 +274,27 @@
                 </div>
               </div>
             </div>
-            <app-receipt-modal></app-receipt-modal>
+            <app-receipt-modal
+              [totalamount]="totalamount"
+              [receiptpaymentsdetails]="selectedReceipt"
+              [customername]="customername"
+              [totalamount]="totalamount"
+              [customeraddress]="customeraddress"
+              [vehicleno]="vehicleno"
+              [receiptdate]="receiptdate"
+              [term]="term"
+              [date]="date"
+              [amount]="amount"
+              [checkdate]="checkdate"
+              [checkno]="checkno"
+              [bank]="bank"
+              [totalamountinword]="totalamountinword"
+              [comments]="comments"
+              [customerid]="customerid"
+              [isactive]="isactive"
+              [deposited]="deposited"
+              [newcode]="newcode"
+            ></app-receipt-modal>
           </div>
         </div>
       </div>

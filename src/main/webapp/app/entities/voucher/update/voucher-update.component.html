@@ -162,6 +162,7 @@
           [code]="code"
           [amount]="amount"
           [name]="name"
+          [id]="id"
           [originalamount]="originalamount"
         ></jhi-voucher-lines-update>
 
@@ -265,13 +266,14 @@
         </button>
 
         <button
+          *ngIf="false"
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
           class="btn btn-success custom-save-btn"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+          <div *ngIf="false"><fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span></div>
         </button>
       </div>
     </form>
