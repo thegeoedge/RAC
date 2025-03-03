@@ -78,7 +78,10 @@ export class AutocarejobUpdateComponent implements OnInit {
     const size = 20;
 
     const fetchPage = () => {
-      this.autocareappointmentService.query({ page, size }).subscribe({
+      const yesterday = dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
+      console.log('Yesterday (ISO Format):', yesterday);
+
+      this.autocareappointmentService.fetchDate(yesterday).subscribe({
         next: (res: HttpResponse<IAutocareappointment[]>) => {
           const appointments = res.body || [];
           allAppointments = [...allAppointments, ...appointments];

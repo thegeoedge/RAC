@@ -49,8 +49,10 @@ import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojo
 
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
 import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopvehiclework.model';
+import { SalesInvoiceLinesDummyService } from 'app/entities/sales-invoice-lines-dummy/service/sales-invoice-lines-dummy.service';
 import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
 import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
+
 
 @Component({
   standalone: true,
@@ -78,6 +80,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   autojobsaleinvoicecommonservicechargeComponent!: AutojobsaleinvoicecommonservicechargeUpdateComponent;
   @ViewChild(AutojobsinvoicelinesUpdateComponent) autojobsinvoicelinesComponent!: AutojobsinvoicelinesUpdateComponent;
   jobinvoicelines = inject(AutojobsinvoicelinesService);
+  searchname = inject(SalesInvoiceLinesDummyService);
   jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
   jobservice = inject(AutojobsalesinvoiceservicechargelineService);
   vehiclework = inject(WorkshopvehicleworkService);
@@ -600,7 +603,8 @@ export class AutocarejobInstructionComponent implements OnInit {
 
     if (searchTerm.length > 1) {
       // Use the new service method to fetch matching results
-      this.inventoryService.findByItem(searchTerm).subscribe(response => {
+      console.log(searchTerm);
+      this.searchname.getElementsByUserInputName(searchTerm).subscribe(response => {
         this.filtereditems = response.body || [];
         console.log('Filtered Itemsssssssss:', this.filtereditems);
       });
