@@ -15,6 +15,7 @@ import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigati
 import { ISalesinvoice } from '../salesinvoice.model';
 import { EntityArrayResponseType, SalesinvoiceService } from '../service/salesinvoice.service';
 import { SalesinvoiceDeleteDialogComponent } from '../delete/salesinvoice-delete-dialog.component';
+import { faPrint } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   standalone: true,
@@ -36,7 +37,7 @@ export class SalesinvoiceComponent implements OnInit {
   subscription: Subscription | null = null;
   salesinvoices?: ISalesinvoice[];
   isLoading = false;
-
+  faPrint = faPrint;
   sortState = sortStateSignal({});
 
   itemsPerPage = ITEMS_PER_PAGE;

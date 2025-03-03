@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        font-size: 12px;
+      }
+      .invoice-container {
+        width: 80%;
+        margin: auto;
+        border: 1px solid #ffffff;
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid rgb(255, 255, 255);
+        padding: 8px;
+        text-align: left;
+      }
+      .header-table td {
+        border: none;
+      }
+      .total-section {
+        margin-top: 20px;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Discount</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of invoiceItems">
+            <td>{{ item.itemname }}</td>
+            <td>{{ item.discount }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.sellingprice }}</td>
+            <td>{{ item.linetotal }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of invoiceChargeItems">
+            <td>{{ item.serviceDescription }}</td>
+            <!-- Fixed casing -->
+            <td>{{ item.servicePrice }}</td>
+            <!-- Fixed casing -->
+          </tr>
+        </tbody>
+        <tbody>
+          <tr *ngFor="let item of invoicecommonChargeItems">
+            <td>{{ item.name }}</td>
+            <!-- Fixed casing -->
+            <td>{{ item.value }}</td>
+            <!-- Fixed casing -->
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="total-section">
+        <p><strong>Sub Total:</strong> 9075.00</p>
+        <p><strong>Discount:</strong> 0.00</p>
+        <p><strong>Net Total:</strong> 9075.00</p>
+      </div>
+    </div>
+  </body>
+</html>
