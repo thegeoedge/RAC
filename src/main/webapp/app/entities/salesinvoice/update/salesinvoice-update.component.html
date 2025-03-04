@@ -21,24 +21,15 @@
     height: 100%;
   }
 
-
-  .custom-cancel-btn,
-.custom-save-btn {
-  width: 50%; /* Each button takes half the width */
-  border: none;
-  font-size: 16px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  text-align: center;
-}
-
 .button-container {
   display: flex;
   width: 100%; /* Ensures full width */
   gap: 4px; /* Minimal spacing between buttons */
   padding: 15px;
 }
+input[type=number]{ 
+    text-align: right;
+  }
 
 
 </style>
@@ -658,7 +649,7 @@
     </div>
 
     <div class="button-container">
-      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" (click)="previousState()">
+      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary btn-lg w-50" (click)="previousState()">
         <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
       </button>
 
@@ -667,7 +658,7 @@
         id="save-entity"
         data-cy="entityCreateSaveButton"
         [disabled]="editForm.invalid || isSaving"
-        class="btn btn-success custom-save-btn"
+        class="btn btn-success btn-lg w-50"
       >
         <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
       </button>
