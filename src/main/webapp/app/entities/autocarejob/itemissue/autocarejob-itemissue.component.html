@@ -1,5 +1,5 @@
-<div class="d-flex justify-content-center">
-  <div class="col-10">
+<div class="d-flex container-fluid">
+  <div class="col-12">
     <div class="row">
       <div class="col-12">
         <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
@@ -120,7 +120,9 @@
                   </tr>
                 </tbody>
               </table>
-              <button class="btn btn-primary btn-sm mt-2" (click)="saveitem()">Save Item</button>
+              <div class="d-flex justify-content-center">
+                <button class="btn btn-primary btn-lg mt-2 w-50" (click)="saveitem()">Save Item</button>
+              </div>
             </div>
           </div>
         </div>
