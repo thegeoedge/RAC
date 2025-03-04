@@ -329,7 +329,7 @@
               <tr *ngFor="let appointment of todayAppointments">
                 <td>{{ appointment.customername }}</td>
                 <td>{{ appointment.vehiclenumber }}</td>
-                <td>{{ appointment.conformdate?.toDate() | date }}</td>
+                <td>{{ appointment!.conformdate?.toString()| date:'medium' }}</td>
                 <td>{{ jobTypeMap[appointment.appointmenttype ?? 0] }}</td>
                 <td>{{ appointment.contactnumber }}</td>
                 <td>

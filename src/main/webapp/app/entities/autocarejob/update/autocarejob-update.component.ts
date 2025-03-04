@@ -74,33 +74,36 @@ export class AutocarejobUpdateComponent implements OnInit {
 
   loadAllAppointments(): void {
     let allAppointments: IAutocareappointment[] = [];
-    let page = 20;
     const size = 20;
-
+  
     const fetchPage = () => {
       const yesterday = dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
       console.log('Yesterday (ISO Format):', yesterday);
-
+  
       this.autocareappointmentService.fetchDate(yesterday).subscribe({
         next: (res: HttpResponse<IAutocareappointment[]>) => {
           const appointments = res.body || [];
-          allAppointments = [...allAppointments, ...appointments];
-          console.log('appointmentsss', appointments);
-          if (appointments.length === size) {
-            page++; // Fetch the next page if current page is full
-            fetchPage();
-          } else {
+          
+          if (appointments.length > 0) {
+            allAppointments = [...allAppointments, ...appointments]; // Append new appointments
+            console.log('Fetched Appointments:', appointments);
+            console.log('All Appointments:', allAppointments);
+            
             this.todayAppointments = this.filterTodayAppointments(allAppointments);
+            console.log('Filtered Today Appointments:', this.todayAppointments);
+          } else {
+            console.warn('No new appointments found.');
           }
         },
-        error: () => {
-          console.error('Failed to load appointments');
+        error: (err) => {
+          console.error('Failed to load appointments', err);
         },
       });
     };
-
+  
     fetchPage();
   }
+  
   jobType: string | null = null;
   customername: string | null = null;
   appointmentnum: number | null = null;
@@ -142,19 +145,10 @@ export class AutocarejobUpdateComponent implements OnInit {
     4: 'Other',
   };
   filterTodayAppointments(appointments: IAutocareappointment[]): IAutocareappointment[] {
-    const today = dayjs().startOf('day'); // Get today's date at midnight
-    console.log('Today:', today);
-
-    let usedAppointments = JSON.parse(localStorage.getItem('usedAppointments') || '[]');
-
-    return appointments.filter(appointment => {
-      if (!appointment.conformdate || usedAppointments.includes(appointment.id)) {
-        return false; // Exclude null dates and used appointments
-      }
-      const appointmentDate = dayjs(appointment.conformdate).startOf('day'); // Get appointment date at midnight
-      return appointmentDate.isSame(today);
-    });
+    console.log('Returning all appointments:', appointments);
+    return appointments; // No filtering, return all appointments as they are
   }
+  
 
   previousState(): void {
     window.history.back();
