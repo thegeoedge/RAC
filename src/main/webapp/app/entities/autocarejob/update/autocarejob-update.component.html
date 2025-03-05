@@ -1,26 +1,23 @@
-
 <style>
-.custom-cancel-btn,
-.custom-save-btn {
-  width: 50%; /* Each button takes half the width */
-  border: none;
-  font-size: 16px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  text-align: center;
-}
+  .custom-cancel-btn,
+  .custom-save-btn {
+    width: 50%; /* Each button takes half the width */
+    border: none;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+  }
 
-.button-container {
-  display: flex;
-  width: 100%; /* Ensures full width */
-  gap: 2px; /* Minimal spacing between buttons */
-}
-
+  .button-container {
+    display: flex;
+    width: 100%; /* Ensures full width */
+    gap: 2px; /* Minimal spacing between buttons */
+  }
 </style>
 <div class="d-flex container-fluid">
   <div class="col-12">
-
     <div class="row">
       <!-- Left Side: Form -->
       <div class="col-6">
@@ -50,10 +47,32 @@
           />
         </div> -->
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_vehicleid">Vehicleid</label>
-          <input type="number" class="form-control" name="vehicleid" id="field_vehicleid" data-cy="vehicleid" formControlName="vehicleid" />
-        </div> -->
+            <div class="mb-3">
+              <label class="form-label" for="field_jobtypeid">jobtypeid</label>
+              <input
+                type="number"
+                class="form-control"
+                name="jobtypeid"
+                id="field_jobtypeid"
+                data-cy="jobtypeid"
+                formControlName="jobtypeid"
+                [ngModel]="jobtypeid"
+                [disabled]="true"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="field_vehicleid">Vehicleid</label>
+              <input
+                type="number"
+                class="form-control"
+                name="vehicleid"
+                id="field_vehicleid"
+                data-cy="vehicleid"
+                formControlName="vehicleid"
+                [ngModel]="vehicleid"
+              />
+            </div>
 
             <div class="row">
               <div class="mb-3 col-6">
@@ -114,10 +133,18 @@
               />
             </div>
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_jobopenby">Jobopenby</label>
-          <input type="number" class="form-control" name="jobopenby" id="field_jobopenby" data-cy="jobopenby" formControlName="jobopenby" />
-        </div> -->
+            <div class="mb-3">
+              <label class="form-label" for="field_jobopenby">Jobopenby</label>
+              <input
+                type="number"
+                class="form-control"
+                name="jobopenby"
+                id="field_jobopenby"
+                data-cy="jobopenby"
+                formControlName="jobopenby"
+                [ngModel]="jobopenby"
+              />
+            </div>
 
             <!-- <div class="mb-3">
           <label class="form-label" for="field_jobopentime">Jobopentime</label>
@@ -160,17 +187,18 @@
               />
             </div>
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_customerid">Customerid</label>
-          <input
-            type="number"
-            class="form-control"
-            name="customerid"
-            id="field_customerid"
-            data-cy="customerid"
-            formControlName="customerid"
-          />
-        </div> -->
+            <div class="mb-3">
+              <label class="form-label" for="field_customerid">Customerid</label>
+              <input
+                type="number"
+                class="form-control"
+                name="customerid"
+                id="field_customerid"
+                formControlName="customerid"
+                data-cy="customerid"
+                [ngModel]="customerid"
+              />
+            </div>
 
             <!-- <div class="mb-3">
           <label class="form-label" for="field_advisorfinalcheck">Advisorfinalcheck</label>
@@ -287,10 +315,33 @@
             formControlName="iscustomercomment"
           />
         </div> -->
+            <div class="mb-3">
+              <label
+                class="form-label"
+                for="field_vehicletypeid
+"
+                >typeid</label
+              >
+              <input
+                type="text"
+                class="form-check"
+                name="vehicletypeid"
+                id="field_vehicletypeid"
+                data-cy="vehicletypeid"
+                [ngModel]="vehicletypeid"
+                formControlName="vehicletypeid"
+              />
+            </div>
           </div>
 
           <div class="button-container">
-            <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" (click)="previousState()">
+            <button
+              type="button"
+              id="cancel-save"
+              data-cy="entityCreateCancelButton"
+              class="btn btn-secondary custom-cancel-btn"
+              (click)="previousState()"
+            >
               <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
             </button>
 
@@ -299,10 +350,7 @@
               id="save-entity"
               data-cy="entityCreateSaveButton"
               [disabled]="editForm.invalid || isSaving"
-
               class="btn btn-success custom-save-btn"
-
-
             >
               <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
             </button>
@@ -329,12 +377,11 @@
               <tr *ngFor="let appointment of todayAppointments">
                 <td>{{ appointment.customername }}</td>
                 <td>{{ appointment.vehiclenumber }}</td>
-                <td>{{ appointment!.conformdate?.toString()| date:'medium' }}</td>
+                <td>{{ appointment!.conformdate?.toString() | date: 'medium' }}</td>
                 <td>{{ jobTypeMap[appointment.appointmenttype ?? 0] }}</td>
                 <td>{{ appointment.contactnumber }}</td>
-                <td>
-                  <button class="btn btn-info btn-sm" (click)="loadAppointment(appointment)">Load</button>
-                </td>
+
+                <button class="btn btn-info btn-sm" (click)="loadAppointment(appointment)">Load</button>
               </tr>
             </tbody>
           </table>

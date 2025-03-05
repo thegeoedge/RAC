@@ -168,6 +168,16 @@
                           formControlName="customername"
                         />
                       </div>
+                      <label class="form-label" for="field_customerid" *ngIf="false">Customer Name</label>
+                      <input
+                        *ngIf="false"
+                        type="text"
+                        class="form-control form-control-sm"
+                        name="customerid"
+                        id="field_customerid"
+                        data-cy="customerid"
+                        formControlName="customerid"
+                      />
 
                       <div class="mb-3 col-6">
                         <label class="form-label" for="field_customertel">Customer Telephone</label>
@@ -847,6 +857,7 @@
             <div class="row">
               <div class="col-md-6">
                 <p><strong>VEHICLE NO:</strong> {{ editForm.controls['vehiclenumber'].value }}</p>
+
                 <p><strong>NAME:</strong> {{ editForm.controls['customername'].value }}</p>
                 <p><strong>JOB TYPE:</strong> {{ editForm.controls['jobtypename'].value }}</p>
               </div>

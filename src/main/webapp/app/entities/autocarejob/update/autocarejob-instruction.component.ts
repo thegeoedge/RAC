@@ -53,7 +53,6 @@ import { SalesInvoiceLinesDummyService } from 'app/entities/sales-invoice-lines-
 import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
 import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
 
-
 @Component({
   standalone: true,
   selector: 'jhi-autocarejob-instruction',
@@ -142,7 +141,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       if (autocarejob) {
         this.updateForm(autocarejob);
       }
-
+      console.log('jobs', this.autocarejob);
       this.loadDataFromOtherEntities();
       this.loadDataFromBrandEntities();
       this.loadDataFromServicesEntities();

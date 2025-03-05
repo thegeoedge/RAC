@@ -16,7 +16,7 @@ import { AutocareappointmentService } from 'app/entities/autocareappointment/ser
 import { IAutocareappointment } from 'app/entities/autocareappointment/autocareappointment.model';
 import { AutocarejobService } from '../service/autocarejob.service';
 import { AutocarejobFormService, AutocarejobFormGroup } from './autocarejob-form.service';
-
+import { HttpClient } from '@angular/common/http';
 @Component({
   standalone: true,
   selector: 'jhi-autocarejob-update',
@@ -24,6 +24,7 @@ import { AutocarejobFormService, AutocarejobFormGroup } from './autocarejob-form
   imports: [SharedModule, FormsModule, ReactiveFormsModule, AutocarejobInstructionComponent],
 })
 export class AutocarejobUpdateComponent implements OnInit {
+  [x: string]: any;
   isSaving = false;
   autocarejob: IAutocarejob | null = null;
   customervehicles: ICustomervehicle[] = [];
@@ -41,9 +42,14 @@ export class AutocarejobUpdateComponent implements OnInit {
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
 
   todayAppointments: IAutocareappointment[] = []; // New property for today's appointments
-
+  storedUserIdNumber: number = 0;
+  jobopenby: number = 0;
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
+      const storedUserId = localStorage.getItem('userId'); // Retrieve userId from localStorage
+      console.log('storedUserId value:', storedUserId);
+      this.jobopenby = Number(storedUserId);
+      console.log(this.storedUserIdNumber);
       this.autocarejob = autocarejob;
       if (autocarejob) {
         this.updateForm(autocarejob);
@@ -75,40 +81,45 @@ export class AutocarejobUpdateComponent implements OnInit {
   loadAllAppointments(): void {
     let allAppointments: IAutocareappointment[] = [];
     const size = 20;
-  
+
     const fetchPage = () => {
       const yesterday = dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
       console.log('Yesterday (ISO Format):', yesterday);
-  
+
       this.autocareappointmentService.fetchDate(yesterday).subscribe({
         next: (res: HttpResponse<IAutocareappointment[]>) => {
           const appointments = res.body || [];
-          
+
           if (appointments.length > 0) {
             allAppointments = [...allAppointments, ...appointments]; // Append new appointments
             console.log('Fetched Appointments:', appointments);
             console.log('All Appointments:', allAppointments);
-            
+
             this.todayAppointments = this.filterTodayAppointments(allAppointments);
             console.log('Filtered Today Appointments:', this.todayAppointments);
           } else {
             console.warn('No new appointments found.');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Failed to load appointments', err);
         },
       });
     };
-  
+
     fetchPage();
   }
-  
+
   jobType: string | null = null;
   customername: string | null = null;
   appointmentnum: number | null = null;
   vehicleNo: string | null = null;
   customerTel: string | null = null;
+  customerid: number = 0;
+  vehicleid: number = 0;
+  jobtypeid: number = 0;
+  vehicletypeid: number = 0;
+
   loadAppointment(appointment: any): void {
     console.log('Loading appointment:', appointment);
 
@@ -116,6 +127,30 @@ export class AutocarejobUpdateComponent implements OnInit {
     this.vehicleNo = appointment.vehiclenumber;
     this.customername = appointment.customername;
     this.appointmentnum = appointment.appointmenttype;
+    this.vehicleid = appointment.vehicleid;
+    this.jobtypeid = appointment.appointmenttype;
+
+    this.customerid = appointment?.customerid || 0;
+    console.log('appointmemnt', appointment.customerid);
+    const apiParams = {
+      'vehiclenumber.equals': appointment.vehiclenumber,
+      page: 0,
+      size: 20,
+    };
+
+    this.customervehicleService.query(apiParams).subscribe(
+      response => {
+        if (response.body && response.body.length > 0) {
+          console.log('Response:', response.body[0].typeid); // Logs the first item
+          this.vehicletypeid = response.body[0]?.typeid || 0;
+        } else {
+          console.log('No data found.');
+        }
+      },
+      error => {
+        console.error('Error:', error);
+      },
+    );
 
     if (this.appointmentnum !== null) {
       const jobType = this.jobTypeMap[this.appointmentnum];
@@ -148,7 +183,6 @@ export class AutocarejobUpdateComponent implements OnInit {
     console.log('Returning all appointments:', appointments);
     return appointments; // No filtering, return all appointments as they are
   }
-  
 
   previousState(): void {
     window.history.back();
@@ -185,10 +219,12 @@ export class AutocarejobUpdateComponent implements OnInit {
       const jobTypeText = this.jobTypeMap[selectedVehicle.appointmenttype ?? 0];
       this.editForm.get('jobtypename')?.patchValue(jobTypeText);
       // Example: Populate other fields as needed
+
+      //  this.editForm.get('  customerid')?.patchValue(selectedVehicle.customername || '');
       this.editForm.get('customername')?.patchValue(selectedVehicle.customername || '');
       this.editForm.get('customertel')?.patchValue(selectedVehicle.contactnumber || '');
       this.editForm.get('jobtypeid')?.patchValue(selectedVehicle.appointmenttype ?? null);
-      this.editForm.get('vehicleid')?.patchValue(selectedVehicle.id ?? null); // Set vehicleid
+      this.editForm.get('vehicleid')?.patchValue(selectedVehicle.vehicleid ?? null); // Set vehicleid
     } else {
       console.error('No matching vehicle found for:', selectedVehicleNumber);
     }
@@ -211,6 +247,7 @@ export class AutocarejobUpdateComponent implements OnInit {
 
       // Patch the job number into the form control
       this.editForm.get('jobnumber')?.patchValue(jobNumber);
+      console.log('job hereeeeeeeeeeeeeeeee', autocarejob);
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }

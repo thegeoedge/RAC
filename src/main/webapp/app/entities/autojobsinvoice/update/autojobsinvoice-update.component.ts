@@ -60,6 +60,7 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     // Ensure this method is public
     this.isSaving = true;
     const autojobsinvoice = this.autojobsinvoiceFormService.getAutojobsinvoice(this.editForm);
+    console.log(autojobsinvoice);
     if (autojobsinvoice.id !== null) {
       return this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
     } else {
@@ -70,7 +71,7 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     return new Observable(observer => {
       result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
         next: response => {
-          console.log('Save Successful:', response);
+          console.log('Save Successfulllllllllllllllllllllllllllll:', response);
           if (response.body) {
             const invoiceId = response.body.id;
             console.log('Saved Invoice ID:', invoiceId);
