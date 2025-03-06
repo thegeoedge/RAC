@@ -33,7 +33,7 @@
     margin-right: 0.25rem;
   }
 </style>
-<div class="container-fluid">
+<div class="container-fluid p-4">
   <h2 id="page-heading" data-cy="AutojobsinvoiceHeading">
     <span>Auto Jobs Invoices</span>
 
@@ -47,7 +47,8 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-autojobsinvoice"
-        [routerLink]="['/autojobsinvoice/new']" *ngIf="false"
+        [routerLink]="['/autojobsinvoice/new']"
+        *ngIf="false"
       >
         <fa-icon icon="plus"></fa-icon>
         <span>Create a new Autojobs Invoice</span>

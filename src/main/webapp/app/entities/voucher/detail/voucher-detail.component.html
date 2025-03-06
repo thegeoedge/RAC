@@ -9,15 +9,14 @@
     cursor: pointer;
     text-align: center;
   }
-  
+
   .button-container {
     display: flex;
     width: 100%; /* Ensures full width */
     gap: 2px; /* Minimal spacing between buttons */
   }
-  
-  </style>
-<div class="d-flex justify-content-center">
+</style>
+<div class="d-flex justify-content-center p-4">
   <div class="col-8">
     @if (voucher(); as voucherRef) {
       <div>
@@ -99,16 +98,15 @@
             <span>{{ voucherRef.createdBy }}</span>
           </dd>
         </dl>
-<div class="button-container">
-  <button type="submit" (click)="previousState()" class="btn btn-secondary custom-back-btn" data-cy="entityDetailsBackButton">
-    <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
-  </button>
+        <div class="button-container">
+          <button type="submit" (click)="previousState()" class="btn btn-secondary custom-back-btn" data-cy="entityDetailsBackButton">
+            <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+          </button>
 
-  <button type="button" [routerLink]="['/voucher', voucherRef.id, 'edit']" class="btn btn-primary custom-edit-btn">
-    <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
-  </button>
-</div>
-        
+          <button type="button" [routerLink]="['/voucher', voucherRef.id, 'edit']" class="btn btn-primary custom-edit-btn">
+            <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+          </button>
+        </div>
       </div>
     }
   </div>

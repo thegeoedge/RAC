@@ -1,4 +1,38 @@
-<div class="container-fluid">
+<style>
+  /* Responsive table styling */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Compact table styling */
+  .table-sm th,
+  .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Striped rows for better readability */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  /* Button group styling */
+  .btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Ensure the table fits within the container */
+  .container-fluid {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  /* Add spacing between buttons */
+  .btn-group .btn {
+    margin-right: 0.25rem;
+  }
+</style>
+<div class="container-fluid p-4">
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -70,8 +104,8 @@
           <span>No Autocarejobs found</span>
         </div>
         } @if (autocarejobs && autocarejobs.length > 0) {
-        <div class="table-responsive table-entities" id="entities">
-          <table class="table table-striped" aria-describedby="page-heading">
+        <div class="table-responsive" id="entities">
+          <table class="table table-striped table-sm" aria-describedby="page-heading">
             <thead>
               <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
                 <th scope="col" jhiSortBy="id">
@@ -477,7 +511,7 @@
                     </button>
 
                     <button *ngIf="autocarejob.iswaiting" class="btn btn-success btn-sm">Wait</button>
-                    <button *ngIf="autocarejob.updatetocustomer" class="btn btn-success btn-sm">Call</button>
+                    <button *ngIf="autocarejob.updatetocustomer" class="btn btn-success btn-sm m-3">Call</button>
                   </div>
                 </td>
               </tr>

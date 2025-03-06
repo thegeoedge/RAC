@@ -33,7 +33,7 @@
     margin-right: 0.25rem;
   }
 </style>
-<div class="container-fluid">
+<div class="container-fluid p-4">
   <h2 id="page-heading" data-cy="AutocarejobHeading">
     <span>Autocare Jobs</span>
 
@@ -435,17 +435,14 @@
                 <div class="btn-group">
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye"></fa-icon>
-
                   </a>
 
                   <a [routerLink]="['/autocarejob', autocarejob.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt"></fa-icon>
-
                   </a>
 
                   <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times"></fa-icon>
-
                   </button>
                 </div>
               </td>

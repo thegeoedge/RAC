@@ -9,12 +9,11 @@
     padding: 0;
   }
   .full-width-form .row {
-    margin: 0;
-  }
-  .full-width-form .col-md-4,
-  .full-width-form .col-md-6,
-  .full-width-form .col-12 {
-    padding: 10px;
+    marg .full-width-form .col-md-4,
+    .full-width-form .col-md-6,
+    .full-width-form .col-12 {
+      padding: 10px;
+    }
   }
   html,
   body {
@@ -24,7 +23,7 @@
     height: 100%;
   }
 
-  .custom-cancel-btn,
+  .custom-can .custom-cancel-btn,
   .custom-save-btn {
     width: 50%; /* Each button takes half the width */
     border: none;
@@ -34,8 +33,7 @@
     cursor: pointer;
     text-align: center;
   }
-
-  .button-container {
+  f5dc4d5685c3807b62c47de .button-container {
     display: flex;
     width: 100%; /* Ensures full width */
     gap: 4px; /* Minimal spacing between buttons */
@@ -680,10 +678,8 @@
         id="save-entity"
         data-cy="entityCreateSaveButton"
         [disabled]="editForm.invalid || isSaving"
-        class="btn btn-success custom-save-btn"
-      >
-        <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
-      </button>
+        class="btn btn-success btn-lg w-50"
+      ></button>
     </div>
   </form>
 </div>

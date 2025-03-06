@@ -34,7 +34,7 @@
   }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid p-4">
   <!-- Page Heading -->
   <h2 id="page-heading" data-cy="SalesinvoiceHeading">
     <span>Sales Invoices</span>
@@ -50,14 +50,14 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-salesinvoice"
-        [routerLink]="['/salesinvoice/new']" *ngIf="false"
+        [routerLink]="['/salesinvoice/new']"
+        *ngIf="false"
       >
         <fa-icon icon="plus"></fa-icon>
         <span>Create New Sales Invoice</span>
       </button>
     </div>
   </h2>
-  
 
   <!-- Error and Alert Messages -->
   <jhi-alert-error></jhi-alert-error>

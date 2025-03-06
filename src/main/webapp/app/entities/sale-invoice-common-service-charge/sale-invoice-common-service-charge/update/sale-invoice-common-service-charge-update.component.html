@@ -1,41 +1,40 @@
 <style>
   .custom-cancel-btn {
-  background-color: #a9a29f; /* Light brownish-grey */
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 150px;
-}
+    background-color: #a9a29f; /* Light brownish-grey */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 150px;
+  }
 
-.custom-save-btn {
-  background-color: #4caf50; /* Green */
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 150px;
-}
+  .custom-save-btn {
+    background-color: #4caf50; /* Green */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 150px;
+  }
 
-.custom-cancel-btn:hover {
-  background-color: #8b837e; /* Darker shade */
-}
+  .custom-cancel-btn:hover {
+    background-color: #8b837e; /* Darker shade */
+  }
 
-.custom-save-btn:hover {
-  background-color: #388e3c; /* Darker green */
-}
+  .custom-save-btn:hover {
+    background-color: #388e3c; /* Darker green */
+  }
 
-.button-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
+  .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+  }
 </style>
 <div class="d-flex justify-content-center">
   <div class="col-8">
@@ -152,11 +151,17 @@
             </tr>
           </tbody>
         </table>
-        <button type="button" class="btn btn-secondary" (click)="addServiceChargeDummy()">Add Line</button>
+        <button type="button" class="btn btn-secondary btn-lg" (click)="addServiceChargeDummy()">Add Line</button>
       </div>
 
       <div class="button-container">
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" (click)="previousState()">
+        <button
+          type="button"
+          id="cancel-save"
+          data-cy="entityCreateCancelButton"
+          class="btn btn-secondary custom-cancel-btn"
+          (click)="previousState()"
+        >
           <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
         </button>
 

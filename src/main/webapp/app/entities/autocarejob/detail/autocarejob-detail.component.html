@@ -1,21 +1,22 @@
 <style>
-.custom-back-btn,
-.custom-edit-btn {
-  width: 50%; /* Each button takes half the width */
-  border: none;
-  font-size: 16px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  text-align: center;
-}
+  .custom-back-btn,
+  .custom-edit-btn {
+    width: 50%; /* Each button takes half the width */
+    border: none;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    padding: 10px 15px;
+  }
 
-.button-container {
-  display: flex;
-  width: 100%; /* Ensures full width */
-  gap: 2px; /* Minimal spacing between buttons */
-}
-.details-container {
+  .button-container {
+    display: flex;
+    width: 100%; /* Ensures full width */
+    gap: 4px; /* Minimal spacing between buttons */
+  }
+  .details-container {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 10px;
@@ -24,9 +25,8 @@
   .details-container dt {
     font-weight: bold;
   }
-
 </style>
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center p-4">
   <div class="col-8">
     @if (autocarejob()) {
       <div>
@@ -223,7 +223,7 @@
           <button type="submit" (click)="previousState()" class="btn btn-secondary custom-back-btn" data-cy="entityDetailsBackButton">
             <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
           </button>
-  
+
           <button type="button" [routerLink]="['/autocarejob', autocarejob()!.id, 'edit']" class="btn btn-primary custom-edit-btn">
             <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
           </button>

@@ -1,4 +1,4 @@
-<div class="d-flex container-fluid">
+<div class="d-flex container-fluid p-4">
   <div class="col-12">
     <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <h2 id="jhi-voucher-heading" data-cy="VoucherCreateUpdateHeading">Create or edit a Voucher</h2>
@@ -51,21 +51,25 @@
           }
 
           .custom-cancel-btn,
-  .custom-save-btn {
-    width: 50%; /* Each button takes half the width */
-    border: none;
-    font-size: 16px;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-  }
-  
-  .button-container {
-    display: flex;
-    width: 100%; /* Ensures full width */
-    gap: 2px; /* Minimal spacing between buttons */
-  }
+          .custom-save-btn {
+            width: 50%; /* Each button takes half the width */
+            border: none;
+            font-size: 16px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px 15px;
+          }
+
+          .button-container {
+            display: flex;
+            width: 100%; /* Ensures full width */
+            gap: 2px; /* Minimal spacing between buttons */
+          }
+          input[type='number'] {
+            text-align: right;
+          }
         </style>
 
         <div class="card shadow-lg p-4">
@@ -261,19 +265,24 @@
       </div>
       <br />
       <div class="button-container">
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary custom-cancel-btn" (click)="previousState()">
+        <button
+          type="button"
+          id="cancel-save"
+          data-cy="entityCreateCancelButton"
+          class="btn btn-secondary custom-cancel-btn"
+          (click)="previousState()"
+        >
           <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
         </button>
 
         <button
-          *ngIf="false"
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
           class="btn btn-success custom-save-btn"
         >
-          <div *ngIf="false"><fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span></div>
+          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
         </button>
       </div>
     </form>
