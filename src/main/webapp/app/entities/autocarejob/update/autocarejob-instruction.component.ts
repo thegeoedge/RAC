@@ -52,6 +52,7 @@ import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopv
 import { SalesInvoiceLinesDummyService } from 'app/entities/sales-invoice-lines-dummy/service/sales-invoice-lines-dummy.service';
 import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
 import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
+import { PartialUpdateSystemSettings, SystemSettingsService } from 'app/entities/system-settings/service/system-settings.service';
 
 @Component({
   standalone: true,
@@ -110,7 +111,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   // Variables for service selection and total calculation
   selectedServices: IBillingserviceoptionvalues[] = [];
   totalServiceCharge: number = 0;
-
+  systemsettings = inject(SystemSettingsService);
   protected autocarejobService = inject(AutocarejobService);
   protected autocarejobFormService = inject(AutocarejobFormService);
   protected activatedRoute = inject(ActivatedRoute);
@@ -134,7 +135,9 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
-
+  nextvalue: string = ''; // Correct declaration
+  newnextvalue: String = '';
+  newlastvalue: String = '';
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
       this.autocarejob = autocarejob;
@@ -142,6 +145,33 @@ export class AutocarejobInstructionComponent implements OnInit {
         this.updateForm(autocarejob);
       }
       console.log('jobs', this.autocarejob);
+      this.systemsettings.find(0).subscribe(response => {
+        console.log('Full System Settings Response:', response);
+
+        if (response.body) {
+          console.log('System Settings Next Value:', response.body.nextValue);
+          console.log('System Settings Last Value:', response.body.lastValue);
+
+          this.nextvalue = response.body.nextValue ?? '';
+          this.newlastvalue = response.body.lastValue ?? ''; // Ensure lastValue is assigned
+
+          console.log('Current Next Value:', this.nextvalue);
+          console.log('Current Last Value:', this.newlastvalue);
+
+          // Increment both values
+          const newId = this.incrementId(this.nextvalue);
+          const newLastId = this.incrementId(this.newlastvalue.toString());
+
+          console.log('New Next Value:', newId);
+          console.log('New Last Value:', newLastId);
+
+          // Store new values
+          this.newnextvalue = newId;
+          this.newlastvalue = newLastId;
+        } else {
+          console.log('No body found in response');
+        }
+      });
       this.loadDataFromOtherEntities();
       this.loadDataFromBrandEntities();
       this.loadDataFromServicesEntities();
@@ -156,7 +186,15 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.setAutoNextServiceDate();
     });
   }
+  incrementId(id: string): string {
+    const match = id.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) return id; // Return as is if it doesn't match the pattern
 
+    const prefix = match[1]; // Extract letters (e.g., "SI")
+    const number = parseInt(match[2], 10) + 1; // Increment the number part
+
+    return `${prefix}${number}`;
+  }
   setAutoNextServiceDate(): void {
     const futureDate = dayjs().add(6, 'month').format('YYYY-MM-DD'); // Add 6 months to today
     this.editForm.patchValue({ nextservicedate: dayjs(futureDate) }); // Update form
@@ -770,7 +808,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     return {
       id: formValue.id || null,
       jobid: this.editForm.controls.id.value ?? 0,
-      code: formValue.code || '',
+      code: this.nextvalue,
       quoteid: formValue.quoteid || null,
       orderid: formValue.orderid || 0,
       autojobsrepid: formValue.autojobsrepid || null,
@@ -870,6 +908,20 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (this.workshopVehicleWorkListComponent) {
       this.workshopVehicleWorkListComponent.save();
     }
+    const systemSettingsUpdate: PartialUpdateSystemSettings = {
+      id: 0,
+      lastValue: this.newlastvalue.toString(),
+      nextValue: this.newnextvalue.toString(),
+    }; // ✅ Fix applied
+
+    this.systemsettings.partialUpdate(systemSettingsUpdate).subscribe({
+      next: response => {
+        console.log('System Settings Updated:', response);
+      },
+      error: err => {
+        console.error('Error updating system settings:', err);
+      },
+    });
   }
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({

@@ -13,7 +13,7 @@ import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-commo
 import { ISalesInvoiceServiceChargeLine } from 'app/entities/sales-invoice-service-charge-line/sales-invoice-service-charge-line/sales-invoice-service-charge-line.model';
 import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
 import { ISalesinvoice } from '../salesinvoice.model';
-import { SalesinvoiceService } from '../service/salesinvoice.service';
+import { SalesinvoiceService, PartialUpdateSalesinvoice } from '../service/salesinvoice.service';
 import { SalesinvoiceFormService, SalesinvoiceFormGroup } from './salesinvoice-form.service';
 import { SalesInvoiceLinesUpdateComponent } from '../../sales-invoice-lines/update/sales-invoice-lines-update.component';
 import { SaleInvoiceCommonServiceChargeUpdateComponent } from '../../sale-invoice-common-service-charge/update/sale-invoice-common-service-charge-update.component';
@@ -26,6 +26,7 @@ import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/s
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
 import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.component';
+import { AutocarejobService, PartialUpdateAutocarejob } from 'app/entities/autocarejob/service/autocarejob.service';
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -54,6 +55,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   SaleInvoiceCommonServiceChargesUpdateComponent!: SaleInvoiceCommonServiceChargeUpdateComponent;
   protected salesInvoiceService = inject(SalesinvoiceService);
   autojobinvoice = inject(AutojobsinvoiceService);
+  autojob = inject(AutocarejobService);
   protected vehicletypesService = inject(VehicletypeService);
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
@@ -90,7 +92,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   createdby: number = 0;
 
   newcode: string = '';
-
+  jobid: number = 0;
   ngOnInit(): void {
     console.log('starttt');
 
@@ -100,6 +102,28 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // Extract ID from query params in case it's not in route data
     this.activatedRoute.queryParams.subscribe(params => {
       console.log('Query Params ID:', params['id']);
+      this.salesInvoiceService.fetchJobInvoice(params['id']).subscribe({
+        next: response => {
+          console.log('Job Invoice Responseeeeeeeer:', response.body[0].jobid);
+          console.log('Job Invoice Responseeeeeeeer:', response.body[0]);
+          this.jobid = response.body[0].jobid;
+          this.autojob.find(response.body[0].jobid).subscribe({
+            next: response => {
+              console.log('Job Invoice Responseeeeeeeer12222:', response);
+              // Handle the response here
+            },
+            error: err => {
+              console.error('Error fetching job invoice:', err);
+            },
+          });
+          console.log('jobbbbbb', this.jobid);
+          // Handle the response here
+        },
+        error: err => {
+          console.error('Error fetching job invoice:', err);
+        },
+      });
+
       this.loadSalesInvoiceDummy(params['id']);
       this.invoicelines(params['id']);
       this.servicelines(params['id']);
@@ -112,6 +136,37 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // Subscribe to form control valueChanges
     this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.get('subtotal')?.valueChanges.subscribe(() => this.calculateDiscount());
+  }
+  selectedMethod: string = ''; // Variable to store the received method
+
+  onMethodChanged(method: string): void {
+    this.selectedMethod = method; // Store the method in the parent component
+    console.log('Received Payment Method:', this.selectedMethod);
+    this.editForm.patchValue({ paymenttype: this.selectedMethod });
+  }
+  pending: number = 0;
+  pendings: number = 0; // Add pendings as a class property
+
+  onMethodPending(pending: number): void {
+    this.pending = pending;
+    console.log('pendingggg', this.pending);
+
+    const subtotalControl = this.editForm.get('subtotal');
+    if (subtotalControl) {
+      const subtotal = subtotalControl.value;
+
+      // Check if subtotal is a valid number
+      if (subtotal != null && !isNaN(subtotal)) {
+        console.log('nettotal:', subtotal);
+        this.pendings = subtotal - this.pending; // Use 'this' to refer to the class property
+        console.log('pendingssss:', this.pendings);
+        this.editForm.patchValue({ pendingamount: this.pendings });
+      } else {
+        console.log('subtotal is invalid or null');
+      }
+    } else {
+      console.log('subtotal control is null');
+    }
   }
 
   vehicletypes: IVehicletype[] = [];
@@ -336,7 +391,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       const salesInvoiceDummy = response.body[0];
       console.log('Retrieved dataaaaaaaaaaaaa:', response);
       console.log('Retrieved dataaaaaaaaaaaaa:', salesInvoiceDummy);
-
+      console.log('jobiddd', this.jobid);
       this.fetchaccountid(salesInvoiceDummy.customername);
       this.customername = salesInvoiceDummy.customername;
       this.customeraddress = salesInvoiceDummy.customeraddress;
@@ -363,7 +418,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         customername: (salesInvoiceDummy as any).customername,
         vehicleno: (salesInvoiceDummy as any).vehicleno,
         customeraddress: (salesInvoiceDummy as any).customeraddress,
-
+        autocarejobid: this.jobid || 0,
         subtotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
         nettotal: Number((salesInvoiceDummy as any).nettotal) || 0, // Replace "8888" with a dynamic value
         totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,
@@ -462,6 +517,18 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
+    console.log('salessssssssssssssssss', salesinvoice);
+    const systemSettingsUpdate: PartialUpdateAutocarejob = { id: this.jobid, isjobclose: true }; // ✅ Fix applied
+
+    this.autojob.partialUpdate(systemSettingsUpdate).subscribe({
+      next: response => {
+        console.log('System Settings Updatedddddddd:', response);
+      },
+      error: err => {
+        console.error('Error updating system settings:', err);
+      },
+    });
+
     if (salesinvoice.id !== null) {
       this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
     } else {

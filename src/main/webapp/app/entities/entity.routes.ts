@@ -325,6 +325,11 @@ const routes: Routes = [
     data: { pageTitle: 'Autojobsinvoicelinebatches' },
     loadChildren: () => import('./autojobsinvoicelinebatches/autojobsinvoicelinebatches.routes'),
   },
+  {
+    path: 'system-settings',
+    data: { pageTitle: 'SystemSettings' },
+    loadChildren: () => import('./system-settings/system-settings.routes'),
+  },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];
 

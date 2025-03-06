@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, inject, input } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, input } from '@angular/core';
 import { ReceiptpaymentsdetailsService } from '../receiptpaymentsdetails/service/receiptpaymentsdetails.service';
 import {
   ReceiptpaymentsdetailsFormService,
@@ -87,13 +87,15 @@ export class ReceiptModalComponent implements OnChanges {
 
   cash: number = 0;
   balance: number = 0;
+  @Output() methodpending: EventEmitter<number> = new EventEmitter<number>(); // Define the EventEmitter
+
   onItemCodeInput(event: Event): void {
     const inputElement = <HTMLInputElement>event.target;
     const value = inputElement.value;
     console.log(`Input value: ${value}`);
     this.cash = parseFloat(value);
     console.log('Cash:', this.cash);
-
+    this.methodpending.emit(this.cash);
     console.log('Total Amount:', this.totalamount);
     this.balance = this.totalamount - this.cash;
     console.log('Balance:', this.balance);
@@ -152,7 +154,9 @@ export class ReceiptModalComponent implements OnChanges {
       },
     });
   }
+  @Output() methodChanged: EventEmitter<string> = new EventEmitter<string>(); // Define the EventEmitter
 
+  method: String = '';
   onOptionChange(option: number): void {
     this.selectedOption = option;
 
@@ -207,6 +211,9 @@ export class ReceiptModalComponent implements OnChanges {
     }
 
     console.log('Selected Payment Method:', paymentMethod);
+    this.method = paymentMethod;
+    console.log(this.method);
+    this.methodChanged.emit(this.method.toString());
     console.log('Selected Term ID:', termid);
     this.receipt.term = paymentMethod;
     this.receipt.termid = termid;

@@ -1,0 +1,31 @@
+{
+  "annotations": {
+    "changelogDate": "20250305145449"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "key",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lastValue",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nextValue",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "SystemSettings",
+  "relationships": [],
+  "searchEngine": "no"
+}

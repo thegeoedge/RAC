@@ -1,0 +1,10 @@
+entity SystemSettings {
+     
+    key String    ,
+    lastValue String  ,
+    nextValue String  ,
+    lmu Integer,
+    lmd Instant
+  }
+  
+  
