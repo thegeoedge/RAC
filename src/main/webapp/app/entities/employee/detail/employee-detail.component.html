@@ -1,0 +1,278 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (employee(); as employeeRef) {
+      <div>
+        <h2 data-cy="employeeDetailsHeading"><span>Employee</span></h2>
+
+        <hr />
+
+        <jhi-alert-error></jhi-alert-error>
+
+        <jhi-alert></jhi-alert>
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ employeeRef.id }}</span>
+          </dd>
+          <dt><span>Code</span></dt>
+          <dd>
+            <span>{{ employeeRef.code }}</span>
+          </dd>
+          <dt><span>Full Name</span></dt>
+          <dd>
+            <span>{{ employeeRef.fullName }}</span>
+          </dd>
+          <dt><span>Name With Initials</span></dt>
+          <dd>
+            <span>{{ employeeRef.nameWithInitials }}</span>
+          </dd>
+          <dt><span>Surname</span></dt>
+          <dd>
+            <span>{{ employeeRef.surname }}</span>
+          </dd>
+          <dt><span>Nic Number</span></dt>
+          <dd>
+            <span>{{ employeeRef.nicNumber }}</span>
+          </dd>
+          <dt><span>Nic Issue Date</span></dt>
+          <dd>
+            <span>{{ employeeRef.nicIssueDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Passport No</span></dt>
+          <dd>
+            <span>{{ employeeRef.passportNo }}</span>
+          </dd>
+          <dt><span>Passport Issue Date</span></dt>
+          <dd>
+            <span>{{ employeeRef.passportIssueDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Passport Exp Date</span></dt>
+          <dd>
+            <span>{{ employeeRef.passportExpDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Date Of Birth</span></dt>
+          <dd>
+            <span>{{ employeeRef.dateOfBirth | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Age</span></dt>
+          <dd>
+            <span>{{ employeeRef.age }}</span>
+          </dd>
+          <dt><span>Blood Group</span></dt>
+          <dd>
+            <span>{{ employeeRef.bloodGroup }}</span>
+          </dd>
+          <dt><span>Gender</span></dt>
+          <dd>
+            <span>{{ employeeRef.gender }}</span>
+          </dd>
+          <dt><span>Phone 2</span></dt>
+          <dd>
+            <span>{{ employeeRef.phone2 }}</span>
+          </dd>
+          <dt><span>Marital Status</span></dt>
+          <dd>
+            <span>{{ employeeRef.maritalStatus }}</span>
+          </dd>
+          <dt><span>Married Date</span></dt>
+          <dd>
+            <span>{{ employeeRef.marriedDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Nationality</span></dt>
+          <dd>
+            <span>{{ employeeRef.nationality }}</span>
+          </dd>
+          <dt><span>Permanent Address</span></dt>
+          <dd>
+            <span>{{ employeeRef.permanentAddress }}</span>
+          </dd>
+          <dt><span>Temporary Address</span></dt>
+          <dd>
+            <span>{{ employeeRef.temporaryAddress }}</span>
+          </dd>
+          <dt><span>Home</span></dt>
+          <dd>
+            <span>{{ employeeRef.home }}</span>
+          </dd>
+          <dt><span>Mobile</span></dt>
+          <dd>
+            <span>{{ employeeRef.mobile }}</span>
+          </dd>
+          <dt><span>Fax</span></dt>
+          <dd>
+            <span>{{ employeeRef.fax }}</span>
+          </dd>
+          <dt><span>Email</span></dt>
+          <dd>
+            <span>{{ employeeRef.email }}</span>
+          </dd>
+          <dt><span>Emergency Contact Person</span></dt>
+          <dd>
+            <span>{{ employeeRef.emergencyContactPerson }}</span>
+          </dd>
+          <dt><span>Emergency Number</span></dt>
+          <dd>
+            <span>{{ employeeRef.emergencyNumber }}</span>
+          </dd>
+          <dt><span>City</span></dt>
+          <dd>
+            <span>{{ employeeRef.city }}</span>
+          </dd>
+          <dt><span>District</span></dt>
+          <dd>
+            <span>{{ employeeRef.district }}</span>
+          </dd>
+          <dt><span>Province</span></dt>
+          <dd>
+            <span>{{ employeeRef.province }}</span>
+          </dd>
+          <dt><span>Electorate</span></dt>
+          <dd>
+            <span>{{ employeeRef.electorate }}</span>
+          </dd>
+          <dt><span>Main Road</span></dt>
+          <dd>
+            <span>{{ employeeRef.mainRoad }}</span>
+          </dd>
+          <dt><span>Mode Of Transport</span></dt>
+          <dd>
+            <span>{{ employeeRef.modeOfTransport }}</span>
+          </dd>
+          <dt><span>Distance</span></dt>
+          <dd>
+            <span>{{ employeeRef.distance }}</span>
+          </dd>
+          <dt><span>Travel Time</span></dt>
+          <dd>
+            <span>{{ employeeRef.travelTime }}</span>
+          </dd>
+          <dt><span>Username</span></dt>
+          <dd>
+            <span>{{ employeeRef.username }}</span>
+          </dd>
+          <dt><span>Password</span></dt>
+          <dd>
+            <span>{{ employeeRef.password }}</span>
+          </dd>
+          <dt><span>Department ID</span></dt>
+          <dd>
+            <span>{{ employeeRef.departmentID }}</span>
+          </dd>
+          <dt><span>Department Code</span></dt>
+          <dd>
+            <span>{{ employeeRef.departmentCode }}</span>
+          </dd>
+          <dt><span>Emp Reg Date</span></dt>
+          <dd>
+            <span>{{ employeeRef.empRegDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Lmu</span></dt>
+          <dd>
+            <span>{{ employeeRef.lmu }}</span>
+          </dd>
+          <dt><span>Lmd</span></dt>
+          <dd>
+            <span>{{ employeeRef.lmd | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Role Id</span></dt>
+          <dd>
+            <span>{{ employeeRef.roleId }}</span>
+          </dd>
+          <dt><span>Role Name</span></dt>
+          <dd>
+            <span>{{ employeeRef.roleName }}</span>
+          </dd>
+          <dt><span>Epf</span></dt>
+          <dd>
+            <span>{{ employeeRef.epf }}</span>
+          </dd>
+          <dt><span>Etf</span></dt>
+          <dd>
+            <span>{{ employeeRef.etf }}</span>
+          </dd>
+          <dt><span>Date Joined</span></dt>
+          <dd>
+            <span>{{ employeeRef.dateJoined | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Date Resigned</span></dt>
+          <dd>
+            <span>{{ employeeRef.dateResigned | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Designation</span></dt>
+          <dd>
+            <span>{{ employeeRef.designation }}</span>
+          </dd>
+          <dt><span>Job Status Id</span></dt>
+          <dd>
+            <span>{{ employeeRef.jobStatusId }}</span>
+          </dd>
+          <dt><span>Job Status Name</span></dt>
+          <dd>
+            <span>{{ employeeRef.jobStatusName }}</span>
+          </dd>
+          <dt><span>Image Path</span></dt>
+          <dd>
+            <span>{{ employeeRef.imagePath }}</span>
+          </dd>
+          <dt><span>Bank Account No</span></dt>
+          <dd>
+            <span>{{ employeeRef.bankAccountNo }}</span>
+          </dd>
+          <dt><span>Bank Id</span></dt>
+          <dd>
+            <span>{{ employeeRef.bankId }}</span>
+          </dd>
+          <dt><span>Bank Name</span></dt>
+          <dd>
+            <span>{{ employeeRef.bankName }}</span>
+          </dd>
+          <dt><span>Branch Id</span></dt>
+          <dd>
+            <span>{{ employeeRef.branchId }}</span>
+          </dd>
+          <dt><span>Branch Name</span></dt>
+          <dd>
+            <span>{{ employeeRef.branchName }}</span>
+          </dd>
+          <dt><span>Salary Payment Basis</span></dt>
+          <dd>
+            <span>{{ employeeRef.salaryPaymentBasis }}</span>
+          </dd>
+          <dt><span>Emp Status</span></dt>
+          <dd>
+            <span>{{ employeeRef.empStatus }}</span>
+          </dd>
+          <dt><span>Religion</span></dt>
+          <dd>
+            <span>{{ employeeRef.religion }}</span>
+          </dd>
+          <dt><span>Experience</span></dt>
+          <dd>
+            <span>{{ employeeRef.experience }}</span>
+          </dd>
+          <dt><span>Qualifications</span></dt>
+          <dd>
+            <span>{{ employeeRef.qualifications }}</span>
+          </dd>
+          <dt><span>Attendance Code</span></dt>
+          <dd>
+            <span>{{ employeeRef.attendanceCode }}</span>
+          </dd>
+          <dt><span>Is Active</span></dt>
+          <dd>
+            <span>{{ employeeRef.isActive }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/employee', employeeRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

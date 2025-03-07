@@ -76,6 +76,7 @@
     <include file="config/liquibase/changelog/20250226053608_added_entity_ReceiptLines.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250227165912_added_entity_Autojobsinvoicelinebatches.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250305145449_added_entity_SystemSettings.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250306131023_added_entity_Employee.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

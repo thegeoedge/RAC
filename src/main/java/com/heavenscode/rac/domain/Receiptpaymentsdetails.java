@@ -15,8 +15,8 @@ public class Receiptpaymentsdetails implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
+    // Ensure this is present
+    @Column(name = "ID")
     private Integer id;
 
     @Column(name = "lineid")
@@ -65,7 +65,7 @@ public class Receiptpaymentsdetails implements Serializable {
     private String otherdetails;
 
     @Column(name = "lmu")
-    private String lmu;
+    private int lmu;
 
     @Column(name = "lmd")
     private Instant lmd;
@@ -343,16 +343,16 @@ public class Receiptpaymentsdetails implements Serializable {
         this.otherdetails = otherdetails;
     }
 
-    public String getLmu() {
+    public int getLmu() {
         return this.lmu;
     }
 
-    public Receiptpaymentsdetails lmu(String lmu) {
+    public Receiptpaymentsdetails lmu(int lmu) {
         this.setLmu(lmu);
         return this;
     }
 
-    public void setLmu(String lmu) {
+    public void setLmu(int lmu) {
         this.lmu = lmu;
     }
 

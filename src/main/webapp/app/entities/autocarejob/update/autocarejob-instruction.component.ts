@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
-
+import { Router } from '@angular/router';
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -88,6 +88,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
+  router: Router = inject(Router);
   constructor(private cdr: ChangeDetectorRef) {} // Inject ChangeDetectorRef
   isSaving = false;
   autocarejob: IAutocarejob | null = null;
@@ -140,6 +141,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   newlastvalue: String = '';
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
+      console.log('Selected Vehicle Type:', this.vehicletypes.find(v => v.id === this.selectedVehicleTypeId)?.vehicletype);
+
       this.autocarejob = autocarejob;
       if (autocarejob) {
         this.updateForm(autocarejob);
@@ -203,7 +206,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   previousState(): void {
     window.history.back();
   }
-
+  vehicletypeId: number = 0;
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
@@ -214,9 +217,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     let page = 0;
     const pageSize = 20;
     this.billingserviceoption = [];
-
+    console.log(this.billingserviceoption);
     const fetchPage = () => {
-      this.billingserviceoptionService.query({ page, size: pageSize }).subscribe(
+      this.billingserviceoptionService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
         (res: HttpResponse<IBillingserviceoption[]>) => {
           this.billingserviceoption = [...this.billingserviceoption, ...(res.body || [])];
 
@@ -244,7 +247,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.billingserviceoptionvalues = [];
 
     const fetchPage = () => {
-      this.billingserviceoptionvaluesService.query({ page, size: pageSize }).subscribe(
+      this.billingserviceoptionvaluesService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
         (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
           this.billingserviceoptionvalues = [...this.billingserviceoptionvalues, ...(res.body || [])];
 
@@ -268,6 +271,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   createBillingOptionsLookup(): void {
     this.billingOptionsByVehicleType = {};
+    console.log(this.billingOptionsByVehicleType);
 
     this.billingserviceoptionvalues.forEach(value => {
       if (value.vehicletypeid != null && !this.billingOptionsByVehicleType[value.vehicletypeid]) {
@@ -282,6 +286,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   filterBillingServiceOptionValues(): void {
+    console.log('iiiiiiiiiiiii', this.selectedVehicleTypeId);
+    this.vehicletypeId = this.selectedVehicleTypeId ?? 0;
     if (this.selectedVehicleTypeId) {
       this.filteredBillingServiceOptionValues = this.billingOptionsByVehicleType[this.selectedVehicleTypeId] || [];
     } else {
@@ -297,6 +303,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
 
     const option = this.billingserviceoption.find(opt => opt.id === billingserviceoptionId);
+    console.log(option);
     // console.log('Billing Service Optionssssssssss:', option); // Debugging
     return option && option.servicename ? option.servicename : 'Unknown';
   }
@@ -908,20 +915,6 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (this.workshopVehicleWorkListComponent) {
       this.workshopVehicleWorkListComponent.save();
     }
-    const systemSettingsUpdate: PartialUpdateSystemSettings = {
-      id: 0,
-      lastValue: this.newlastvalue.toString(),
-      nextValue: this.newnextvalue.toString(),
-    }; // ✅ Fix applied
-
-    this.systemsettings.partialUpdate(systemSettingsUpdate).subscribe({
-      next: response => {
-        console.log('System Settings Updated:', response);
-      },
-      error: err => {
-        console.error('Error updating system settings:', err);
-      },
-    });
   }
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
@@ -1021,7 +1014,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    this.router.navigate(['/autojobsinvoice']);
   }
 
   protected onSaveError(): void {

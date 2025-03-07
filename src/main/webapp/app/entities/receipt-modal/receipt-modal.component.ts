@@ -17,6 +17,7 @@ import { toWords } from 'number-to-words';
 import { ReceiptService } from '../receipt/service/receipt.service';
 import dayjs from 'dayjs/esm';
 import { SalesinvoiceUpdateComponent } from '../salesinvoice/update/salesinvoice-update.component';
+import { ReceiptLinesService } from '../receipt-lines/service/receipt-lines.service';
 @Component({
   selector: 'app-receipt-modal',
   standalone: true,
@@ -44,9 +45,15 @@ export class ReceiptModalComponent implements OnChanges {
   @Input() isactive: boolean = true;
   @Input() deposited: boolean = true;
   @Input() createdby: number = 0;
+  @Input() accountId: number = 0;
 
   isSaving = false;
   field_input1: string = 'field_input1'; // Define this property here00
+  field_input2: string = 'field_input2';
+  field_input3: string = 'field_input3';
+  field_input4: string = 'field_input4';
+  field_input5: string = 'field_input5';
+  field_input6: string = 'field_input6';
   selectedOption: number = 0;
   banks: IBanks[] = [];
   bankbranch: IBankbranch[] = [];
@@ -58,6 +65,8 @@ export class ReceiptModalComponent implements OnChanges {
   protected banksService = inject(BanksService);
   protected bankbranchService = inject(BankbranchService);
   reciptService = inject(ReceiptService);
+  reciptlines = inject(ReceiptLinesService);
+  paymentdetails = inject(ReceiptpaymentsdetailsService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ReceiptpaymentsdetailsFormGroup = this.receiptpaymentsdetailsFormService.createReceiptpaymentsdetailsFormGroup();
 
@@ -100,7 +109,65 @@ export class ReceiptModalComponent implements OnChanges {
     this.balance = this.totalamount - this.cash;
     console.log('Balance:', this.balance);
   }
+  cheque: number = 0;
+  onItemChequeInput(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    const cheqvalue = inputElement.value;
+    console.log(`Input value: ${cheqvalue}`);
+    this.cheque = parseFloat(cheqvalue);
+    console.log('Cheque:', this.cheque);
+  }
+  cheqdate: Date | null = null;
+  onItemChequedate(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    const cheqdate = inputElement.value;
+    console.log(`Input value: ${cheqdate}`);
+    this.cheqdate = new Date(cheqdate);
+    console.log('Cheque Date:', this.cheqdate);
+  }
 
+  cheqam: number = 0;
+  onItemChequeAmInput(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    const cheqvalue = inputElement.value;
+    console.log(`Input value: ${cheqvalue}`);
+    this.cheqam = parseFloat(cheqvalue);
+    console.log('Chequeamount:', this.cheqam);
+  }
+
+  bankid: number = 0;
+  bankname: string = '';
+  onItemBankInput($event: Event): void {
+    const selectedBank = ($event.target as HTMLSelectElement).value;
+
+    if (!selectedBank) {
+      console.log('No bank selected');
+      return;
+    }
+
+    // Get selected object
+    const selectedObject = this.banks.find(bank => bank.name === selectedBank);
+
+    if (selectedObject) {
+      console.log(`Bank ID: ${selectedObject.id}, Bank Name: ${selectedObject.name}`);
+      this.bankid = Number(selectedObject.id);
+      this.bankname = selectedObject.name ? selectedObject.name.toString() : '';
+      console.log('Bank ID:', this.bankid);
+      console.log('Bank Name:', this.bankname);
+    } else {
+      console.log('Selected bank not found in the list');
+    }
+  }
+  Branch: string = '';
+  onItemChequebranchInput(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    const branchvalue = inputElement.value;
+    console.log(`Input value: ${branchvalue}`);
+    this.Branch = branchvalue;
+    console.log('Branchesss:', this.Branch);
+  }
+
+  termid: number = 0;
   loadBankBranch(): void {
     this.bankbranchService.query({ size: 1000 }).subscribe((res: HttpResponse<IBankbranch[]>) => {
       this.bankbranch = res.body || [];
@@ -130,36 +197,129 @@ export class ReceiptModalComponent implements OnChanges {
     vehicleno: 'string', // Added vehicle number
     id: null, // Added id property
   };
+  receiptlines = {
+    id: 0, // For the record's ID
+    lineid: 1, // LineID field (Numeric)
+    invoicecode: 'string', // Invoice code (String)
+    invoicetype: 'string', // Invoice type (String)
+    originalamount: 0, // Original amount (Numeric)
+    amountowing: 0, // Amount owing (Numeric)
+    discountavailable: 0, // Discount available (Numeric)
+    discounttaken: 0, // Discount taken (Numeric)
+    amountreceived: 0, // Amount received (Numeric)
+    lmu: 0, // Last Modified User (Numeric)
+    lmd: dayjs('2025-02-27T16:44:59.467Z'), // Last Modified Date (Date)
+    accountid: 0, // Account ID (Numeric)
+  };
+  receiptPaymentDetail = {
+    id: 0,
+    lineid: 0,
+    paymentamount: 0,
+    totalreceiptamount: 0,
+    checkqueamount: 0,
+    checkqueno: '',
+    checkquedate: dayjs('2025-02-27T16:44:59.467Z'),
+    checkqueexpiredate: dayjs('2025-02-27T16:44:59.467Z'),
+    bankname: '',
+    bankid: 0,
+    bankbranchname: '',
+    bankbranchid: 0,
+    creditcardno: '',
+    creditcardamount: 0,
+    reference: '',
+    otherdetails: '',
+    lmu: 0,
+    lmd: dayjs('2025-02-27T16:44:59.467Z'),
+    termid: 0,
+    termname: '',
+    accountno: '',
+    accountnumber: '',
+    chequereturndate: dayjs(), // FIX: Use dayjs() instead of an empty string
+    isdeposit: false,
+    depositeddate: dayjs(), // FIX: Use dayjs() instead of an empty string
+    chequestatuschangeddate: dayjs(),
+    returnchequesttledate: dayjs(),
+    chequestatusid: 0,
+    ispdcheque: false,
+    depositdate: dayjs(),
+    accountid: 0,
+    accountcode: '',
+    bankdepositbankname: '',
+    bankdepositbankid: 0,
+    bankdepositbankbranchname: '',
+    bankdepositbankbranchid: 0,
+    returnchequefine: 0,
+    companybankid: 0,
+    isbankreconciliation: false,
+  };
+
+  id: number = 0;
+  paymentmethod: String = '';
   save(): void {
     this.isSaving = true;
     const receiptpaymentsdetails = this.receiptpaymentsdetailsFormService.getReceiptpaymentsdetails(this.editForm);
 
     if (receiptpaymentsdetails.id !== null) {
-      this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
+      // this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
     } else {
-      this.salesinvoiceupdate.save();
-      this.subscribeToSaveResponse(this.reciptService.create(this.receipt));
+      // First, save receipt and wait for the response
+      this.subscribeToSaveResponse(this.reciptService.create(this.receipt), receiptId => {
+        // After getting the receipt ID, assign it to receiptlines
+        this.receiptlines.accountid = this.accountId;
+        this.receiptlines.amountreceived = this.cash;
+        this.receiptlines.id = receiptId; // Use the received ID
+
+        console.log('Assigned receipt ID to receipt lines:', this.receiptlines.id);
+        console.log('chqqqq', this.checkno);
+        // Now, save receiptlines
+        this.subscribeToSaveResponse(this.reciptlines.create(this.receiptlines));
+        this.receiptPaymentDetail.id = receiptId;
+        this.receiptPaymentDetail.lineid = 1;
+        this.receiptPaymentDetail.termid = this.termid;
+        this.receiptPaymentDetail.termname = this.method.toString();
+        this.receiptPaymentDetail.checkqueamount = this.cheqam;
+        this.receiptPaymentDetail.checkqueno = this.cheque ? this.cheque.toString() : '';
+        this.receiptPaymentDetail.checkqueexpiredate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+        this.receiptPaymentDetail.checkquedate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+        this.receiptPaymentDetail.bankname = this.bankname;
+        this.receiptPaymentDetail.bankid = this.bankid;
+        this.receiptPaymentDetail.bankbranchname = this.Branch;
+        this.receiptPaymentDetail.accountid = this.accountId;
+        this.receiptPaymentDetail.chequestatusid = 1;
+        this.receiptPaymentDetail.paymentamount = this.cheqam;
+        console.log('hhhhhhh', this.receiptPaymentDetail);
+        this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
+        this.salesinvoiceupdate.save();
+      });
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<any>>): void {
+  // Modified subscribeToSaveResponse to accept a callback
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<any>>, callback?: (id: number) => void): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
-        console.log('Save response:', response); // Logs the response here
-        this.onSaveSuccess();
+        console.log('✅ Save response:', response.body.id); // Logs the response ID
+        this.id = response.body.id; // Save ID to this.id
+        if (callback) {
+          callback(response.body.id); // Call the callback function with the ID
+        }
       },
       error: err => {
-        console.error('Error occurred while saving:', err); // Logs any errors
+        console.error('❌ Error occurred while saving:', err); // Logs the full error
+        if (err.error) {
+          console.error('🚨 Error Response Body:', err.error); // Logs the actual error body
+        }
         this.onSaveError();
       },
     });
   }
+
   @Output() methodChanged: EventEmitter<string> = new EventEmitter<string>(); // Define the EventEmitter
 
   method: String = '';
   onOptionChange(option: number): void {
     this.selectedOption = option;
-
+    console.log('aaaa', this.accountId);
     // Updating receipt object with the required properties
     this.receipt.totalamount = this.totalamount;
     this.receipt.customername = this.customername ?? '';
@@ -217,7 +377,7 @@ export class ReceiptModalComponent implements OnChanges {
     console.log('Selected Term ID:', termid);
     this.receipt.term = paymentMethod;
     this.receipt.termid = termid;
-
+    this.termid = termid;
     console.log('totalamount:', this.totalamount);
 
     let totalAmountInWords = toWords(this.totalamount).replace(/,/g, '').replace(/and/g, 'and'); // Formatting the words

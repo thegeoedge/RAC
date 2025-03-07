@@ -330,6 +330,11 @@ const routes: Routes = [
     data: { pageTitle: 'SystemSettings' },
     loadChildren: () => import('./system-settings/system-settings.routes'),
   },
+  {
+    path: 'employee',
+    data: { pageTitle: 'Employees' },
+    loadChildren: () => import('./employee/employee.routes'),
+  },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];
 

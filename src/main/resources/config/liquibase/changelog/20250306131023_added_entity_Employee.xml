@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity Employee.
+    -->
+    <changeSet id="20250306131023-1" author="jhipster">
+        <createTable tableName="employee">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="full_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="name_with_initials" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="surname" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="nic_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="nic_issue_date" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="passport_no" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="passport_issue_date" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="passport_exp_date" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="date_of_birth" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="age" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="blood_group" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="gender" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="phone_2" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="marital_status" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="married_date" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="nationality" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="permanent_address" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="temporary_address" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="home" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="mobile" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fax" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="emergency_contact_person" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="emergency_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="city" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="district" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="province" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="electorate" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="main_road" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="mode_of_transport" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="distance" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="travel_time" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="department_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="department_code" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="emp_reg_date" type="date">
+                <constraints nullable="true" />
+            </column>
+            <column name="lmu" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="lmd" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="role_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="role_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="epf" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="etf" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="date_joined" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="date_resigned" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="designation" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="job_status_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="job_status_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="image_path" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_account_no" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="branch_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="branch_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="salary_payment_basis" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="emp_status" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="religion" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="experience" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="qualifications" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="attendance_code" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="is_active" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="employee" columnName="lmd" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="employee" columnName="date_joined" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="employee" columnName="date_resigned" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20250306131023-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/employee.csv"
+                  separator=";"
+                  tableName="employee"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="code" type="string"/>
+            <column name="full_name" type="string"/>
+            <column name="name_with_initials" type="string"/>
+            <column name="surname" type="string"/>
+            <column name="nic_number" type="string"/>
+            <column name="nic_issue_date" type="date"/>
+            <column name="passport_no" type="string"/>
+            <column name="passport_issue_date" type="date"/>
+            <column name="passport_exp_date" type="date"/>
+            <column name="date_of_birth" type="date"/>
+            <column name="age" type="numeric"/>
+            <column name="blood_group" type="string"/>
+            <column name="gender" type="string"/>
+            <column name="phone_2" type="string"/>
+            <column name="marital_status" type="string"/>
+            <column name="married_date" type="date"/>
+            <column name="nationality" type="string"/>
+            <column name="permanent_address" type="string"/>
+            <column name="temporary_address" type="string"/>
+            <column name="home" type="string"/>
+            <column name="mobile" type="string"/>
+            <column name="fax" type="string"/>
+            <column name="email" type="string"/>
+            <column name="emergency_contact_person" type="string"/>
+            <column name="emergency_number" type="string"/>
+            <column name="city" type="string"/>
+            <column name="district" type="string"/>
+            <column name="province" type="string"/>
+            <column name="electorate" type="string"/>
+            <column name="main_road" type="string"/>
+            <column name="mode_of_transport" type="string"/>
+            <column name="distance" type="string"/>
+            <column name="travel_time" type="string"/>
+            <column name="username" type="string"/>
+            <column name="password" type="string"/>
+            <column name="department_id" type="numeric"/>
+            <column name="department_code" type="string"/>
+            <column name="emp_reg_date" type="date"/>
+            <column name="lmu" type="string"/>
+            <column name="lmd" type="date"/>
+            <column name="role_id" type="numeric"/>
+            <column name="role_name" type="string"/>
+            <column name="epf" type="string"/>
+            <column name="etf" type="string"/>
+            <column name="date_joined" type="date"/>
+            <column name="date_resigned" type="date"/>
+            <column name="designation" type="string"/>
+            <column name="job_status_id" type="numeric"/>
+            <column name="job_status_name" type="string"/>
+            <column name="image_path" type="string"/>
+            <column name="bank_account_no" type="string"/>
+            <column name="bank_id" type="numeric"/>
+            <column name="bank_name" type="string"/>
+            <column name="branch_id" type="numeric"/>
+            <column name="branch_name" type="string"/>
+            <column name="salary_payment_basis" type="string"/>
+            <column name="emp_status" type="string"/>
+            <column name="religion" type="string"/>
+            <column name="experience" type="string"/>
+            <column name="qualifications" type="string"/>
+            <column name="attendance_code" type="string"/>
+            <column name="is_active" type="boolean"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

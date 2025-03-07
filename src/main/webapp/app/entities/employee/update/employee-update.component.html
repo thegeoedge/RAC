@@ -1,0 +1,619 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-employee-heading" data-cy="EmployeeCreateUpdateHeading">
+        Translation missing for racApp.employee.home.createOrEditLabel
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_code">Code</label>
+          <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_fullName">Full Name</label>
+          <input type="text" class="form-control" name="fullName" id="field_fullName" data-cy="fullName" formControlName="fullName" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_nameWithInitials">Name With Initials</label>
+          <input
+            type="text"
+            class="form-control"
+            name="nameWithInitials"
+            id="field_nameWithInitials"
+            data-cy="nameWithInitials"
+            formControlName="nameWithInitials"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_surname">Surname</label>
+          <input type="text" class="form-control" name="surname" id="field_surname" data-cy="surname" formControlName="surname" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_nicNumber">Nic Number</label>
+          <input type="text" class="form-control" name="nicNumber" id="field_nicNumber" data-cy="nicNumber" formControlName="nicNumber" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_nicIssueDate">Nic Issue Date</label>
+          <div class="input-group">
+            <input
+              id="field_nicIssueDate"
+              data-cy="nicIssueDate"
+              type="text"
+              class="form-control"
+              name="nicIssueDate"
+              ngbDatepicker
+              #nicIssueDateDp="ngbDatepicker"
+              formControlName="nicIssueDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="nicIssueDateDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_passportNo">Passport No</label>
+          <input
+            type="text"
+            class="form-control"
+            name="passportNo"
+            id="field_passportNo"
+            data-cy="passportNo"
+            formControlName="passportNo"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_passportIssueDate">Passport Issue Date</label>
+          <div class="input-group">
+            <input
+              id="field_passportIssueDate"
+              data-cy="passportIssueDate"
+              type="text"
+              class="form-control"
+              name="passportIssueDate"
+              ngbDatepicker
+              #passportIssueDateDp="ngbDatepicker"
+              formControlName="passportIssueDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="passportIssueDateDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_passportExpDate">Passport Exp Date</label>
+          <div class="input-group">
+            <input
+              id="field_passportExpDate"
+              data-cy="passportExpDate"
+              type="text"
+              class="form-control"
+              name="passportExpDate"
+              ngbDatepicker
+              #passportExpDateDp="ngbDatepicker"
+              formControlName="passportExpDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="passportExpDateDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dateOfBirth">Date Of Birth</label>
+          <div class="input-group">
+            <input
+              id="field_dateOfBirth"
+              data-cy="dateOfBirth"
+              type="text"
+              class="form-control"
+              name="dateOfBirth"
+              ngbDatepicker
+              #dateOfBirthDp="ngbDatepicker"
+              formControlName="dateOfBirth"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateOfBirthDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_age">Age</label>
+          <input type="number" class="form-control" name="age" id="field_age" data-cy="age" formControlName="age" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_bloodGroup">Blood Group</label>
+          <input
+            type="text"
+            class="form-control"
+            name="bloodGroup"
+            id="field_bloodGroup"
+            data-cy="bloodGroup"
+            formControlName="bloodGroup"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_gender">Gender</label>
+          <input type="text" class="form-control" name="gender" id="field_gender" data-cy="gender" formControlName="gender" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_phone2">Phone 2</label>
+          <input type="text" class="form-control" name="phone2" id="field_phone2" data-cy="phone2" formControlName="phone2" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_maritalStatus">Marital Status</label>
+          <input
+            type="text"
+            class="form-control"
+            name="maritalStatus"
+            id="field_maritalStatus"
+            data-cy="maritalStatus"
+            formControlName="maritalStatus"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_marriedDate">Married Date</label>
+          <div class="input-group">
+            <input
+              id="field_marriedDate"
+              data-cy="marriedDate"
+              type="text"
+              class="form-control"
+              name="marriedDate"
+              ngbDatepicker
+              #marriedDateDp="ngbDatepicker"
+              formControlName="marriedDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="marriedDateDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_nationality">Nationality</label>
+          <input
+            type="text"
+            class="form-control"
+            name="nationality"
+            id="field_nationality"
+            data-cy="nationality"
+            formControlName="nationality"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_permanentAddress">Permanent Address</label>
+          <input
+            type="text"
+            class="form-control"
+            name="permanentAddress"
+            id="field_permanentAddress"
+            data-cy="permanentAddress"
+            formControlName="permanentAddress"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_temporaryAddress">Temporary Address</label>
+          <input
+            type="text"
+            class="form-control"
+            name="temporaryAddress"
+            id="field_temporaryAddress"
+            data-cy="temporaryAddress"
+            formControlName="temporaryAddress"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_home">Home</label>
+          <input type="text" class="form-control" name="home" id="field_home" data-cy="home" formControlName="home" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_mobile">Mobile</label>
+          <input type="text" class="form-control" name="mobile" id="field_mobile" data-cy="mobile" formControlName="mobile" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_fax">Fax</label>
+          <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_email">Email</label>
+          <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_emergencyContactPerson">Emergency Contact Person</label>
+          <input
+            type="text"
+            class="form-control"
+            name="emergencyContactPerson"
+            id="field_emergencyContactPerson"
+            data-cy="emergencyContactPerson"
+            formControlName="emergencyContactPerson"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_emergencyNumber">Emergency Number</label>
+          <input
+            type="text"
+            class="form-control"
+            name="emergencyNumber"
+            id="field_emergencyNumber"
+            data-cy="emergencyNumber"
+            formControlName="emergencyNumber"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_city">City</label>
+          <input type="text" class="form-control" name="city" id="field_city" data-cy="city" formControlName="city" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_district">District</label>
+          <input type="text" class="form-control" name="district" id="field_district" data-cy="district" formControlName="district" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_province">Province</label>
+          <input type="text" class="form-control" name="province" id="field_province" data-cy="province" formControlName="province" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_electorate">Electorate</label>
+          <input
+            type="text"
+            class="form-control"
+            name="electorate"
+            id="field_electorate"
+            data-cy="electorate"
+            formControlName="electorate"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_mainRoad">Main Road</label>
+          <input type="text" class="form-control" name="mainRoad" id="field_mainRoad" data-cy="mainRoad" formControlName="mainRoad" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_modeOfTransport">Mode Of Transport</label>
+          <input
+            type="text"
+            class="form-control"
+            name="modeOfTransport"
+            id="field_modeOfTransport"
+            data-cy="modeOfTransport"
+            formControlName="modeOfTransport"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_distance">Distance</label>
+          <input type="text" class="form-control" name="distance" id="field_distance" data-cy="distance" formControlName="distance" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_travelTime">Travel Time</label>
+          <input
+            type="text"
+            class="form-control"
+            name="travelTime"
+            id="field_travelTime"
+            data-cy="travelTime"
+            formControlName="travelTime"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_username">Username</label>
+          <input type="text" class="form-control" name="username" id="field_username" data-cy="username" formControlName="username" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_password">Password</label>
+          <input type="text" class="form-control" name="password" id="field_password" data-cy="password" formControlName="password" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_departmentID">Department ID</label>
+          <input
+            type="number"
+            class="form-control"
+            name="departmentID"
+            id="field_departmentID"
+            data-cy="departmentID"
+            formControlName="departmentID"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_departmentCode">Department Code</label>
+          <input
+            type="text"
+            class="form-control"
+            name="departmentCode"
+            id="field_departmentCode"
+            data-cy="departmentCode"
+            formControlName="departmentCode"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_empRegDate">Emp Reg Date</label>
+          <div class="input-group">
+            <input
+              id="field_empRegDate"
+              data-cy="empRegDate"
+              type="text"
+              class="form-control"
+              name="empRegDate"
+              ngbDatepicker
+              #empRegDateDp="ngbDatepicker"
+              formControlName="empRegDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="empRegDateDp.toggle()"><fa-icon icon="calendar-alt"></fa-icon></button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lmu">Lmu</label>
+          <input type="text" class="form-control" name="lmu" id="field_lmu" data-cy="lmu" formControlName="lmu" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lmd">Lmd</label>
+          <div class="d-flex">
+            <input
+              id="field_lmd"
+              data-cy="lmd"
+              type="datetime-local"
+              class="form-control"
+              name="lmd"
+              formControlName="lmd"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_roleId">Role Id</label>
+          <input type="number" class="form-control" name="roleId" id="field_roleId" data-cy="roleId" formControlName="roleId" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_roleName">Role Name</label>
+          <input type="text" class="form-control" name="roleName" id="field_roleName" data-cy="roleName" formControlName="roleName" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_epf">Epf</label>
+          <input type="text" class="form-control" name="epf" id="field_epf" data-cy="epf" formControlName="epf" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_etf">Etf</label>
+          <input type="text" class="form-control" name="etf" id="field_etf" data-cy="etf" formControlName="etf" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dateJoined">Date Joined</label>
+          <div class="d-flex">
+            <input
+              id="field_dateJoined"
+              data-cy="dateJoined"
+              type="datetime-local"
+              class="form-control"
+              name="dateJoined"
+              formControlName="dateJoined"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dateResigned">Date Resigned</label>
+          <div class="d-flex">
+            <input
+              id="field_dateResigned"
+              data-cy="dateResigned"
+              type="datetime-local"
+              class="form-control"
+              name="dateResigned"
+              formControlName="dateResigned"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_designation">Designation</label>
+          <input
+            type="text"
+            class="form-control"
+            name="designation"
+            id="field_designation"
+            data-cy="designation"
+            formControlName="designation"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_jobStatusId">Job Status Id</label>
+          <input
+            type="number"
+            class="form-control"
+            name="jobStatusId"
+            id="field_jobStatusId"
+            data-cy="jobStatusId"
+            formControlName="jobStatusId"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_jobStatusName">Job Status Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="jobStatusName"
+            id="field_jobStatusName"
+            data-cy="jobStatusName"
+            formControlName="jobStatusName"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_imagePath">Image Path</label>
+          <input type="text" class="form-control" name="imagePath" id="field_imagePath" data-cy="imagePath" formControlName="imagePath" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_bankAccountNo">Bank Account No</label>
+          <input
+            type="text"
+            class="form-control"
+            name="bankAccountNo"
+            id="field_bankAccountNo"
+            data-cy="bankAccountNo"
+            formControlName="bankAccountNo"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_bankId">Bank Id</label>
+          <input type="number" class="form-control" name="bankId" id="field_bankId" data-cy="bankId" formControlName="bankId" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_bankName">Bank Name</label>
+          <input type="text" class="form-control" name="bankName" id="field_bankName" data-cy="bankName" formControlName="bankName" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_branchId">Branch Id</label>
+          <input type="number" class="form-control" name="branchId" id="field_branchId" data-cy="branchId" formControlName="branchId" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_branchName">Branch Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="branchName"
+            id="field_branchName"
+            data-cy="branchName"
+            formControlName="branchName"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_salaryPaymentBasis">Salary Payment Basis</label>
+          <input
+            type="text"
+            class="form-control"
+            name="salaryPaymentBasis"
+            id="field_salaryPaymentBasis"
+            data-cy="salaryPaymentBasis"
+            formControlName="salaryPaymentBasis"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_empStatus">Emp Status</label>
+          <input type="text" class="form-control" name="empStatus" id="field_empStatus" data-cy="empStatus" formControlName="empStatus" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_religion">Religion</label>
+          <input type="text" class="form-control" name="religion" id="field_religion" data-cy="religion" formControlName="religion" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_experience">Experience</label>
+          <input
+            type="text"
+            class="form-control"
+            name="experience"
+            id="field_experience"
+            data-cy="experience"
+            formControlName="experience"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_qualifications">Qualifications</label>
+          <input
+            type="text"
+            class="form-control"
+            name="qualifications"
+            id="field_qualifications"
+            data-cy="qualifications"
+            formControlName="qualifications"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_attendanceCode">Attendance Code</label>
+          <input
+            type="text"
+            class="form-control"
+            name="attendanceCode"
+            id="field_attendanceCode"
+            data-cy="attendanceCode"
+            formControlName="attendanceCode"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_isActive">Is Active</label>
+          <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isActive" formControlName="isActive" />
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

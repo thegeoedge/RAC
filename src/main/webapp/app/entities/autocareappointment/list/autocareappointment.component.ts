@@ -1,7 +1,7 @@
 import { Component, NgZone, inject, OnInit } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router, RouterModule } from '@angular/router';
-import { combineLatest, filter, Observable, Subscription, tap } from 'rxjs';
+import { combineLatest, filter, finalize, Observable, Subscription, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import SharedModule from 'app/shared/shared.module';
@@ -157,11 +157,48 @@ export class AutocareappointmentComponent implements OnInit {
   }
 
   load(): void {
-    this.queryBackend().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
+    const currentUrl = window.location.href;
+    console.log('Current URLll:', currentUrl); // ✅ Logs the current URL
+
+    this.isLoading = true; // Start loading before the API call
+
+    let queryParams: any;
+
+    if (currentUrl.includes('sort=isconformed,asc')) {
+      console.log('Detectedddd isconformed,desc in URL. Fetching filtered data...');
+      queryParams = {
+        'isconformed.equals': 'false',
+        page: 0,
+        size: 20,
+        sort: ['id,desc'],
+      };
+
+      this.fetchData(queryParams);
+    } else {
+      this.queryBackend()
+        .pipe(
+          finalize(() => (this.isLoading = false)), // Ensure loading stops
+        )
+        .subscribe({
+          next: (res: EntityArrayResponseType) => {
+            this.onResponseSuccess(res);
+          },
+        });
+    }
+  }
+
+  private fetchData(params: any): void {
+    this.autocareappointmentService
+      .query(params)
+      .pipe(
+        finalize(() => (this.isLoading = false)), // Ensure loading stops
+      )
+      .subscribe({
+        next: (res: EntityArrayResponseType) => {
+          console.log(res);
+          this.onResponseSuccess(res);
+        },
+      });
   }
 
   navigateToWithComponentValues(event: SortState): void {

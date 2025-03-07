@@ -67,11 +67,8 @@ export class ReceiptpaymentsdetailsUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const receiptpaymentsdetails = this.receiptpaymentsdetailsFormService.getReceiptpaymentsdetails(this.editForm);
-    if (receiptpaymentsdetails.id !== null) {
-      this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
-    } else {
-      this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.create(receiptpaymentsdetails));
-    }
+
+    this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.create(receiptpaymentsdetails));
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IReceiptpaymentsdetails>>): void {

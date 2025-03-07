@@ -54,9 +54,7 @@ public class ReceiptpaymentsdetailsResource {
     public ResponseEntity<Receiptpaymentsdetails> createReceiptpaymentsdetails(@RequestBody Receiptpaymentsdetails receiptpaymentsdetails)
         throws URISyntaxException {
         LOG.debug("REST request to save Receiptpaymentsdetails : {}", receiptpaymentsdetails);
-        if (receiptpaymentsdetails.getId() != null) {
-            throw new BadRequestAlertException("A new receiptpaymentsdetails cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         receiptpaymentsdetails = receiptpaymentsdetailsRepository.save(receiptpaymentsdetails);
         return ResponseEntity.created(new URI("/api/receiptpaymentsdetails/" + receiptpaymentsdetails.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, receiptpaymentsdetails.getId().toString()))
@@ -172,7 +170,7 @@ public class ReceiptpaymentsdetailsResource {
                 if (receiptpaymentsdetails.getOtherdetails() != null) {
                     existingReceiptpaymentsdetails.setOtherdetails(receiptpaymentsdetails.getOtherdetails());
                 }
-                if (receiptpaymentsdetails.getLmu() != null) {
+                if (receiptpaymentsdetails.getLmu() != 0) {
                     existingReceiptpaymentsdetails.setLmu(receiptpaymentsdetails.getLmu());
                 }
                 if (receiptpaymentsdetails.getLmd() != null) {

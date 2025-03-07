@@ -64,9 +64,7 @@ public class ReceiptLinesResource {
     @PostMapping("")
     public ResponseEntity<ReceiptLines> createReceiptLines(@RequestBody ReceiptLines receiptLines) throws URISyntaxException {
         LOG.debug("REST request to save ReceiptLines : {}", receiptLines);
-        if (receiptLines.getId() != null) {
-            throw new BadRequestAlertException("A new receiptLines cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         receiptLines = receiptLinesService.save(receiptLines);
         return ResponseEntity.created(new URI("/api/receipt-lines/" + receiptLines.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, receiptLines.getId().toString()))

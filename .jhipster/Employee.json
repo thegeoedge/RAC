@@ -1,0 +1,261 @@
+{
+  "annotations": {
+    "changelogDate": "20250306131023"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "code",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fullName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nameWithInitials",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "surname",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nicNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nicIssueDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "passportNo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "passportIssueDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "passportExpDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "dateOfBirth",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "age",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "bloodGroup",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "gender",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "phone2",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "maritalStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "marriedDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "nationality",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "permanentAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "temporaryAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "home",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "mobile",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fax",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "emergencyContactPerson",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "emergencyNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "city",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "district",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "province",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "electorate",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "mainRoad",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "modeOfTransport",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "distance",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "travelTime",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "username",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "password",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "departmentID",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "departmentCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "empRegDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "roleId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "roleName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "epf",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "etf",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateJoined",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "dateResigned",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "designation",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "jobStatusId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "jobStatusName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "imagePath",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankAccountNo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "bankName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "branchId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "branchName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "salaryPaymentBasis",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "empStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "religion",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "experience",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "qualifications",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "attendanceCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "isActive",
+      "fieldType": "Boolean"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Employee",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

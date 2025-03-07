@@ -11,6 +11,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISalesinvoice, NewSalesinvoice } from '../salesinvoice.model';
 import { RestInventory } from 'app/entities/inventory/service/inventory.service';
+import { PartialUpdateSystemSettings, RestSystemSettings } from 'app/entities/system-settings/service/system-settings.service';
 
 export type PartialUpdateSalesinvoice = Partial<ISalesinvoice> & Pick<ISalesinvoice, 'id'>;
 
@@ -101,6 +102,17 @@ export class SalesinvoiceService {
     return this.http
       .put<RestSalesinvoice>(`${this.resourceUrl}/${this.getSalesinvoiceIdentifier(salesinvoice)}`, copy, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+  protected resourceUrly = this.applicationConfigService.getEndpointFor('api/system-settings');
+  partialUpdatee(systemSettings: PartialUpdateSystemSettings): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(systemSettings);
+    return this.http
+      .patch<RestSystemSettings>(`${this.resourceUrly}/${this.getSystemSettingsIdentifier(systemSettings)}`, copy, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  getSystemSettingsIdentifier(systemSettings: Pick<PartialUpdateSystemSettings, 'id'>): number {
+    return systemSettings.id;
   }
 
   partialUpdate(salesinvoice: PartialUpdateSalesinvoice): Observable<EntityResponseType> {

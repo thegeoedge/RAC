@@ -4,17 +4,23 @@ import static com.heavenscode.rac.security.SecurityUtils.AUTHORITIES_KEY;
 import static com.heavenscode.rac.security.SecurityUtils.JWT_ALGORITHM;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.heavenscode.rac.domain.Employee;
+import com.heavenscode.rac.service.EmployeeQueryService;
+import com.heavenscode.rac.service.criteria.EmployeeCriteria;
 import com.heavenscode.rac.web.rest.vm.LoginVM;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -25,7 +31,9 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import tech.jhipster.service.filter.StringFilter;
 
 /**
  * Controller to authenticate users.
@@ -46,28 +54,63 @@ public class AuthenticateController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
+    // @Autowired
+    // EmployeeCriteria employeeCriteria;
+
+    @Autowired
+    EmployeeQueryService employeeQueryService;
+
     public AuthenticateController(JwtEncoder jwtEncoder, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.jwtEncoder = jwtEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
+    // @PostMapping("/authenticate")
+    // public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
+    //     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+    //             loginVM.getUsername(),
+    //             loginVM.getPassword());
+
+    //     Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+    //     SecurityContextHolder.getContext().setAuthentication(authentication);
+    //     String jwt = this.createToken(authentication, loginVM.isRememberMe());
+    //     HttpHeaders httpHeaders = new HttpHeaders();
+    //     httpHeaders.setBearerAuth(jwt);
+    //     return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+    // }
+
     @PostMapping("/authenticate")
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-            loginVM.getUsername(),
-            loginVM.getPassword()
-        );
+        StringFilter stringFilter = new StringFilter();
+        stringFilter.setEquals(loginVM.getUsername());
+        EmployeeCriteria employeeCriteria = new EmployeeCriteria();
+        employeeCriteria.setUsername(stringFilter);
+        var emps = employeeQueryService.findByCriteria(employeeCriteria);
+        var emp = new Employee();
+        var isAdmin = "";
+        if (emps.size() > 0) {
+            emp = emps.get(0);
+            if (emp.getCode().toUpperCase().equals("ADMIN")) {
+                isAdmin = ",ROLE_ADMIN";
+            } else {
+                isAdmin = emp.getRoleName() + ",ROLE_USER";
+            }
+        }
+        var pass = emp.getPassword();
+        var decodedPass = new String(Base64.getDecoder().decode(pass));
+        if (decodedPass.equals(loginVM.getPassword())) {
+            String jwt = this.createToken2(loginVM.getUsername(), isAdmin, loginVM.isRememberMe());
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setBearerAuth(jwt);
+            return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        }
 
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = this.createToken(authentication, loginVM.isRememberMe());
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatusCode.valueOf(401));
     }
 
     /**
-     * {@code GET /authenticate} : check if the user is authenticated, and return its login.
+     * {@code GET /authenticate} : check if the user is authenticated, and return
+     * its login.
      *
      * @param request the HTTP request.
      * @return the login if the user is authenticated.
@@ -94,6 +137,29 @@ public class AuthenticateController {
             .issuedAt(now)
             .expiresAt(validity)
             .subject(authentication.getName())
+            .claim(AUTHORITIES_KEY, authorities)
+            .build();
+
+        JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
+    }
+
+    public String createToken2(String username,String authorities, boolean rememberMe) {
+   
+
+        Instant now = Instant.now();
+        Instant validity;
+        if (rememberMe) {
+            validity = now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS);
+        } else {
+            validity = now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
+        }
+
+        // @formatter:off
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .issuedAt(now)
+            .expiresAt(validity)
+            .subject(username)
             .claim(AUTHORITIES_KEY, authorities)
             .build();
 

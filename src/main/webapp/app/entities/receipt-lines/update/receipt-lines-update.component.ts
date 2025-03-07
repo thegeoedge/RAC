@@ -44,17 +44,20 @@ export class ReceiptLinesUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const receiptLines = this.receiptLinesFormService.getReceiptLines(this.editForm);
-    if (receiptLines.id !== null) {
-      this.subscribeToSaveResponse(this.receiptLinesService.update(receiptLines));
-    } else {
-      this.subscribeToSaveResponse(this.receiptLinesService.create(receiptLines));
-    }
+
+    this.subscribeToSaveResponse(this.receiptLinesService.create(receiptLines));
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IReceiptLines>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      next: response => {
+        console.log('Save successfuuuuuuuuuuul:', response);
+        //   this.onSaveSuccess();
+      },
+      error: error => {
+        console.error('Save failed:', error);
+        this.onSaveError();
+      },
     });
   }
 

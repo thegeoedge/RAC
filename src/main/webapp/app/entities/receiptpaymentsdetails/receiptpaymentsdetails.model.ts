@@ -17,7 +17,7 @@ export interface IReceiptpaymentsdetails {
   creditcardamount?: number | null;
   reference?: string | null;
   otherdetails?: string | null;
-  lmu?: string | null;
+  lmu?: number | null;
   lmd?: dayjs.Dayjs | null;
   termid?: number | null;
   termname?: string | null;
@@ -42,4 +42,4 @@ export interface IReceiptpaymentsdetails {
   isbankreconciliation?: boolean | null;
 }
 
-export type NewReceiptpaymentsdetails = Omit<IReceiptpaymentsdetails, 'id'> & { id: null };
+export type NewReceiptpaymentsdetails = Omit<IReceiptpaymentsdetails, 'id'> & { id: null | number };

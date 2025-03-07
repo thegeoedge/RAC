@@ -15,4 +15,4 @@ export interface IReceiptLines {
   accountid?: number | null;
 }
 
-export type NewReceiptLines = Omit<IReceiptLines, 'id'> & { id: null };
+export type NewReceiptLines = Omit<IReceiptLines, 'id'> & { id: null | number };

@@ -8,15 +8,15 @@ import java.time.Instant;
  * A ReceiptLines.
  */
 @Entity
-@Table(name = "receipt_lines")
+@Table(name = "receiptlines")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ReceiptLines implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
+    // Ensure this is present
+    @Column(name = "ID")
     private Long id;
 
     @Column(name = "lineid")
