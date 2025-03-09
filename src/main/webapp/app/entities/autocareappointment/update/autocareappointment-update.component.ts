@@ -155,7 +155,8 @@ export class AutocareappointmentUpdateComponent implements OnInit {
   // }
 
   selectTime(timetable: any, hoistId: number): void {
-    console.log('send timetable : ', timetable);
+    console.log('send timetableeee : ', timetable);
+    console.log('send timetableeee : ', timetable.hoisttime);
     const appointmentDate = this.editForm.get('appointmentdate')?.value;
     console.log('new appointment date : ', appointmentDate);
 
@@ -175,14 +176,16 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       console.log('new appointment time (Asia/Colombo) : ', appointmentDateTime);
 
       // Update the appointmenttime in the form
-      this.editForm.get('appointmenttime')?.patchValue(appointmentDateTime);
-
+      this.editForm.get('appointmenttime')?.patchValue(timetable.hoisttime);
+      const appointmentDat = this.editForm.get('appointmenttime')?.value;
+      console.log('new appointment timeeeeeeeeee : ', appointmentDat);
       console.log('hoistid :', hoistId);
       this.editForm.get('hoistid')?.patchValue(hoistId);
 
       // Optionally store the selected time and hoist for reference
       this.selectedTime = timetable.hoisttime;
       this.selectedHoist = timetable.hoistid;
+      this.loadHoistAppointmentTime();
     } else {
       alert('Please select an Appointment Date');
     }
@@ -271,6 +274,101 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       console.log('isconformed is not ticked');
       this.editForm.get('conformedby')?.patchValue(null); // Clear the conformedby field if unchecked
     }
+  }
+  filteredTimeSlots: any[] = []; // Add this property to store time slots
+  allAppointments: any[] = [];
+  // Ensure dayjs is imported for date manipulation
+
+  onDateChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const appointmentDate = inputElement.value; // Get selected date
+
+    console.log('Selected Date:', appointmentDate);
+    const fulldate = appointmentDate + 'T00:00:00';
+    console.log('Selected Date:', fulldate);
+
+    const selectedDate = new Date(fulldate).toISOString(); // Convert to ISO 8601 format
+    console.log('Selected Date (ISO Format):', selectedDate);
+
+    // Query for appointments after the selected date
+    this.autocareappointmentService
+      .query({
+        'appointmenttime.greaterThan': selectedDate, // Filter appointments where appointmentDate > fulldate
+        // Sort results by id in descending order
+      })
+      .subscribe(response => {
+        const appointments = response.body ? response.body || [] : [];
+
+        // Format the appointment times to the same format as the filtered time slots
+        const formattedAppointments = appointments.map(appointment => ({
+          ...appointment,
+          appointmenttime: dayjs(appointment.appointmenttime).format('YYYY-MM-DDTHH:mm'), // Convert to normal date-time format
+        }));
+
+        // Add formatted appointments to the allAppointments array
+        this.allAppointments.push(...formattedAppointments);
+        console.log('Appointments Added to Array:', this.allAppointments);
+
+        if (!appointmentDate || !this.timetableData.length) {
+          console.warn('No appointment date selected or timetable data is empty.');
+          return;
+        }
+
+        // Generate time slots by combining the selected date with each hoist time
+        this.filteredTimeSlots = this.timetableData
+          .map(timetable => {
+            if (!timetable.hoisttime || !timetable.hoisttypename) {
+              console.warn('Missing hoist time or hoist type name in timetable:', timetable);
+              return null;
+            }
+
+            // Convert hoist time to UTC first
+            const hoistTimeInUTC = dayjs(timetable.hoisttime, 'HH:mm:ss').utc();
+
+            // Merge with the selected date and convert to Asia/Colombo timezone
+            const formattedDateTime = dayjs(appointmentDate)
+              .hour(hoistTimeInUTC.hour())
+              .minute(hoistTimeInUTC.minute())
+              .second(0)
+              .tz('Asia/Colombo', true) // Convert to Asia/Colombo timezone
+              .format('YYYY-MM-DDTHH:mm');
+
+            return {
+              hoisttypename: timetable.hoisttypename,
+              hoisttime: formattedDateTime,
+              hoisttypeid: timetable.hoisttypeid,
+              id: timetable.id,
+            };
+          })
+          .filter(Boolean); // Remove null values if any hoist time or name was missing
+
+        console.log('Generated Time Slots:', this.filteredTimeSlots);
+
+        // Now, check for matches between filtered time slots and appointments
+        this.filteredTimeSlots.forEach(filteredSlot => {
+          console.log('Filtered Slot:', filteredSlot); // Debug log to check data
+          this.allAppointments.forEach(appointment => {
+            console.log('Appointment:', appointment); // Debug log to check data
+
+            // Ensure appointment.hoistid and filteredSlot.id are comparable (same type)
+            if (filteredSlot.id === appointment.hoistid) {
+              console.log('Matching IDs:', filteredSlot.id, appointment.hoistid);
+
+              // Check if appointmenttime and hoisttime are in the same format
+              if (filteredSlot.hoisttime === appointment.appointmenttime) {
+                console.log('Match Found:', {
+                  filteredSlot,
+                  appointment,
+                });
+              } else {
+                console.log('Time mismatch:', filteredSlot.hoisttime, appointment.appointmenttime);
+              }
+            } else {
+              console.log('ID mismatch:', filteredSlot.id, appointment.hoistid);
+            }
+          });
+        });
+      });
   }
 
   loadHoistAppointmentTime(): void {

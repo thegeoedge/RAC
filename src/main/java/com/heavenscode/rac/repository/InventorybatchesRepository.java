@@ -9,4 +9,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface InventorybatchesRepository extends JpaRepository<Inventorybatches, Long> {}
+public interface InventorybatchesRepository extends JpaRepository<Inventorybatches, Long>, JpaSpecificationExecutor<Inventorybatches> {}

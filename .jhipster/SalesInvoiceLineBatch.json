@@ -1,0 +1,86 @@
+{
+  "annotations": {
+    "changelogDate": "20250307154345"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "lineId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "batchLineId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "itemId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "code",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "batchId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "batchCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "txDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "manufactureDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "expiredDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "qty",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "cost",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "notes",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "nbt",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "vat",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "addedById",
+      "fieldType": "Long"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "SalesInvoiceLineBatch",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

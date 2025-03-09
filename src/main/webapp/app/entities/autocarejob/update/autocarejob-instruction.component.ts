@@ -141,7 +141,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   newlastvalue: String = '';
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
-      console.log('Selected Vehicle Type:', this.vehicletypes.find(v => v.id === this.selectedVehicleTypeId)?.vehicletype);
+      console.log('Selected Vehicle Typeeeeeeeee:', this.vehicletypes.find(v => v.id === this.selectedVehicleTypeId)?.vehicletype);
 
       this.autocarejob = autocarejob;
       if (autocarejob) {
@@ -210,6 +210,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
+      console.log('Vehicle Types:', this.vehicletypes);
     });
   }
 
@@ -249,20 +250,28 @@ export class AutocarejobInstructionComponent implements OnInit {
     const fetchPage = () => {
       this.billingserviceoptionvaluesService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
         (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
+          console.log('Response:', res); // Log the full response
+          console.log('Response Body:', res.body); // Log the response body
+
           this.billingserviceoptionvalues = [...this.billingserviceoptionvalues, ...(res.body || [])];
 
           const totalItems = res.headers.get('X-Total-Count');
+          console.log('Total Items:', totalItems); // Log total item count
+
           const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
 
           if (this.billingserviceoptionvalues.length < totalRecords) {
             page++;
             fetchPage();
           } else {
+            console.log('Final Billing Service Option Values:', this.billingserviceoptionvalues);
             this.createBillingOptionsLookup();
-            this.filterBillingServiceOptionValues();
+            // this.filterBillingServiceOptionValues();
           }
         },
-        error => {},
+        error => {
+          console.error('Error fetching data:', error); // Log any errors
+        },
       );
     };
 
@@ -271,7 +280,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   createBillingOptionsLookup(): void {
     this.billingOptionsByVehicleType = {};
-    console.log(this.billingOptionsByVehicleType);
+    console.log('nnnnnnnnnnn', this.billingOptionsByVehicleType);
 
     this.billingserviceoptionvalues.forEach(value => {
       if (value.vehicletypeid != null && !this.billingOptionsByVehicleType[value.vehicletypeid]) {
@@ -287,7 +296,8 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   filterBillingServiceOptionValues(): void {
     console.log('iiiiiiiiiiiii', this.selectedVehicleTypeId);
-    this.vehicletypeId = this.selectedVehicleTypeId ?? 0;
+    this.vehicletypeId = Number(this.selectedVehicleTypeId) ?? 0;
+    this.loadBillingServiceOptionValues();
     if (this.selectedVehicleTypeId) {
       this.filteredBillingServiceOptionValues = this.billingOptionsByVehicleType[this.selectedVehicleTypeId] || [];
     } else {
@@ -301,9 +311,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (billingserviceoptionId == null) {
       return 'Unknown';
     }
-
+    console.log('billingserviceoptionId', billingserviceoptionId);
     const option = this.billingserviceoption.find(opt => opt.id === billingserviceoptionId);
-    console.log(option);
+    console.log('option response', option);
     // console.log('Billing Service Optionssssssssss:', option); // Debugging
     return option && option.servicename ? option.servicename : 'Unknown';
   }

@@ -1,0 +1,23 @@
+entity SalesInvoiceLineBatch {
+    lineId Long  
+    batchLineId Long  
+    itemId Long
+    code String  
+    batchId Long
+    batchCode String  
+    txDate Instant
+    manufactureDate Instant
+    expiredDate Instant
+    qty Double
+    cost BigDecimal
+    price BigDecimal
+    notes String  
+    lmu Long
+    lmd Instant
+    nbt Boolean
+    vat Boolean
+    addedById Long
+}
+
+paginate * with pagination
+filter all

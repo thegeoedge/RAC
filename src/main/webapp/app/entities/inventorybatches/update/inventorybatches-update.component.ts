@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IInventorybatches } from '../inventorybatches.model';
 import { InventorybatchesService } from '../service/inventorybatches.service';
-import { InventorybatchesFormService, InventorybatchesFormGroup } from './inventorybatches-form.service';
+import { InventorybatchesFormGroup, InventorybatchesFormService } from './inventorybatches-form.service';
 
 @Component({
   standalone: true,

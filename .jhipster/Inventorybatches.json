@@ -73,8 +73,10 @@
       "fieldType": "Float"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Inventorybatches",
   "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no"
+  "searchEngine": "no",
+  "service": "serviceClass"
 }

@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { InventorybatchesComponent } from './list/inventorybatches.component';
-import { InventorybatchesDetailComponent } from './detail/inventorybatches-detail.component';
-import { InventorybatchesUpdateComponent } from './update/inventorybatches-update.component';
 import InventorybatchesResolve from './route/inventorybatches-routing-resolve.service';
 
 const inventorybatchesRoute: Routes = [
   {
     path: '',
-    component: InventorybatchesComponent,
+    loadComponent: () => import('./list/inventorybatches.component').then(m => m.InventorybatchesComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: InventorybatchesDetailComponent,
+    loadComponent: () => import('./detail/inventorybatches-detail.component').then(m => m.InventorybatchesDetailComponent),
     resolve: {
       inventorybatches: InventorybatchesResolve,
     },
@@ -26,7 +23,7 @@ const inventorybatchesRoute: Routes = [
   },
   {
     path: 'new',
-    component: InventorybatchesUpdateComponent,
+    loadComponent: () => import('./update/inventorybatches-update.component').then(m => m.InventorybatchesUpdateComponent),
     resolve: {
       inventorybatches: InventorybatchesResolve,
     },
@@ -34,7 +31,7 @@ const inventorybatchesRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: InventorybatchesUpdateComponent,
+    loadComponent: () => import('./update/inventorybatches-update.component').then(m => m.InventorybatchesUpdateComponent),
     resolve: {
       inventorybatches: InventorybatchesResolve,
     },

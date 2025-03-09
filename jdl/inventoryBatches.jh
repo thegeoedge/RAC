@@ -18,3 +18,4 @@ entity Inventorybatches {
     returnprice Float // ReturnPrice
 }
 paginate * with pagination
+filter all

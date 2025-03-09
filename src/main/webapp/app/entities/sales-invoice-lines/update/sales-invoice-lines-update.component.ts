@@ -3,7 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
-
+import { SalesInvoiceLineBatchService } from 'app/entities/sales-invoice-line-batch/service/sales-invoice-line-batch.service';
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IInventory } from 'app/entities/inventory/inventory.model';
@@ -13,6 +13,8 @@ import { SalesInvoiceLinesFormGroup, SalesInvoiceLinesFormService } from './sale
 import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
 import CommonModule from 'app/shared/shared.module';
+import { InventoryService } from 'app/entities/inventory/service/inventory.service';
+import { InventorybatchesService } from 'app/entities/inventorybatches/service/inventorybatches.service';
 
 @Component({
   standalone: true,
@@ -30,6 +32,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   protected salesInvoiceLinesFormService = inject(SalesInvoiceLinesFormService);
   protected activatedRoute = inject(ActivatedRoute);
   protected fb = inject(FormBuilder);
+  inevntorybatchservice = inject(InventorybatchesService);
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
   // Use FormArray to handle multiple lines
@@ -61,11 +64,16 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   addItemToFormArray(item: any): void {
     const newItem = this.fb.group({
       itemcode: [item.code || item.itemcode || ''], // Match template
+      itemid: [item.id || item.itemid || null], // Match template
       itemname: [item.name || item.itemname], // Match template
       quantity: [item.availablequantity || item.quantity],
+      description: [item.name || ''], // Match template
       sellingprice: [item.lastsellingprice || item.lastsellingprice || item.sellingprice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
+      unitofmeasurement: [item.unitofmeasurement || ''], // Match template
       discount: [0],
+      itemcost: [item.lastcost || item.itemcost || 0],
+      itemprice: [item.lastsellingprice || item.itemprice || 0],
     });
     console.log('New Item Addedaazzz:', newItem.value);
     console.log(this.selectedItem);
@@ -289,8 +297,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   save(inid: number): void {
     this.isSaving = true;
+    this.inevntorybatchservice.query({ 'itemid.equals': '11540', 'price.equals': '1800' }).subscribe((res: HttpResponse<any[]>) => {
+      console.log('Response Body:', res.body);
+      // console.log('Response Headers:', res.headers.keys()); // Logs available headers
+      // console.log('Specific Header (Example - X-Total-Count):', res.headers.get('X-Total-Count'));
+    });
 
-    // Ensure the form is initialized properly
     if (!this.editForm) {
       console.error('Form is not initialized');
       return; // Exit if the form is not initialized

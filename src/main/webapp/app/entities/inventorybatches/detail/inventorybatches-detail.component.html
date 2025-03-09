@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    @if (inventorybatches()) {
+    @if (inventorybatches(); as inventorybatchesRef) {
       <div>
         <h2 data-cy="inventorybatchesDetailsHeading"><span>Inventorybatches</span></h2>
 
@@ -13,75 +13,75 @@
         <dl class="row-md jh-entity-details">
           <dt><span>ID</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.id }}</span>
+            <span>{{ inventorybatchesRef.id }}</span>
           </dd>
           <dt><span>Itemid</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.itemid }}</span>
+            <span>{{ inventorybatchesRef.itemid }}</span>
           </dd>
           <dt><span>Code</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.code }}</span>
+            <span>{{ inventorybatchesRef.code }}</span>
           </dd>
           <dt><span>Txdate</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.txdate | formatMediumDatetime }}</span>
+            <span>{{ inventorybatchesRef.txdate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Cost</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.cost }}</span>
+            <span>{{ inventorybatchesRef.cost }}</span>
           </dd>
           <dt><span>Price</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.price }}</span>
+            <span>{{ inventorybatchesRef.price }}</span>
           </dd>
           <dt><span>Costwithoutvat</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.costwithoutvat }}</span>
+            <span>{{ inventorybatchesRef.costwithoutvat }}</span>
           </dd>
           <dt><span>Pricewithoutvat</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.pricewithoutvat }}</span>
+            <span>{{ inventorybatchesRef.pricewithoutvat }}</span>
           </dd>
           <dt><span>Notes</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.notes }}</span>
+            <span>{{ inventorybatchesRef.notes }}</span>
           </dd>
           <dt><span>Lmu</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.lmu }}</span>
+            <span>{{ inventorybatchesRef.lmu }}</span>
           </dd>
           <dt><span>Lmd</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.lmd | formatMediumDatetime }}</span>
+            <span>{{ inventorybatchesRef.lmd | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Lineid</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.lineid }}</span>
+            <span>{{ inventorybatchesRef.lineid }}</span>
           </dd>
           <dt><span>Manufacturedate</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.manufacturedate | formatMediumDatetime }}</span>
+            <span>{{ inventorybatchesRef.manufacturedate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Expiredate</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.expiredate | formatMediumDatetime }}</span>
+            <span>{{ inventorybatchesRef.expiredate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Quantity</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.quantity }}</span>
+            <span>{{ inventorybatchesRef.quantity }}</span>
           </dd>
           <dt><span>Addeddate</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.addeddate | formatMediumDatetime }}</span>
+            <span>{{ inventorybatchesRef.addeddate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Costtotal</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.costtotal }}</span>
+            <span>{{ inventorybatchesRef.costtotal }}</span>
           </dd>
           <dt><span>Returnprice</span></dt>
           <dd>
-            <span>{{ inventorybatches()!.returnprice }}</span>
+            <span>{{ inventorybatchesRef.returnprice }}</span>
           </dd>
         </dl>
 
@@ -89,7 +89,7 @@
           <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
         </button>
 
-        <button type="button" [routerLink]="['/inventorybatches', inventorybatches()!.id, 'edit']" class="btn btn-primary">
+        <button type="button" [routerLink]="['/inventorybatches', inventorybatchesRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
         </button>
       </div>

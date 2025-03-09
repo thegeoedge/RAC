@@ -1,14 +1,14 @@
 import { inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { of, EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 import { IInventorybatches } from '../inventorybatches.model';
 import { InventorybatchesService } from '../service/inventorybatches.service';
 
 const inventorybatchesResolve = (route: ActivatedRouteSnapshot): Observable<null | IInventorybatches> => {
-  const id = route.params['id'];
+  const id = route.params.id;
   if (id) {
     return inject(InventorybatchesService)
       .find(id)
@@ -16,10 +16,9 @@ const inventorybatchesResolve = (route: ActivatedRouteSnapshot): Observable<null
         mergeMap((inventorybatches: HttpResponse<IInventorybatches>) => {
           if (inventorybatches.body) {
             return of(inventorybatches.body);
-          } else {
-            inject(Router).navigate(['404']);
-            return EMPTY;
           }
+          inject(Router).navigate(['404']);
+          return EMPTY;
         }),
       );
   }

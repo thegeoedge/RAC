@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Inventorybatches;
 import com.heavenscode.rac.repository.InventorybatchesRepository;
+import com.heavenscode.rac.service.InventorybatchesQueryService;
+import com.heavenscode.rac.service.InventorybatchesService;
+import com.heavenscode.rac.service.criteria.InventorybatchesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/inventorybatches")
-@Transactional
 public class InventorybatchesResource {
 
-    private final Logger log = LoggerFactory.getLogger(InventorybatchesResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InventorybatchesResource.class);
 
     private static final String ENTITY_NAME = "inventorybatches";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final InventorybatchesService inventorybatchesService;
+
     private final InventorybatchesRepository inventorybatchesRepository;
 
-    public InventorybatchesResource(InventorybatchesRepository inventorybatchesRepository) {
+    private final InventorybatchesQueryService inventorybatchesQueryService;
+
+    public InventorybatchesResource(
+        InventorybatchesService inventorybatchesService,
+        InventorybatchesRepository inventorybatchesRepository,
+        InventorybatchesQueryService inventorybatchesQueryService
+    ) {
+        this.inventorybatchesService = inventorybatchesService;
         this.inventorybatchesRepository = inventorybatchesRepository;
+        this.inventorybatchesQueryService = inventorybatchesQueryService;
     }
 
     /**
@@ -53,11 +64,11 @@ public class InventorybatchesResource {
     @PostMapping("")
     public ResponseEntity<Inventorybatches> createInventorybatches(@RequestBody Inventorybatches inventorybatches)
         throws URISyntaxException {
-        log.debug("REST request to save Inventorybatches : {}", inventorybatches);
+        LOG.debug("REST request to save Inventorybatches : {}", inventorybatches);
         if (inventorybatches.getId() != null) {
             throw new BadRequestAlertException("A new inventorybatches cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        inventorybatches = inventorybatchesRepository.save(inventorybatches);
+        inventorybatches = inventorybatchesService.save(inventorybatches);
         return ResponseEntity.created(new URI("/api/inventorybatches/" + inventorybatches.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, inventorybatches.getId().toString()))
             .body(inventorybatches);
@@ -78,7 +89,7 @@ public class InventorybatchesResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Inventorybatches inventorybatches
     ) throws URISyntaxException {
-        log.debug("REST request to update Inventorybatches : {}, {}", id, inventorybatches);
+        LOG.debug("REST request to update Inventorybatches : {}, {}", id, inventorybatches);
         if (inventorybatches.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -90,7 +101,7 @@ public class InventorybatchesResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        inventorybatches = inventorybatchesRepository.save(inventorybatches);
+        inventorybatches = inventorybatchesService.update(inventorybatches);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, inventorybatches.getId().toString()))
             .body(inventorybatches);
@@ -112,7 +123,7 @@ public class InventorybatchesResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Inventorybatches inventorybatches
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Inventorybatches partially : {}, {}", id, inventorybatches);
+        LOG.debug("REST request to partial update Inventorybatches partially : {}, {}", id, inventorybatches);
         if (inventorybatches.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -124,64 +135,7 @@ public class InventorybatchesResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Inventorybatches> result = inventorybatchesRepository
-            .findById(inventorybatches.getId())
-            .map(existingInventorybatches -> {
-                if (inventorybatches.getItemid() != null) {
-                    existingInventorybatches.setItemid(inventorybatches.getItemid());
-                }
-                if (inventorybatches.getCode() != null) {
-                    existingInventorybatches.setCode(inventorybatches.getCode());
-                }
-                if (inventorybatches.getTxdate() != null) {
-                    existingInventorybatches.setTxdate(inventorybatches.getTxdate());
-                }
-                if (inventorybatches.getCost() != null) {
-                    existingInventorybatches.setCost(inventorybatches.getCost());
-                }
-                if (inventorybatches.getPrice() != null) {
-                    existingInventorybatches.setPrice(inventorybatches.getPrice());
-                }
-                if (inventorybatches.getCostwithoutvat() != null) {
-                    existingInventorybatches.setCostwithoutvat(inventorybatches.getCostwithoutvat());
-                }
-                if (inventorybatches.getPricewithoutvat() != null) {
-                    existingInventorybatches.setPricewithoutvat(inventorybatches.getPricewithoutvat());
-                }
-                if (inventorybatches.getNotes() != null) {
-                    existingInventorybatches.setNotes(inventorybatches.getNotes());
-                }
-                if (inventorybatches.getLmu() != null) {
-                    existingInventorybatches.setLmu(inventorybatches.getLmu());
-                }
-                if (inventorybatches.getLmd() != null) {
-                    existingInventorybatches.setLmd(inventorybatches.getLmd());
-                }
-                if (inventorybatches.getLineid() != null) {
-                    existingInventorybatches.setLineid(inventorybatches.getLineid());
-                }
-                if (inventorybatches.getManufacturedate() != null) {
-                    existingInventorybatches.setManufacturedate(inventorybatches.getManufacturedate());
-                }
-                if (inventorybatches.getExpiredate() != null) {
-                    existingInventorybatches.setExpiredate(inventorybatches.getExpiredate());
-                }
-                if (inventorybatches.getQuantity() != null) {
-                    existingInventorybatches.setQuantity(inventorybatches.getQuantity());
-                }
-                if (inventorybatches.getAddeddate() != null) {
-                    existingInventorybatches.setAddeddate(inventorybatches.getAddeddate());
-                }
-                if (inventorybatches.getCosttotal() != null) {
-                    existingInventorybatches.setCosttotal(inventorybatches.getCosttotal());
-                }
-                if (inventorybatches.getReturnprice() != null) {
-                    existingInventorybatches.setReturnprice(inventorybatches.getReturnprice());
-                }
-
-                return existingInventorybatches;
-            })
-            .map(inventorybatchesRepository::save);
+        Optional<Inventorybatches> result = inventorybatchesService.partialUpdate(inventorybatches);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -193,16 +147,31 @@ public class InventorybatchesResource {
      * {@code GET  /inventorybatches} : get all the inventorybatches.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of inventorybatches in body.
      */
     @GetMapping("")
     public ResponseEntity<List<Inventorybatches>> getAllInventorybatches(
+        InventorybatchesCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of Inventorybatches");
-        Page<Inventorybatches> page = inventorybatchesRepository.findAll(pageable);
+        LOG.debug("REST request to get Inventorybatches by criteria: {}", criteria);
+
+        Page<Inventorybatches> page = inventorybatchesQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /inventorybatches/count} : count all the inventorybatches.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countInventorybatches(InventorybatchesCriteria criteria) {
+        LOG.debug("REST request to count Inventorybatches by criteria: {}", criteria);
+        return ResponseEntity.ok().body(inventorybatchesQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -213,8 +182,8 @@ public class InventorybatchesResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Inventorybatches> getInventorybatches(@PathVariable("id") Long id) {
-        log.debug("REST request to get Inventorybatches : {}", id);
-        Optional<Inventorybatches> inventorybatches = inventorybatchesRepository.findById(id);
+        LOG.debug("REST request to get Inventorybatches : {}", id);
+        Optional<Inventorybatches> inventorybatches = inventorybatchesService.findOne(id);
         return ResponseUtil.wrapOrNotFound(inventorybatches);
     }
 
@@ -226,8 +195,8 @@ public class InventorybatchesResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInventorybatches(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Inventorybatches : {}", id);
-        inventorybatchesRepository.deleteById(id);
+        LOG.debug("REST request to delete Inventorybatches : {}", id);
+        inventorybatchesService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

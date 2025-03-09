@@ -30,6 +30,13 @@ import { AutocarejobService, PartialUpdateAutocarejob } from 'app/entities/autoc
 import { PartialUpdateSystemSettings, SystemSettingsService } from 'app/entities/system-settings/service/system-settings.service';
 import dayjs from 'dayjs';
 
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend Day.js with necessary plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -60,6 +67,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesInvoiceService = inject(SalesinvoiceService);
   autojobinvoice = inject(AutojobsinvoiceService);
   autojob = inject(AutocarejobService);
+
   protected vehicletypesService = inject(VehicletypeService);
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
@@ -200,9 +208,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.editForm.patchValue({ invcanceldate: null });
     this.editForm.patchValue({ customerid: this.customerid });
     this.editForm.patchValue({ vehicleno: this.vehicleno });
+    this.editForm.patchValue({ isactive: true });
+    this.editForm.patchValue({ locationid: 0 });
+    const todaydate = dayjs().format('YYYY-MM-DD'); // Example for today's date
+    console.log('todaydateeeeeeeeeeeeeee', todaydate);
     this.editForm.patchValue({
-      invoicedate: dayjs().startOf('day').format('YYYY-MM-DD 00:00:00.000'),
+      invoicedate: dayjs(`${todaydate}T00:00:00.000Z`).format(),
     });
+
     console.log('checkkkkkkkkkkkkkk', this.newlastvalue);
     console.log(this.newnextvalue);
   }
@@ -417,11 +430,29 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     );
   }
 
-  fetchedItems: { itemname: string; quantity: number; sellingprice: number }[] = [];
+  fetchedItems: {
+    itemid: number;
+    code: string;
+    lastcost: number;
+    itemname: string;
+    quantity: number;
+    sellingprice: number;
+    unitofmeasurement: string;
+    availablequantity: number;
+  }[] = [];
+  selectredItem: {
+    lastcost: number;
+    itemid: number;
+    code: string;
+    name: string;
+    availablequantity: number;
+    lastsellingprice: number;
+    unitofmeasurement: string;
+  } | null = null;
 
   private invoicelines(id: number): void {
     this.salesInvoiceService.fetchInvoiceLines(id).subscribe(
-      (res: HttpResponse<ISalesInvoiceLines[]>) => {
+      (res: HttpResponse<any[]>) => {
         if (res.body && res.body.length > 0) {
           console.log('counts', res.body);
           // Clear previous fetched items before adding new ones
@@ -432,6 +463,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               itemname: item.itemname ?? '',
               quantity: item.quantity ?? 0,
               sellingprice: item.sellingprice ?? 0,
+              lastcost: item.lastcost ?? 0,
+              code: item.itemcode ?? '',
+              unitofmeasurement: item.unitofmeasurement ?? '',
+              availablequantity: item.availablequantity ?? 0,
+              itemid: item.itemid ?? 0,
             });
           });
 
@@ -493,12 +529,23 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
   }
 
-  selectedItem: { code: string; name: string; availablequantity: number; lastsellingprice: number } | null = null;
+  selectedItem: {
+    lastcost: number;
+    itemid: number;
+    code: string;
+    name: string;
+    availablequantity: number;
+    lastsellingprice: number;
+    unitofmeasurement: string;
+  } | null = null;
 
   itemname: string = ''; // Variable to hold the selected item's name
   availablequantity: number = 0;
   lastsellingprice: number = 0;
   code: string = '';
+  itemid: number = 0;
+  unitofmeasurement: string = '';
+  lastcost: number = 0;
   onItemCodeSelect(event: Event, index: number): void {
     const inputElement = event.target as HTMLInputElement;
     const selectedCode = inputElement.value;
@@ -512,6 +559,9 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
       this.code = selectedItem.code ?? '';
+      this.itemid = selectedItem.id;
+      this.lastcost = selectedItem.lastcost ?? 0;
+      this.unitofmeasurement = selectedItem.unitofmeasurement ?? '';
     } else {
       console.warn('No matching item found for:', selectedCode);
       this.itemname = ''; // Clear itemName if no match is found
@@ -520,10 +570,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
+      itemid: this.itemid,
       code: this.code,
       name: this.itemname,
       availablequantity: this.buyquantity,
       lastsellingprice: this.lastsellingprice,
+      unitofmeasurement: this.unitofmeasurement,
+      lastcost: this.lastcost,
     };
 
     // Log the selected item to the console
@@ -580,7 +633,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
-    console.log('salessssssssssssssssss', salesinvoice);
+    console.log('salesssssssssssssssssssssssss', salesinvoice);
     const systemSettingsUpdate: PartialUpdateAutocarejob = { id: this.jobid, isjobclose: true }; // ✅ Fix applied
 
     this.autojob.partialUpdate(systemSettingsUpdate).subscribe({

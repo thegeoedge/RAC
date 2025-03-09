@@ -1,0 +1,251 @@
+<div>
+  <h2 id="page-heading" data-cy="SalesInvoiceLineBatchHeading">
+    <span>Sales Invoice Line Batches</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
+        <span>Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-sales-invoice-line-batch"
+        [routerLink]="['/sales-invoice-line-batch/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span>Create a new Sales Invoice Line Batch</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <jhi-filter [filters]="filters"></jhi-filter>
+
+  @if (salesInvoiceLineBatches?.length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span>No Sales Invoice Line Batches found</span>
+    </div>
+  }
+
+  @if (salesInvoiceLineBatches && salesInvoiceLineBatches.length > 0) {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span>ID</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lineId">
+              <div class="d-flex">
+                <span>Line Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="batchLineId">
+              <div class="d-flex">
+                <span>Batch Line Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="itemId">
+              <div class="d-flex">
+                <span>Item Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="code">
+              <div class="d-flex">
+                <span>Code</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="batchId">
+              <div class="d-flex">
+                <span>Batch Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="batchCode">
+              <div class="d-flex">
+                <span>Batch Code</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="txDate">
+              <div class="d-flex">
+                <span>Tx Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="manufactureDate">
+              <div class="d-flex">
+                <span>Manufacture Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="expiredDate">
+              <div class="d-flex">
+                <span>Expired Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="qty">
+              <div class="d-flex">
+                <span>Qty</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="cost">
+              <div class="d-flex">
+                <span>Cost</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="price">
+              <div class="d-flex">
+                <span>Price</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="notes">
+              <div class="d-flex">
+                <span>Notes</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lmu">
+              <div class="d-flex">
+                <span>Lmu</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lmd">
+              <div class="d-flex">
+                <span>Lmd</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="nbt">
+              <div class="d-flex">
+                <span>Nbt</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="vat">
+              <div class="d-flex">
+                <span>Vat</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="addedById">
+              <div class="d-flex">
+                <span>Added By Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (salesInvoiceLineBatch of salesInvoiceLineBatches; track trackId(salesInvoiceLineBatch)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/sales-invoice-line-batch', salesInvoiceLineBatch.id, 'view']">{{ salesInvoiceLineBatch.id }}</a>
+              </td>
+              <td>{{ salesInvoiceLineBatch.lineId }}</td>
+              <td>{{ salesInvoiceLineBatch.batchLineId }}</td>
+              <td>{{ salesInvoiceLineBatch.itemId }}</td>
+              <td>{{ salesInvoiceLineBatch.code }}</td>
+              <td>{{ salesInvoiceLineBatch.batchId }}</td>
+              <td>{{ salesInvoiceLineBatch.batchCode }}</td>
+              <td>{{ salesInvoiceLineBatch.txDate | formatMediumDatetime }}</td>
+              <td>{{ salesInvoiceLineBatch.manufactureDate | formatMediumDatetime }}</td>
+              <td>{{ salesInvoiceLineBatch.expiredDate | formatMediumDatetime }}</td>
+              <td>{{ salesInvoiceLineBatch.qty }}</td>
+              <td>{{ salesInvoiceLineBatch.cost }}</td>
+              <td>{{ salesInvoiceLineBatch.price }}</td>
+              <td>{{ salesInvoiceLineBatch.notes }}</td>
+              <td>{{ salesInvoiceLineBatch.lmu }}</td>
+              <td>{{ salesInvoiceLineBatch.lmd | formatMediumDatetime }}</td>
+              <td>{{ salesInvoiceLineBatch.nbt }}</td>
+              <td>{{ salesInvoiceLineBatch.vat }}</td>
+              <td>{{ salesInvoiceLineBatch.addedById }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a
+                    [routerLink]="['/sales-invoice-line-batch', salesInvoiceLineBatch.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
+                    <fa-icon icon="eye"></fa-icon>
+                    <span class="d-none d-md-inline">View</span>
+                  </a>
+
+                  <a
+                    [routerLink]="['/sales-invoice-line-batch', salesInvoiceLineBatch.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                    <span class="d-none d-md-inline">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(salesInvoiceLineBatch)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times"></fa-icon>
+                    <span class="d-none d-md-inline">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (salesInvoiceLineBatches && salesInvoiceLineBatches.length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
+    </div>
+  }
+</div>

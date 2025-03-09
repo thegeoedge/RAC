@@ -17,7 +17,7 @@ describe('Inventorybatches Management Detail Component', () => {
           [
             {
               path: '**',
-              component: InventorybatchesDetailComponent,
+              loadComponent: () => import('./inventorybatches-detail.component').then(m => m.InventorybatchesDetailComponent),
               resolve: { inventorybatches: () => of({ id: 123 }) },
             },
           ],

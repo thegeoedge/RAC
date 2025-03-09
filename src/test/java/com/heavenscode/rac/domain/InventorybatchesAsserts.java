@@ -72,5 +72,7 @@ public class InventorybatchesAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertInventorybatchesUpdatableRelationshipsEquals(Inventorybatches expected, Inventorybatches actual) {}
+    public static void assertInventorybatchesUpdatableRelationshipsEquals(Inventorybatches expected, Inventorybatches actual) {
+        // empty method
+    }
 }
