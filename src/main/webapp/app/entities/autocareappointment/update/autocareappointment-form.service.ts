@@ -109,7 +109,14 @@ export class AutocareappointmentFormService {
       lmd: new FormControl(autocareappointmentRawValue.lmd),
       lmu: new FormControl(autocareappointmentRawValue.lmu),
       customerid: new FormControl(autocareappointmentRawValue.customerid),
-      contactnumber: new FormControl(autocareappointmentRawValue.contactnumber),
+      contactnumber: new FormControl(autocareappointmentRawValue.contactnumber, {
+        validators: [
+          Validators.required,
+          Validators.pattern('^[0-9]{10}$'),
+          Validators.minLength(10),
+          Validators.maxLength(10)
+        ],
+      }),
       customername: new FormControl(autocareappointmentRawValue.customername),
       issued: new FormControl(autocareappointmentRawValue.issued),
       hoistid: new FormControl(autocareappointmentRawValue.hoistid),

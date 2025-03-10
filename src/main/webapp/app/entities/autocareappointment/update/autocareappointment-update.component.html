@@ -111,7 +111,7 @@
             </div>
           </div>
           <div class="mb-3 col-4">
-            <label class="form-label" for="field_contactnumber">Contact Number</label>
+            <label class="form-label" for="field_contactnumber">Contact Number *</label>
             <input
               type="text"
               class="form-control"
@@ -119,9 +119,21 @@
               id="field_contactnumber"
               data-cy="contactnumber"
               formControlName="contactnumber"
-              required
-              pattern="^\d{10}$"
+              [class.is-invalid]="editForm.get('contactnumber')?.invalid && editForm.get('contactnumber')?.touched"
+              (keypress)="$event.charCode >= 48 && $event.charCode <= 57"
+              maxlength="10"
             />
+            <div 
+              class="invalid-feedback" 
+              *ngIf="editForm.get('contactnumber')?.invalid && editForm.get('contactnumber')?.touched"
+            >
+              <div *ngIf="editForm.get('contactnumber')?.errors?.['required']">Contact Number is required</div>
+              <div *ngIf="editForm.get('contactnumber')?.errors?.['pattern'] || 
+                          editForm.get('contactnumber')?.errors?.['minlength'] || 
+                          editForm.get('contactnumber')?.errors?.['maxlength']">
+                Contact Number must be exactly 10 digits
+              </div>
+            </div>
           </div>
         </div>
         <div>

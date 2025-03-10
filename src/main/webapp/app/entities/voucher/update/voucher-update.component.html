@@ -107,7 +107,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label" for="field_totalAmount">Total Amount</label>
+                  <label class="form-label" for="field_totalAmount">Total Amount *</label>
                   <input
                     type="number"
                     class="form-control"
@@ -115,14 +115,23 @@
                     id="field_totalAmount"
                     data-cy="totalAmount"
                     formControlName="totalAmount"
+                    min="0"
+                    step="0.01"
+                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46"
+                    [class.is-invalid]="isFieldInvalid('totalAmount')"
                   />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('totalAmount')">
+                    <div *ngIf="editForm.get('totalAmount')?.errors?.['required']">Total Amount is required</div>
+                    <div *ngIf="editForm.get('totalAmount')?.errors?.['min']">Total Amount must be greater than 0</div>
+                    <div *ngIf="editForm.get('totalAmount')?.errors?.['pattern']">Total Amount must be a valid number</div>
+                  </div>
                 </div>
               </div>
 
               <!-- Right Column -->
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label" for="field_amountPaid">Amount Paid</label>
+                  <label class="form-label" for="field_amountPaid">Amount Paid *</label>
                   <input
                     type="number"
                     class="form-control"
@@ -130,11 +139,20 @@
                     id="field_amountPaid"
                     data-cy="amountPaid"
                     formControlName="amountPaid"
+                    min="0"
+                    step="0.01"
+                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46"
+                    [class.is-invalid]="isFieldInvalid('amountPaid')"
                   />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('amountPaid')">
+                    <div *ngIf="editForm.get('amountPaid')?.errors?.['required']">Amount Paid is required</div>
+                    <div *ngIf="editForm.get('amountPaid')?.errors?.['min']">Amount Paid must be greater than 0</div>
+                    <div *ngIf="editForm.get('amountPaid')?.errors?.['pattern']">Amount Paid must be a valid number</div>
+                  </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label" for="field_totalAmountInWord">Total Amount In Word</label>
+                  <label class="form-label" for="field_totalAmountInWord">Total Amount In Word *</label>
                   <input
                     type="text"
                     class="form-control"
@@ -142,7 +160,17 @@
                     id="field_totalAmountInWord"
                     data-cy="totalAmountInWord"
                     formControlName="totalAmountInWord"
+                    [class.is-invalid]="isFieldInvalid('totalAmountInWord')"
+                    onkeypress="return (event.charCode >= 65 && event.charCode <= 90) || 
+                                  (event.charCode >= 97 && event.charCode <= 122) || 
+                                  event.charCode === 32"
+                    style="text-transform: uppercase"
+                    readonly
                   />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('totalAmountInWord')">
+                    <div *ngIf="editForm.get('totalAmountInWord')?.errors?.['required']">Total Amount In Word is required</div>
+                    <div *ngIf="editForm.get('totalAmountInWord')?.errors?.['pattern']">Only letters and spaces are allowed</div>
+                  </div>
                 </div>
 
                 <div class="mb-3">

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { toWords } from 'number-to-words';
 import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ISalesInvoiceDummy } from 'app/entities/sales-invoice-dummy/sales-invoice-dummy.model';
 import { IVoucher } from '../voucher.model';
 import { VoucherService } from '../service/voucher.service';
@@ -93,6 +93,7 @@ export class VoucherUpdateComponent implements OnInit {
     });
     // Fetch voucher lines and log the response
     this.fetchVoucherLines();
+    this.setupFormValidation();
   }
   async fetchVoucherLines(): Promise<void> {
     try {
@@ -124,8 +125,13 @@ export class VoucherUpdateComponent implements OnInit {
 
   private convertToWords(value: number): void {
     if (value !== null && !isNaN(value)) {
-      const words = toWords(value).toUpperCase() + ' RUPEES ONLY'; // Convert to words and uppercase
-      this.editForm.patchValue({ totalAmountInWord: words }, { emitEvent: false });
+      try {
+        const words = toWords(value).toUpperCase() + ' RUPEES ONLY';
+        this.editForm.patchValue({ totalAmountInWord: words }, { emitEvent: false });
+      } catch (error) {
+        console.error('Error converting number to words:', error);
+        this.editForm.patchValue({ totalAmountInWord: '' }, { emitEvent: false });
+      }
     } else {
       this.editForm.patchValue({ totalAmountInWord: '' }, { emitEvent: false });
     }
@@ -193,17 +199,20 @@ export class VoucherUpdateComponent implements OnInit {
       result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
         next: response => {
           if (response.body) {
-            console.log('Save Success:', response.body.id); // Log the response in the console
-            resolve(response.body.id); // Resolve the promise with the id
+            console.log('Save Success:', response.body.id);
+            alert('Voucher saved successfully!'); // Add success alert
+            resolve(response.body.id);
+            this.previousState(); // Navigate back after successful save
           } else {
             console.warn('Save response body is null');
-            resolve(null); // Resolve with null if body is null
+            resolve(null);
           }
         },
         error: error => {
-          console.error('Save Error:', error); // Log the error in the console
+          console.error('Save Error:', error);
+          alert('Error saving voucher!'); // Add error alert
           this.onSaveError();
-          reject(error); // Reject the promise in case of an error
+          reject(error);
         },
       });
     });
@@ -224,6 +233,37 @@ export class VoucherUpdateComponent implements OnInit {
   protected updateForm(voucher: IVoucher): void {
     this.voucher = voucher;
     this.voucherFormService.resetForm(this.editForm, voucher);
+  }
+
+  private setupFormValidation(): void {
+    // Add validators to the form controls
+    const numberPattern = '^[0-9]+(.[0-9]{1,2})?$';
+    const textOnlyPattern = '^[A-Za-z ]+$';
+    
+    this.editForm.get('totalAmount')?.setValidators([
+      Validators.required,
+      Validators.min(0),
+      Validators.pattern(numberPattern)
+    ]);
+
+    this.editForm.get('amountPaid')?.setValidators([
+      Validators.required,
+      Validators.min(0),
+      Validators.pattern(numberPattern)
+    ]);
+
+    this.editForm.get('totalAmountInWord')?.setValidators([
+      Validators.required,
+      Validators.pattern(textOnlyPattern)
+    ]);
+
+    // Update form validation
+    this.editForm.updateValueAndValidity();
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.editForm.get(fieldName);
+    return field ? (field.invalid && (field.dirty || field.touched)) : false;
   }
 }
 function lastValueFrom<T>(observable: Observable<T>): Promise<T> {
