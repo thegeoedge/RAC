@@ -71,12 +71,17 @@
                   (change)="onVehicleSelect($event)"
                   (input)="onVehicleSearch($event)"
                   [ngModel]="vehicleNo"
+                  [class.is-invalid]="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched"
+                  required
                 />
                 <datalist id="vehiclenumberList">
                   <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber">
                     {{ item.conformdate }}
                   </option>
                 </datalist>
+                <div *ngIf="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched" class="invalid-feedback">
+                  Vehicle Number is required.
+                </div>
               </div>
 
               <div class="mb-3 col-6">
@@ -145,7 +150,12 @@
                 data-cy="customername"
                 formControlName="customername"
                 [ngModel]="customername"
+                [class.is-invalid]="editForm.controls.customername.invalid && editForm.controls.customername.touched"
+                required
               />
+              <div *ngIf="editForm.controls.customername.invalid && editForm.controls.customername.touched" class="invalid-feedback">
+                Customer Name is required.
+              </div>
             </div>
 
             <div class="mb-3">
@@ -157,8 +167,17 @@
                 id="field_customertel"
                 data-cy="customertel"
                 formControlName="customertel"
+                pattern="^\d{10}$"
                 [ngModel]="customerTel"
+                [class.is-invalid]="editForm.controls.customertel.invalid && editForm.controls.customertel.touched"
+                required
               />
+              <div *ngIf="editForm.controls.customertel.errors?.required && editForm.controls.customertel.touched" class="invalid-feedback">
+                Customer Telephone Number is required.
+              </div>
+              <div *ngIf="editForm.controls.customertel.errors?.pattern && editForm.controls.customertel.touched" class="invalid-feedback">
+                Enter a valid 10-digit phone number.
+              </div>
             </div>
 
             <!-- <div class="mb-3">
@@ -196,6 +215,7 @@
                   name="jobdate"
                   formControlName="jobdate"
                   placeholder="YYYY-MM-DD HH:mm"
+                  required
                 />
               </div>
             </div>
