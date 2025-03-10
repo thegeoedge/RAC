@@ -80,12 +80,17 @@
               list="vehiclenumberList"
               (change)="onVehicleSelect($event)"
               (input)="onVehicleSearch($event)"
+              [class.is-invalid]="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched"
+              required
             />
             <datalist id="vehiclenumberList">
               <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber">
                 {{ item.milage }}KM - {{ item.nextmilage }}KM
               </option>
             </datalist>
+            <div *ngIf="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched" class="invalid-feedback">
+              Vehicle Number is required.
+            </div>
           </div>
 
           <div class="mb-3 col-4">
@@ -97,10 +102,15 @@
               id="field_customername"
               data-cy="customername"
               formControlName="customername"
+              [class.is-invalid]="editForm.controls.customername.invalid && editForm.controls.customername.touched"
+              required
             />
+            <div *ngIf="editForm.controls.customername.invalid && editForm.controls.customername.touched" class="invalid-feedback">
+              Customer Name is required.
+            </div>
           </div>
           <div class="mb-3 col-4">
-            <label class="form-label" for="field_contactnumber">Contact Number</label>
+            <label class="form-label" for="field_contactnumber">Contact Number *</label>
             <input
               type="text"
               class="form-control"
@@ -108,7 +118,21 @@
               id="field_contactnumber"
               data-cy="contactnumber"
               formControlName="contactnumber"
+              [class.is-invalid]="editForm.get('contactnumber')?.invalid && editForm.get('contactnumber')?.touched"
+              (keypress)="$event.charCode >= 48 && $event.charCode <= 57"
+              maxlength="10"
             />
+            <div 
+              class="invalid-feedback" 
+              *ngIf="editForm.get('contactnumber')?.invalid && editForm.get('contactnumber')?.touched"
+            >
+              <div *ngIf="editForm.get('contactnumber')?.errors?.['required']">Contact Number is required</div>
+              <div *ngIf="editForm.get('contactnumber')?.errors?.['pattern'] || 
+                          editForm.get('contactnumber')?.errors?.['minlength'] || 
+                          editForm.get('contactnumber')?.errors?.['maxlength']">
+                Contact Number must be exactly 10 digits
+              </div>
+            </div>
           </div>
         </div>
         <div>
