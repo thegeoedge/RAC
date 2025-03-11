@@ -47,33 +47,6 @@
           />
         </div> -->
 
-            <div class="mb-3">
-              <label class="form-label" for="field_jobtypeid">jobtypeid</label>
-              <input
-                type="number"
-                class="form-control"
-                name="jobtypeid"
-                id="field_jobtypeid"
-                data-cy="jobtypeid"
-                formControlName="jobtypeid"
-                [ngModel]="jobtypeid"
-                [disabled]="true"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label" for="field_vehicleid">Vehicleid</label>
-              <input
-                type="number"
-                class="form-control"
-                name="vehicleid"
-                id="field_vehicleid"
-                data-cy="vehicleid"
-                formControlName="vehicleid"
-                [ngModel]="vehicleid"
-              />
-            </div>
-
             <div class="row">
               <div class="mb-3 col-6">
                 <label class="form-label" for="field_vehiclenumber">Vehicle Number</label>
@@ -138,19 +111,6 @@
               />
             </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="field_jobopenby">Jobopenby</label>
-              <input
-                type="number"
-                class="form-control"
-                name="jobopenby"
-                id="field_jobopenby"
-                data-cy="jobopenby"
-                formControlName="jobopenby"
-                [ngModel]="jobopenby"
-              />
-            </div>
-
             <!-- <div class="mb-3">
           <label class="form-label" for="field_jobopentime">Jobopentime</label>
           <div class="d-flex">
@@ -204,19 +164,6 @@
               <div *ngIf="editForm.controls.customertel.errors?.pattern && editForm.controls.customertel.touched" class="invalid-feedback">
                 Enter a valid 10-digit phone number.
               </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label" for="field_customerid">Customerid</label>
-              <input
-                type="number"
-                class="form-control"
-                name="customerid"
-                id="field_customerid"
-                formControlName="customerid"
-                data-cy="customerid"
-                [ngModel]="customerid"
-              />
             </div>
 
             <!-- <div class="mb-3">
@@ -335,23 +282,6 @@
             formControlName="iscustomercomment"
           />
         </div> -->
-            <div class="mb-3">
-              <label
-                class="form-label"
-                for="field_vehicletypeid
-"
-                >typeid</label
-              >
-              <input
-                type="text"
-                class="form-check"
-                name="vehicletypeid"
-                id="field_vehicletypeid"
-                data-cy="vehicletypeid"
-                [ngModel]="vehicletypeid"
-                formControlName="vehicletypeid"
-              />
-            </div>
           </div>
 
           <div class="button-container">
@@ -359,7 +289,7 @@
               type="button"
               id="cancel-save"
               data-cy="entityCreateCancelButton"
-              class="btn btn-secondary custom-cancel-btn"
+              class="btn btn-lg btn-secondary custom-cancel-btn"
               (click)="previousState()"
             >
               <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
@@ -370,7 +300,7 @@
               id="save-entity"
               data-cy="entityCreateSaveButton"
               [disabled]="editForm.invalid || isSaving"
-              class="btn btn-success custom-save-btn"
+              class="btn btn-lg btn-success custom-save-btn"
             >
               <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
             </button>
