@@ -46,8 +46,8 @@
             [disabled]="true"
           />
         </div> -->
-
-            <div class="mb-3" *ngIf="false">
+ 
+             <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_jobtypeid">jobtypeid</label>
               <input
                 type="number"
@@ -73,7 +73,6 @@
                 [ngModel]="vehicleid"
               />
             </div>
-
             <div class="row">
               <div class="mb-3 col-6">
                 <label class="form-label" for="field_vehiclenumber">Vehicle Number</label>
@@ -89,12 +88,17 @@
                   (change)="onVehicleSelect($event)"
                   (input)="onVehicleSearch($event)"
                   [ngModel]="vehicleNo"
+                  [class.is-invalid]="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched"
+                  required
                 />
                 <datalist id="vehiclenumberList">
                   <option *ngFor="let item of filteredVehicles" [value]="item.vehiclenumber">
                     {{ item.conformdate }}
                   </option>
                 </datalist>
+                <div *ngIf="editForm.controls.vehiclenumber.invalid && editForm.controls.vehiclenumber.touched" class="invalid-feedback">
+                  Vehicle Number is required.
+                </div>
               </div>
 
               <div class="mb-3 col-6">
@@ -132,8 +136,7 @@
                 placeholder="Enter description"
               />
             </div>
-
-            <div class="mb-3" *ngIf="false">
+              <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_jobopenby">Jobopenby</label>
               <input
                 type="number"
@@ -145,6 +148,7 @@
                 [ngModel]="jobopenby"
               />
             </div>
+
 
             <!-- <div class="mb-3">
           <label class="form-label" for="field_jobopentime">Jobopentime</label>
@@ -171,7 +175,12 @@
                 data-cy="customername"
                 formControlName="customername"
                 [ngModel]="customername"
+                [class.is-invalid]="editForm.controls.customername.invalid && editForm.controls.customername.touched"
+                required
               />
+              <div *ngIf="editForm.controls.customername.invalid && editForm.controls.customername.touched" class="invalid-feedback">
+                Customer Name is required.
+              </div>
             </div>
 
             <div class="mb-3">
@@ -183,9 +192,12 @@
                 id="field_customertel"
                 data-cy="customertel"
                 formControlName="customertel"
+                pattern="^\d{10}$"
                 [ngModel]="customerTel"
+                [class.is-invalid]="editForm.controls.customertel.invalid && editForm.controls.customertel.touched"
+                required
               />
-            </div>
+                </div>
 
             <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_customerid">Customerid</label>
@@ -198,6 +210,13 @@
                 data-cy="customerid"
                 [ngModel]="customerid"
               />
+                 <div *ngIf="editForm.controls.customertel.errors?.required && editForm.controls.customertel.touched" class="invalid-feedback">
+                Customer Telephone Number is required.
+              </div>
+              <div *ngIf="editForm.controls.customertel.errors?.pattern && editForm.controls.customertel.touched" class="invalid-feedback">
+                Enter a valid 10-digit phone number.
+              </div>
+
             </div>
 
             <!-- <div class="mb-3">
@@ -223,6 +242,7 @@
                   name="jobdate"
                   formControlName="jobdate"
                   placeholder="YYYY-MM-DD HH:mm"
+                  required
                 />
               </div>
             </div>
@@ -315,11 +335,11 @@
             formControlName="iscustomercomment"
           />
         </div> -->
-            <div class="mb-3" *ngIf="false">
+
+             <div class="mb-3" *ngIf="false">
               <label
                 class="form-label"
-                for="field_vehicletypeid
-"
+                for="field_vehicletypeid"
                 >typeid</label
               >
               <input
@@ -339,7 +359,7 @@
               type="button"
               id="cancel-save"
               data-cy="entityCreateCancelButton"
-              class="btn btn-secondary custom-cancel-btn"
+              class="btn btn-lg btn-secondary custom-cancel-btn"
               (click)="previousState()"
             >
               <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
@@ -350,7 +370,7 @@
               id="save-entity"
               data-cy="entityCreateSaveButton"
               [disabled]="editForm.invalid || isSaving"
-              class="btn btn-success custom-save-btn"
+              class="btn btn-lg btn-success custom-save-btn"
             >
               <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
             </button>
