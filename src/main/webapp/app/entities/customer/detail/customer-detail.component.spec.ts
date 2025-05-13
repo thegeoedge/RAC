@@ -17,8 +17,8 @@ describe('Customer Management Detail Component', () => {
           [
             {
               path: '**',
-              component: CustomerDetailComponent,
-              resolve: { customer: () => of({ id: 123 }) },
+              loadComponent: () => import('./customer-detail.component').then(m => m.CustomerDetailComponent),
+              resolve: { customer: () => of({ id: 26915 }) },
             },
           ],
           withComponentInputBinding(),
@@ -40,7 +40,7 @@ describe('Customer Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', CustomerDetailComponent);
 
       // THEN
-      expect(instance.customer()).toEqual(expect.objectContaining({ id: 123 }));
+      expect(instance.customer()).toEqual(expect.objectContaining({ id: 26915 }));
     });
   });
 

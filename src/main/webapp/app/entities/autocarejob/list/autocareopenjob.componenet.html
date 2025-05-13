@@ -97,8 +97,6 @@
 
         <jhi-alert-error></jhi-alert-error>
 
-        <jhi-alert></jhi-alert>
-
         @if (autocarejobs?.length === 0) {
         <div class="alert alert-warning" id="no-result">
           <span>No Autocarejobs found</span>
@@ -472,40 +470,76 @@
 
                 <td class="text-end">
                   <div class="btn-group">
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'view']"
+                      class="btn btn-info btn-sm"
+                      data-cy="entityDetailsButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="eye"></fa-icon>
                       <!-- <span class="d-none d-md-inline">View</span> -->
                     </a>
 
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'edit']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="pencil-alt"></fa-icon>
                       <!-- <span class="d-none d-md-inline">Edit</span> -->
                     </a>
 
                     <a
+                      *ngIf="showJobLink"
                       [routerLink]="['/autocarejob', autocarejob.id, 'instructions']"
                       class="btn btn-warning btn-sm"
                       data-cy="entityEditButton"
+                      title="Go to Instructions"
                     >
                       <fa-icon icon="book"></fa-icon>
                       <!-- <span class="d-none d-md-inline">instruction</span> -->
                     </a>
 
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'history']" class="btn btn-success btn-sm" data-cy="entityEditButton">
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'history']"
+                      class="btn btn-success btn-sm"
+                      data-cy="entityEditButton"
+                      title="Go to History"
+                    >
                       <fa-icon icon="sync"></fa-icon>
                       <!-- <span class="d-none d-md-inline">History</span> -->
                     </a>
 
                     <a
+                      *ngIf="showJobLink1"
                       [routerLink]="['/autocarejob', autocarejob.id, 'itemissue']"
                       class="btn btn-primary btn-sm"
                       data-cy="entityEditButton"
+                      title="Go to Item Issue"
                     >
                       <fa-icon icon="asterisk"></fa-icon>
                       <!-- <span class="d-none d-md-inline"> Item</span> -->
                     </a>
+                    <a
+                      *ngIf="showJobLink2"
+                      [routerLink]="['/salesinvoice', 'new']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                      [queryParams]="{ id: autocarejob.id }"
+                      title="Go to Invoice"
+                    >
+                      <fa-icon icon="book"></fa-icon>
+                      <!-- <span class="d-none d-md-inline">invoice</span> -->
+                    </a>
 
-                    <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <button
+                      type="submit"
+                      (click)="delete(autocarejob)"
+                      class="btn btn-danger btn-sm"
+                      data-cy="entityDeleteButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="times"></fa-icon>
                       <!-- <span class="d-none d-md-inline">Delete</span> -->
                     </button>

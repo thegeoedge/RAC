@@ -84,3 +84,4 @@ entity Customer{
 
 }
 paginate * with pagination
+filter all

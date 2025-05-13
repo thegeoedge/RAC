@@ -1,0 +1,8 @@
+entity EmpFunctions (FunctionId) {
+    @id
+    FunctionId Integer required
+    FunctionName String
+    ModuleId Integer
+  }
+  paginate * with pagination
+filter all

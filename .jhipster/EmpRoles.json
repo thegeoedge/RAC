@@ -1,0 +1,26 @@
+{
+  "annotations": {
+    "changelogDate": "20250427064330"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "roleId",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"],
+      "options": {
+        "id": true
+      }
+    },
+    {
+      "fieldName": "roleName",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "EmpRoles",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

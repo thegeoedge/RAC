@@ -1,0 +1,9 @@
+entity PaymentMethod {
+    paymentMethodName String  ,
+    commission Double,
+    companyBankAccountId Integer,
+    lmd Instant,
+    lmu Integer
+  }
+  
+  filter all

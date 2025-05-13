@@ -18,6 +18,16 @@ import { ReceiptService } from '../receipt/service/receipt.service';
 import dayjs from 'dayjs/esm';
 import { SalesinvoiceUpdateComponent } from '../salesinvoice/update/salesinvoice-update.component';
 import { ReceiptLinesService } from '../receipt-lines/service/receipt-lines.service';
+import { PaymentMethodService } from '../payment-method/service/payment-method.service';
+import { CustomerService } from '../customer/service/customer.service';
+import { v4 as uuidv4 } from 'uuid';
+import { ITransactions } from '../transactions/transactions.model';
+import { TransactionsService } from '../transactions/service/transactions.service';
+import { SalesInvoiceLinesService } from '../sales-invoice-lines/service/sales-invoice-lines.service';
+import { Account } from 'app/core/auth/account.model';
+import { AccountService } from 'app/core/auth/account.service';
+import { AccountsService } from '../accounts/service/accounts.service';
+import { SalesinvoiceService } from '../salesinvoice/service/salesinvoice.service';
 @Component({
   selector: 'app-receipt-modal',
   standalone: true,
@@ -46,7 +56,8 @@ export class ReceiptModalComponent implements OnChanges {
   @Input() deposited: boolean = true;
   @Input() createdby: number = 0;
   @Input() accountId: number = 0;
-
+  @Input() invoicecode: string | null = null;
+  @Input() sharedSubId: string | null = null;
   isSaving = false;
   field_input1: string = 'field_input1'; // Define this property here00
   field_input2: string = 'field_input2';
@@ -57,9 +68,9 @@ export class ReceiptModalComponent implements OnChanges {
   selectedOption: number = 0;
   banks: IBanks[] = [];
   bankbranch: IBankbranch[] = [];
-
+  salesInvoiceService = inject(SalesinvoiceService);
   salesinvoiceupdate = inject(SalesinvoiceUpdateComponent);
-
+  invoicelines = inject(SalesInvoiceLinesService);
   protected receiptpaymentsdetailsService = inject(ReceiptpaymentsdetailsService);
   protected receiptpaymentsdetailsFormService = inject(ReceiptpaymentsdetailsFormService);
   protected banksService = inject(BanksService);
@@ -67,9 +78,12 @@ export class ReceiptModalComponent implements OnChanges {
   reciptService = inject(ReceiptService);
   reciptlines = inject(ReceiptLinesService);
   paymentdetails = inject(ReceiptpaymentsdetailsService);
+  customeraccid = inject(CustomerService);
+  transtactions = inject(TransactionsService);
+  acc = inject(AccountsService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ReceiptpaymentsdetailsFormGroup = this.receiptpaymentsdetailsFormService.createReceiptpaymentsdetailsFormGroup();
-
+  paymentmethods = inject(PaymentMethodService);
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['receiptpaymentsdetails'] && changes['receiptpaymentsdetails'].currentValue) {
       console.log('Updated receiptpaymentsdetails:', changes['receiptpaymentsdetails'].currentValue); // Logs the new value
@@ -78,13 +92,78 @@ export class ReceiptModalComponent implements OnChanges {
       this.loadBankBranch();
     }
   }
+  accountsId: number = 0;
+  accountcode: string = '';
+
+  fetchacc(): void {
+    console.log('Fetching account ID... >>>>>>>>>>>>>>>>>>>', this.customerid);
+    this.invoicelines.getSubId();
+    // Make sure you pass the correct query params for filtering by customerid
+    this.customeraccid.query({ 'id.equals': this.customerid }).subscribe((res: HttpResponse<any[]>) => {
+      const accounts = res.body || [];
+      console.log('Fetched accounts:', accounts);
+
+      // You may not even need to filter again if the query already filters by customerId
+      const selectedAccount = accounts.length > 0 ? accounts[0] : null;
+
+      if (selectedAccount) {
+        this.accountcode = selectedAccount.accountcode;
+        this.transaction.accountCode = selectedAccount.accountcode;
+        this.transaction.accountId = selectedAccount.accountid;
+        this.accountsId = selectedAccount.id;
+        console.log('Selected Account ID:', this.accountId);
+      } else {
+        console.log('No account found for customer ID:', this.customerid);
+      }
+    });
+  }
 
   // Log for debugging
   ngOnInit() {
     console.log('selectedOption:', this.selectedOption);
+    // Call the method to fetch account ID
+    // Call the method to fetch payment methods
   }
   previousState(): void {
     window.history.back();
+  }
+  paymentType: string = '';
+  finalcommisonamount: number = 0;
+
+  onpaymentOptionChange(option: string): void {
+    this.paymentType = option;
+    console.log('Payment Option Changed:', this.paymentType);
+    console.log('Total Amount:', this.totalamount);
+
+    this.fetchpaymentmethod();
+    console.log(this.items);
+
+    let commissionRate = 0;
+
+    if (this.paymentType === 'visa') {
+      commissionRate = this.items[2].commission;
+      console.log('Visa selected - Commission %:', commissionRate);
+    } else if (this.paymentType === 'paypal') {
+      commissionRate = this.items[1].commission;
+      console.log('PayPal selected - Commission %:', commissionRate);
+    } else if (this.paymentType === 'amex') {
+      commissionRate = this.items[0].commission;
+      console.log('Amex selected - Commission %:', commissionRate);
+    }
+
+    this.finalcommisonamount = (this.totalamount * commissionRate) / 100;
+    const finalTotal = this.totalamount + this.finalcommisonamount;
+
+    console.log('Final Commission Amount:', this.finalcommisonamount.toFixed(2));
+    console.log('Final Total (with commission):', finalTotal.toFixed(2));
+  }
+
+  fetchpaymentmethod(): void {
+    this.paymentmethods.query({ size: 1000 }).subscribe((res: HttpResponse<any[]>) => {
+      this.items = res.body || []; // Assign the response body to the items array
+      console.log('Fetched payment methodxxxxxxxxxxxxxxxxxs:', this.items); // Log the fetched payment methods
+    });
+    console.log('Fetched payment methods:', this.items); // Log the fetched payment methods
   }
 
   loadBanks(): void {
@@ -92,11 +171,104 @@ export class ReceiptModalComponent implements OnChanges {
       this.banks = res.body || [];
     });
   }
+
+  account = {
+    id: null,
+    code: '',
+    date: dayjs(),
+    name: '',
+    description: '',
+    type: 0,
+    parent: 0,
+    balance: 0,
+    lmu: 0,
+    lmd: dayjs(),
+    hasbatches: null as boolean | null,
+    accountvalue: 0,
+    accountlevel: 0,
+    accountsnumberingsystem: 0,
+    subparentid: 0,
+    canedit: null as boolean | null,
+    amount: 0,
+    creditamount: 0,
+    debitamount: 0,
+    debitorcredit: '',
+    reporttype: 0,
+  };
+
+  transaction = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 0,
+    accountCode: '',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: 'invoice',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  }; // Non-null assertion operator indicates it will be assigned later
+
+  addtrasction(): void {
+    console.log('Adding transaction...');
+    this.customername = this.salesInvoiceService.getCustomerName();
+    console.log('Account ID:>>>>>>>>>>>>', this.customername);
+    this.acc.query({ 'name.contains': this.customername }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts: any[] = res.body || [];
+        console.log('Fetched accountsssss:', accounts[0].amount + this.totalamount);
+        console.log('Fetched accountsssss:', accounts[0].debitamount + this.totalamount);
+
+        console.log('Fetched accountsssss:', accounts[0].id);
+        const account = accounts[0];
+        const updatedAccount = {
+          id: account.id,
+          debitamount: account.debitamount + this.totalamount,
+          amount: account.amount + this.totalamount,
+        };
+
+        // Call partial update (PATCH)
+        this.acc.partialUpdate(updatedAccount).subscribe({
+          next: () => {
+            console.log('Account updated successfully.');
+          },
+          error: err => {
+            console.error('Failed to update account:', err);
+          },
+        });
+        // Do something with the accounts
+      },
+      error: err => {
+        console.error('Failed to fetch accounts:', err);
+      },
+    });
+
+    this.transaction.subId = this.invoicelines.getSubId();
+    this.transaction.refDoc = this.invoicecode ? this.invoicecode.toString() : '';
+    this.transaction.debit = this.totalamount;
+
+    console.log('Updated transaction:', this.transaction);
+    console.log('Transaction ID:', this.invoicecode);
+
+    this.transtactions.create(this.transaction).subscribe({
+      next: response => {
+        console.log('Transaction created successfully:', response.body);
+      },
+      error: error => {
+        console.error('Error creating transaction:', error);
+      },
+    });
+  }
+
   items: any[] = []; // Your data array, adjust accordingly
 
   cash: number = 0;
   balance: number = 0;
-  @Output() methodpending: EventEmitter<number> = new EventEmitter<number>(); // Define the EventEmitter
+  @Output() methodpending: EventEmitter<{ cash: number; balance: number }> = new EventEmitter<{ cash: number; balance: number }>(); // Define the EventEmitter
 
   onItemCodeInput(event: Event): void {
     const inputElement = <HTMLInputElement>event.target;
@@ -104,10 +276,11 @@ export class ReceiptModalComponent implements OnChanges {
     console.log(`Input value: ${value}`);
     this.cash = parseFloat(value);
     console.log('Cash:', this.cash);
-    this.methodpending.emit(this.cash);
+
     console.log('Total Amount:', this.totalamount);
     this.balance = this.totalamount - this.cash;
     console.log('Balance:', this.balance);
+    this.methodpending.emit({ cash: this.cash, balance: this.balance }); // Emit the value as an object
   }
   cheque: number = 0;
   onItemChequeInput(event: Event): void {
@@ -290,6 +463,8 @@ export class ReceiptModalComponent implements OnChanges {
         console.log('hhhhhhh', this.receiptPaymentDetail);
         this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
         this.salesinvoiceupdate.save();
+        this.fetchacc();
+        this.addtrasction();
       });
     }
   }
@@ -361,6 +536,7 @@ export class ReceiptModalComponent implements OnChanges {
       case 4:
         paymentMethod = 'Card/Other';
         termid = 4;
+        this.fetchpaymentmethod();
         break;
       case 5:
         paymentMethod = 'Bank';

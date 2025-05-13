@@ -1,7 +1,7 @@
 <nav class="sidenav">
   <ul class="sidenav-menu">
     <li class="sidenav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <a class="sidenav-link" routerLink="/"> <fa-icon icon="home"></fa-icon> Home </a>
+      <a class="sidenav-link" routerLink="/login"> <fa-icon icon="home"></fa-icon> Home </a>
     </li>
     @if (account() !== null) {
       <!-- Entities Section (Expanded instead of Dropdown) -->
@@ -23,38 +23,38 @@
               <fa-icon icon="asterisk" [fixedWidth]="true"></fa-icon> Service Category
             </a>
           </li>
-          <li>
+          <li *ngIf="showJobLink">
             <a class="sidenav-link" routerLink="/autocarejob" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-             Autocare job
+              Autocare job
             </a>
           </li>
-          <li>
-            <a
-              class="sidenav-link"
-              routerLink="/autocarejob/autocareopenjob"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-            >
 
-            Autocare View Job
-            </a>
-          </li>
-          <li>
+          <div *ngIf="false">
+            <li>
+              <a
+                class="sidenav-link"
+                routerLink="/autocarejob/autocareopenjob"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }"
+              >
+                Autocare View Job
+              </a>
+            </li>
+          </div>
+          <li *ngIf="false">
             <a class="sidenav-link" routerLink="/autojobsinvoice" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-            
               Autojobs Invoice
-
             </a>
           </li>
           <li *ngIf="false">
             <a class="sidenav-link" routerLink="/vehicletype" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-             Vehicle type
+              Vehicle type
             </a>
           </li>
 
           <li>
             <a class="sidenav-link" routerLink="/autocareappointment" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-             Autocare appointment
+              Appointment
             </a>
           </li>
           <div *ngIf="false">
@@ -65,7 +65,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Autocare Job In Images
+                Autocare Job In Images
               </a>
             </li>
             <li>
@@ -75,7 +75,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Autocare Appointment Type
+                Autocare Appointment Type
               </a>
             </li>
             <li>
@@ -95,7 +95,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Service Subcategory
+                Service Subcategory
               </a>
             </li>
             <li>
@@ -130,7 +130,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Workshop Vehicle Work
+                Workshop Vehicle Work
               </a>
             </li>
             <li>
@@ -140,7 +140,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Autojob Employee Allocation
+                Autojob Employee Allocation
               </a>
             </li>
             <li>
@@ -150,7 +150,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Autocare Job Category
+                Autocare Job Category
               </a>
             </li>
             <li>
@@ -170,7 +170,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Autocare Cancel Item Option
+                Autocare Cancel Item Option
               </a>
             </li>
             <li>
@@ -185,14 +185,10 @@
               </a>
             </li>
             <li>
-              <a class="sidenav-link" routerLink="/taxes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-               Taxes
-              </a>
+              <a class="sidenav-link" routerLink="/taxes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"> Taxes </a>
             </li>
             <li>
-              <a class="sidenav-link" routerLink="/banks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-               Banks
-              </a>
+              <a class="sidenav-link" routerLink="/banks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"> Banks </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/bankbranch" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -201,7 +197,7 @@
             </li>
             <li>
               <a class="sidenav-link" routerLink="/accounts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-               Accounts
+                Accounts
               </a>
             </li>
             <li>
@@ -211,12 +207,11 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              Company Bank Account
+                Company Bank Account
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/receipt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Receipt
               </a>
             </li>
@@ -227,13 +222,11 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Location Based Stock
+                Location Based Stock
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/autojobsinvoice" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Autojobs Invoice
               </a>
             </li>
@@ -244,8 +237,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Billing Service Option
+                Billing Service Option
               </a>
             </li>
             <li>
@@ -255,8 +247,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Billing Service Option Values
+                Billing Service Option Values
               </a>
             </li>
             <li>
@@ -266,8 +257,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Common Service Option
+                Common Service Option
               </a>
             </li>
             <li>
@@ -277,8 +267,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Next Service Instructions
+                Next Service Instructions
               </a>
             </li>
             <li>
@@ -288,8 +277,7 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Last Service Instructions
+                Last Service Instructions
               </a>
             </li>
             <li>
@@ -299,59 +287,53 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
               >
-              
-              Autocare Service Millages
+                Autocare Service Millages
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/autocarecompany" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Autocare Company
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/autocarehoist" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Auto Care Hoist
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/hoisttype" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Hoist Type
               </a>
             </li>
             <li>
               <a class="sidenav-link" routerLink="/autocaretimetable" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              
                 Auto Care Time Table
               </a>
             </li>
           </div>
 
-           <li>
+          <li *ngIf="showJobLink2">
             <a class="sidenav-link" routerLink="/salesinvoice" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-             Sales Invoice
+              Sales Invoice
             </a>
           </li>
-          <li>
-            <a
-              class="dropdown-item"
-              routerLink="/sales-invoice-dummy"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-            >
-            
-              <span>Sales Invoice Dummy</span>
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/voucher" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-            
-
-              <span>Voucher</span>
-            </a>
-          </li>
+          <div *ngIf="false">
+            <li>
+              <a
+                class="dropdown-item"
+                routerLink="/sales-invoice-dummy"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }"
+              >
+                <span>Sales Invoice Dummy</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/voucher" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                <span>Voucher</span>
+              </a>
+            </li>
+          </div>
         </ul>
       </li>
     }
@@ -376,7 +358,7 @@
         </li>
         <li>
           <a class="sidenav-link" routerLink="/admin/health" routerLinkActive="active">
-            <fa-icon icon="heart" [fixedWidth]="true"></fa-icon>  Health
+            <fa-icon icon="heart" [fixedWidth]="true"></fa-icon> Health
           </a>
         </li>
         <li>

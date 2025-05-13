@@ -10,5 +10,8 @@ eg $input-color: red;
 // Import Bootstrap source files from node_modules
 @import 'bootstrap/scss/bootstrap';
 @import 'bootswatch/dist/flatly/bootswatch';
+@import '~bootstrap-rtl/dist/css/bootstrap.rtl.css'; // If you want to use the minified CSS
+
+@import 'custom';
 
 /* jhipster-needle-scss-add-vendor JHipster will add new css style */

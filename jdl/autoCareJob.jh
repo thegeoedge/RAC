@@ -44,3 +44,4 @@ entity Autocarejob {
     dashboardimage String // DashBoardImage
 }
 paginate * with pagination
+filter all

@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { debounceTime } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ISalesInvoiceLines } from 'app/entities/sales-invoice-lines/sales-invoice-lines.model';
 import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-common-service-charge/sale-invoice-common-service-charge.model';
@@ -32,6 +32,10 @@ import dayjs from 'dayjs';
 
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { CustomervehicleService } from 'app/entities/customervehicle/service/customervehicle.service';
+import { CustomerService } from 'app/entities/customer/service/customer.service';
+import { ICustomer } from 'app/entities/customer/customer.model';
+import { AddInvoicetableComponent } from './add-invoicetable/add-invoicetable.component';
 
 // Extend Day.js with necessary plugins
 dayjs.extend(utc);
@@ -49,6 +53,8 @@ dayjs.extend(timezone);
     SaleInvoiceCommonServiceChargeUpdateComponent,
     SalesInvoiceServiceChargeLineUpdateComponent,
     ReceiptModalComponent,
+    AddInvoicetableComponent,
+    RouterModule,
   ],
 })
 export class SalesinvoiceUpdateComponent implements OnInit {
@@ -57,17 +63,19 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   salesinvoice: ISalesinvoice | null = null;
   showCodeField: boolean = false;
   @ViewChild(SalesInvoiceLinesUpdateComponent) salesInvoiceLinesUpdateComponent!: SalesInvoiceLinesUpdateComponent;
-
+  vehicle = inject(CustomervehicleService);
+  customer = inject(CustomerService);
   @ViewChild(SalesInvoiceServiceChargeLineUpdateComponent)
   SalesInvoiceServiceChargeLinesUpdateComponent!: SalesInvoiceServiceChargeLineUpdateComponent;
   router: Router = inject(Router);
   @ViewChild(SaleInvoiceCommonServiceChargeUpdateComponent)
-  systemsettings = inject(SystemSettingsService);
   SaleInvoiceCommonServiceChargesUpdateComponent!: SaleInvoiceCommonServiceChargeUpdateComponent;
+  systemsettings = inject(SystemSettingsService);
   protected salesInvoiceService = inject(SalesinvoiceService);
   autojobinvoice = inject(AutojobsinvoiceService);
   autojob = inject(AutocarejobService);
-
+  @ViewChild(AddInvoicetableComponent)
+  AddInvoicetableComponent!: AddInvoicetableComponent;
   protected vehicletypesService = inject(VehicletypeService);
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
@@ -83,7 +91,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   editForm: SalesinvoiceFormGroup = this.salesinvoiceFormService.createSalesinvoiceFormGroup();
   discountOption: string = 'percentage'; // Default value
   discountValue: number = 0;
-  subTotal: number = 0;
+  subTotal: number = 0.0;
   totalamount: number = 0;
   i: number = 0;
   customername: string = '';
@@ -93,6 +101,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   term: string = '';
   date: Date = new Date();
   amount: number = 0;
+  invoicecode: string = '';
   checkdate: Date = new Date();
   checkno: string = '';
   bank: string = '';
@@ -108,6 +117,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   nextvalue: string = ''; // Correct declaration
   newnextvalue: String = '';
   newlastvalue: String = '';
+  jobbid: any;
   ngOnInit(): void {
     console.log('starttt');
 
@@ -115,71 +125,94 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // this.servicecommonlines(id);
     // this.invoicelines(id);
     // Extract ID from query params in case it's not in route data
+
+    this.systemsettings.find(0).subscribe(response => {
+      console.log('Full System Settings Responseee:', response);
+
+      if (response.body) {
+        console.log('System Settings Next Value:', response.body.nextValue);
+        console.log('System Settings Last Value:', response.body.lastValue);
+
+        this.nextvalue = response.body.nextValue ?? '';
+        this.newlastvalue = response.body.lastValue ?? ''; // Ensure lastValue is assigned
+
+        console.log('Current Next Value:', this.nextvalue);
+        console.log('Current Last Value:', this.newlastvalue);
+
+        // Increment both values
+        const newId = this.incrementId(this.nextvalue);
+        const newLastId = this.incrementId(this.newlastvalue.toString());
+
+        console.log('New Next Value:', newId);
+        console.log('New Last Value:', newLastId);
+
+        // Store new values
+        this.newnextvalue = newId;
+        this.newlastvalue = newLastId;
+        console.log('New Next Valuwwwwwwwwwwwwwwwwwwwwe:', this.newnextvalue);
+        console.log('New Last Valwwwwwue:', this.newlastvalue);
+        //  this.editForm.patchValue({ code: this.nextvalue });
+        const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
+        console.log('salessssssssssssswwwsssss', salesinvoice);
+      } else {
+        console.log('No body found in response');
+      }
+    });
+
+    if (!window.location.search.includes('?')) {
+      console.log('No query parameters found, skipping execution.');
+      return;
+    }
+
     this.activatedRoute.queryParams.subscribe(params => {
       console.log('Query Params ID:', params['id']);
-      this.salesInvoiceService.fetchJobInvoice(params['id']).subscribe({
+
+      // First API call to fetch autojobinvoice data
+      this.autojobinvoice.query({ 'jobid.equals': params['id'] }).subscribe({
         next: response => {
-          console.log('Job Invoice Responseeeeeeeer:', response.body[0].jobid);
-          console.log('Job Invoice Responseeeeeeeer:', response.body[0]);
-          this.jobid = response.body[0].jobid;
-          this.autojob.find(response.body[0].jobid).subscribe({
-            next: response => {
-              console.log('Job Invoice Responseeeeeeeer12222:', response);
-              if (response.body) {
-                this.vehicleno = response.body.vehiclenumber ?? '';
-              }
-              console.log('vehiclenumberrrrrrrrrrrrrrrrrrrrrr:', this.vehicleno);
-              this.editForm.patchValue({ vehicleno: this.vehicleno });
-              // Handle the response here
-            },
-            error: err => {
-              console.error('Error fetching job invoice:', err);
-            },
-          });
-          console.log('jobbbbbb', this.jobid);
-          // Handle the response here
+          if (response.body && response.body.length > 0) {
+            console.log('Response:', response.body[0].id);
+            this.jobbid = response.body[0].id;
+            console.log('Jobbid:', this.jobbid);
+
+            // After setting this.jobbid, now make the second API call
+            this.salesInvoiceService.fetchJobInvoice(this.jobbid).subscribe({
+              next: response => {
+                this.loadSalesInvoiceDummy(this.jobbid);
+                this.invoicelines(this.jobbid);
+                this.servicelines(this.jobbid);
+                this.servicecommonlines(this.jobbid);
+                console.log('Job Invoice Response:', response.body[0].jobid);
+                console.log('Job Invoice Data:', response.body[0]);
+                this.jobid = response.body[0].jobid;
+
+                // Third API call to fetch job details
+                this.autojob.find(this.jobid).subscribe({
+                  next: response => {
+                    console.log('Job Details:', response);
+                    if (response.body) {
+                      this.vehicleno = response.body.vehiclenumber ?? '';
+                    }
+                    console.log('Vehicle Number:', this.vehicleno);
+                    this.editForm.patchValue({ vehicleno: this.vehicleno });
+                  },
+                  error: err => {
+                    console.error('Error fetching job details:', err);
+                  },
+                });
+              },
+              error: err => {
+                console.error('Error fetching job invoice:', err);
+              },
+            });
+          }
         },
         error: err => {
-          console.error('Error fetching job invoice:', err);
+          console.error('Error fetching autojobinvoice:', err);
         },
       });
-
-      this.loadSalesInvoiceDummy(params['id']);
-      this.invoicelines(params['id']);
-      this.servicelines(params['id']);
-      this.servicecommonlines(params['id']);
-      this.systemsettings.find(0).subscribe(response => {
-        console.log('Full System Settings Responseee:', response);
-
-        if (response.body) {
-          console.log('System Settings Next Value:', response.body.nextValue);
-          console.log('System Settings Last Value:', response.body.lastValue);
-
-          this.nextvalue = response.body.nextValue ?? '';
-          this.newlastvalue = response.body.lastValue ?? ''; // Ensure lastValue is assigned
-
-          console.log('Current Next Value:', this.nextvalue);
-          console.log('Current Last Value:', this.newlastvalue);
-
-          // Increment both values
-          const newId = this.incrementId(this.nextvalue);
-          const newLastId = this.incrementId(this.newlastvalue.toString());
-
-          console.log('New Next Value:', newId);
-          console.log('New Last Value:', newLastId);
-
-          // Store new values
-          this.newnextvalue = newId;
-          this.newlastvalue = newLastId;
-          console.log('New Next Valuwwwwwwwwwwwwwwwwwwwwe:', this.newnextvalue);
-          console.log('New Last Valwwwwwue:', this.newlastvalue);
-          //  this.editForm.patchValue({ code: this.nextvalue });
-          const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
-          console.log('salessssssssssssswwwsssss', salesinvoice);
-        } else {
-          console.log('No body found in response');
-        }
-      });
+      this.editForm.patchValue({ vehicleno: this.vehicleno });
+      // Call other methods after fetching the job ID
     });
 
     this.loadVehicleTypes();
@@ -188,7 +221,92 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // Subscribe to form control valueChanges
     this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.get('subtotal')?.valueChanges.subscribe(() => this.calculateDiscount());
+    this.editForm.patchValue({ vehicleno: this.vehicleno });
   }
+  get subtotalControl(): AbstractControl {
+    return this.editForm.get('subtotal')!;
+  }
+
+  formatNumber(value: number | string | null | undefined): string {
+    if (value === null || value === undefined || value === '') return '';
+
+    const number = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value;
+
+    if (isNaN(number)) return '';
+
+    // Convert to fixed 2 decimal places and format with commas
+    return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  onSubtotalInput(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const rawValue = inputElement.value.replace(/,/g, '');
+    const numericValue = parseFloat(rawValue);
+    this.subtotalControl.setValue(isNaN(numericValue) ? null : numericValue);
+  }
+
+  customers: ICustomer[] = [];
+
+  customersearch(event: Event): void {
+    const inputElement = event.target as HTMLInputElement; // Typecast to get the input element
+    const searchName = inputElement.value.trim(); // Get the input value
+
+    if (!searchName) {
+      // Prevent null or empty input issues
+      this.customers = [];
+      return;
+    }
+
+    this.customer // Ensure this.customerService exists and is injected properly
+      .query({ 'nameWithInitials.contains': searchName })
+      .subscribe(
+        response => {
+          this.customers = response.body || []; // Populate customers array
+          console.log(response);
+        },
+        error => {
+          console.error('Error fetching customers', error); // Log any errors
+        },
+      );
+  }
+  vehicleNumbers: string[] = []; // To store vehicle numbers
+  onCustomerSelect(event: Event): void {
+    const inputElement = event.target as HTMLInputElement; // Get the input element
+    const selectedName = inputElement.value.trim(); // Get the value from the input
+    console.log(this.salesinvoice);
+    // Find the customer object corresponding to the selected name
+    const selectedCustomer = this.customers.find(customer => customer.namewithinitials === selectedName);
+
+    if (selectedCustomer) {
+      console.log('Selected Customer ID:', selectedCustomer); // Log the selected customer's ID
+      this.customerid = selectedCustomer.id;
+      this.editForm.patchValue({ customerid: selectedCustomer.id, customername: selectedCustomer.namewithinitials });
+
+      // Assuming `vehicle` is a service that can query vehicles by customer ID
+      this.vehicle
+        .query({ 'customerid.equals': selectedCustomer.id }) // Use correct query format
+        .subscribe(
+          response => {
+            console.log('Vehicle Query Response:', response.body);
+            this.vehicleNumbers = (response.body || []).map((vehicle: any) => vehicle.vehiclenumber); // Update vehicle numbers
+            console.log('Vehicle Query Response:', this.vehicleNumbers);
+          },
+          error => {
+            console.error('Error fetching vehicles', error); // Log any errors
+          },
+        );
+    } else {
+      console.log('Customer not found');
+    }
+  }
+  onVehicleSelect(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const selectedVehicleNumber = inputElement.value.trim();
+    console.log('Selected Vehicle Number:', selectedVehicleNumber);
+    this.editForm.patchValue({ vehicleno: selectedVehicleNumber, code: this.nextvalue });
+    this.invoicecode = this.nextvalue;
+    console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.invoicecode);
+  }
+
   incrementId(id: string): string {
     const match = id.match(/^([A-Za-z]+)(\d+)$/);
     if (!match) return id; // Return as is if it doesn't match the pattern
@@ -221,8 +339,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
   pending: number = 0;
   pendings: number = 0; // Add pendings as a class property
-
-  onMethodPending(pending: number): void {
+  balance: number = 0;
+  onMethodPending(pending: number, balance: number): void {
     this.pending = pending;
     console.log('pendingggg', this.pending);
 
@@ -233,9 +351,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       // Check if subtotal is a valid number
       if (subtotal != null && !isNaN(subtotal)) {
         console.log('nettotal:', subtotal);
+        this.totalamount = subtotal; // Use 'this' to refer to the class property
         this.pendings = subtotal - this.pending; // Use 'this' to refer to the class property
         console.log('pendingssss:', this.pendings);
         this.editForm.patchValue({ pendingamount: this.pendings });
+        this.balance = balance;
+        console.log('pending amount balancee:', this.balance);
       } else {
         console.log('subtotal is invalid or null');
       }
@@ -454,7 +575,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.salesInvoiceService.fetchInvoiceLines(id).subscribe(
       (res: HttpResponse<any[]>) => {
         if (res.body && res.body.length > 0) {
-          console.log('counts', res.body);
+          console.log('countsdddddddddddddddddddddddddddddddd', res.body);
           // Clear previous fetched items before adding new ones
           this.fetchedItems = [];
 
@@ -463,7 +584,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               itemname: item.itemname ?? '',
               quantity: item.quantity ?? 0,
               sellingprice: item.sellingprice ?? 0,
-              lastcost: item.lastcost ?? 0,
+              lastcost: item.itemcost ?? 0,
               code: item.itemcode ?? '',
               unitofmeasurement: item.unitofmeasurement ?? '',
               availablequantity: item.availablequantity ?? 0,
@@ -484,7 +605,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   private loadSalesInvoiceDummy(id: number): void {
-    console.log('iddddd', id);
+    console.log('idddggggggggggggggggggggggggggggggggggggggggggggggggggggggggdd', id);
     this.salesInvoiceService.fetchJobInvoice(id).subscribe(response => {
       const salesInvoiceDummy = response.body[0];
       console.log('Retrieved dataaaaaaaaaaaaa:', response);
@@ -504,6 +625,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.totalamountinword = salesInvoiceDummy.totalamountinword;
       this.comments = salesInvoiceDummy.comments;
       this.customerid = salesInvoiceDummy.customerid;
+      console.log('iddddddddddddddhereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed', this.customerid);
       this.isactive = salesInvoiceDummy.isactive;
       this.deposited = salesInvoiceDummy.deposited;
       this.createdby = salesInvoiceDummy.createdby;
@@ -523,9 +645,35 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         totaldiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
         code: this.nextvalue,
       };
-
+      this.salesInvoiceService.setcustomer(this.customername);
+      this.invoicecode = this.nextvalue;
+      console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.invoicecode);
       this.updateForm(transformedData);
       console.log('Transformed Data:', transformedData);
+      this.fetchInvoices(); // Fetch invoices after updating the form
+    });
+  }
+  invoice: any[] = [];
+
+  fetchInvoices(): void {
+    this.salesInvoiceService.query({ 'customerid.equals': this.customerid }).subscribe({
+      next: res => {
+        console.log('Full responssssssse:', res.body); // 👈 Logs the full HTTP response
+        this.invoice = res.body ?? [];
+
+        // Sum up amountOwing from each invoice
+        const totalAmountOwing = this.invoice.reduce((sum, invoice) => {
+          return sum + (invoice.amountowing || 0); // ensure it handles undefined/null
+        }, 0);
+
+        console.log('Total Amount Owing:', totalAmountOwing);
+        this.editForm.patchValue({
+          amountowing: totalAmountOwing,
+        });
+      },
+      error: err => {
+        console.error('Error fetching invoices:', err);
+      },
     });
   }
 
@@ -537,6 +685,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     availablequantity: number;
     lastsellingprice: number;
     unitofmeasurement: string;
+    discount: string;
   } | null = null;
 
   itemname: string = ''; // Variable to hold the selected item's name
@@ -567,6 +716,40 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.itemname = ''; // Clear itemName if no match is found
     }
   }
+  discountoption: 'percentage' | 'value' = 'percentage';
+  discountvalue: number = 0;
+  discount: string = '';
+
+  onDiscountoptionChange(value: 'percentage' | 'value') {
+    this.discountoption = value;
+    console.log('Discount Option Changed:', this.discountoption);
+    this.updateDiscountFromValue();
+  }
+
+  updateDiscount(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const value = inputElement.value.trim();
+    const parsedValue = parseFloat(value);
+
+    if (!isNaN(parsedValue)) {
+      this.discountvalue = parsedValue;
+      this.updateDiscountFromValue();
+    } else {
+      this.discount = '';
+    }
+  }
+
+  updateDiscountFromValue(): void {
+    console.log('Discount Value:', this.discountoption); // Log the discount value
+    if (this.discountoption === 'percentage') {
+      this.discount = `${this.discountvalue}%`;
+      console.log('Discount:', this.discount);
+    } else {
+      this.discount = `${this.discountvalue}v`;
+    }
+    console.log(this.discount);
+  }
+
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
@@ -577,6 +760,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       lastsellingprice: this.lastsellingprice,
       unitofmeasurement: this.unitofmeasurement,
       lastcost: this.lastcost,
+      discount: this.discount, // Convert to string if needed
     };
 
     // Log the selected item to the console
@@ -632,6 +816,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
+    this.editForm.patchValue({ amountowing: this.balance });
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
     console.log('salesssssssssssssssssssssssss', salesinvoice);
     const systemSettingsUpdate: PartialUpdateAutocarejob = { id: this.jobid, isjobclose: true }; // ✅ Fix applied
@@ -684,7 +869,10 @@ export class SalesinvoiceUpdateComponent implements OnInit {
             if (this.SalesInvoiceServiceChargeLinesUpdateComponent) {
               this.SalesInvoiceServiceChargeLinesUpdateComponent.save(response.body.id); // Call save from the child component
             }
+            console.log('its hereeeeeeeeeeeeee');
+            //   this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id);
             if (this.SaleInvoiceCommonServiceChargesUpdateComponent) {
+              console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
               this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id); // Call save from the child component
             }
             // alert("sucess?")

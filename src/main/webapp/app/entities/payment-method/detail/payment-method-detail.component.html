@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (paymentMethod(); as paymentMethodRef) {
+      <div>
+        <h2 data-cy="paymentMethodDetailsHeading"><span>Payment Method</span></h2>
+
+        <hr />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.id }}</span>
+          </dd>
+          <dt><span>Payment Method Name</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.paymentMethodName }}</span>
+          </dd>
+          <dt><span>Commission</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.commission }}</span>
+          </dd>
+          <dt><span>Company Bank Account Id</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.companyBankAccountId }}</span>
+          </dd>
+          <dt><span>Lmd</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.lmd }}</span>
+          </dd>
+          <dt><span>Lmu</span></dt>
+          <dd>
+            <span>{{ paymentMethodRef.lmu }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton"></button>
+
+        <button type="button" class="btn btn-primary"></button>
+      </div>
+    }
+  </div>
+</div>

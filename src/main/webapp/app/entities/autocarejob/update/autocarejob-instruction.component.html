@@ -1,5 +1,11 @@
 <!doctype html>
 <html lang="en">
+  <style>
+    input {
+      text-align: right;
+    }
+  </style>
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -370,14 +376,16 @@
                     <legend class="w-auto px-2">Last Service</legend>
                     <div class="mb-3">
                       <label class="form-label" for="field_lastserviceinstructions">Last Service Instructions</label>
-                      <!-- <input
+
+                      <input
                         type="text"
                         class="form-control"
                         name="lastserviceinstructions"
                         id="field_lastserviceinstructions"
                         data-cy="lastserviceinstructions"
                         formControlName="lastserviceinstructions"
-                      /> -->
+                        readonly
+                      />
                     </div>
                   </fieldset>
                 </div>
@@ -460,7 +468,16 @@
                       <tbody>
                         <tr *ngFor="let service of filteredBillingServiceOptionValues">
                           <td>{{ getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
-                          <td>{{ service.value }}</td>
+                          <td>
+                            <input
+                              type="number"
+                              class="form-control form-control-sm"
+                              style="width: 100px"
+                              [value]="service.value"
+                              (input)="onValueChange($event, service)"
+                            />
+                          </td>
+
                           <td>
                             <input
                               type="checkbox"
@@ -484,14 +501,14 @@
                       <tbody>
                         <tr *ngFor="let service of selectedServices">
                           <td>{{ getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
-                          <td>{{ service.value | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                          <td>{{ service.value | number: '1.2-2' }}</td>
                         </tr>
                       </tbody>
                       <tfoot>
                         <tr>
                           <td><strong>Total:</strong></td>
                           <td>
-                            <strong>{{ totalServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2' }}</strong>
+                            <strong>{{ totalServiceCharge | number: '1.2-2' }}</strong>
                           </td>
                         </tr>
                       </tfoot>
@@ -590,7 +607,7 @@
                         <th>Avl.Qty</th>
                         <th>Price</th>
                         <th>Req Qty</th>
-                        <th>Dis (%)</th>
+                        <th>Dis</th>
                         <th>Total</th>
                         <th>Delete</th>
                       </tr>
@@ -602,6 +619,7 @@
                         <td>{{ item.lastsellingprice }}</td>
                         <td>
                           <input
+                            style="text-align: right"
                             type="number"
                             class="form-control text-center"
                             [(ngModel)]="item.requestedQuantity"
@@ -622,9 +640,17 @@
                             [ngModelOptions]="{ standalone: true }"
                             (input)="updateItemTotal()"
                           />
+                          <input
+                            type="checkbox"
+                            [(ngModel)]="item.activeitem"
+                            [ngModelOptions]="{ standalone: true }"
+                            (change)="updateItemTotal()"
+                            title="Check to apply fixed discount, uncheck for %"
+                          />value
                         </td>
 
-                        <td>{{ calculateItemTotal(item) | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                        <td>{{ calculateItemTotal(item) | number: '1.2-2' }}</td>
+
                         <!-- Display the total per item -->
                         <td>
                           <button type="button" class="btn btn-danger btn-sm" (click)="onDeleteItem(i)">🗑</button>
@@ -637,15 +663,15 @@
                   <div class="p-2 bg-dark text-white">
                     <div class="d-flex justify-content-between">
                       <span>Total Without Discount:</span>
-                      <span>{{ calculateTotalWithoutDiscount() | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                      <span>{{ calculateTotalWithoutDiscount() | number: '1.2-2' }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                       <span>Total Discount:</span>
-                      <span>{{ calculateTotalDiscount() | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                      <span>{{ calculateTotalDiscount() | number: '1.2-2' }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                       <span>Total With Discount:</span>
-                      <span>{{ calculateTotalWithDiscount() | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                      <span>{{ calculateTotalWithDiscount() | number: '1.2-2' }}</span>
                     </div>
                   </div>
                   <jhi-autojobsinvoicelines-update></jhi-autojobsinvoicelines-update>
@@ -688,7 +714,7 @@
                       <tbody>
                         <tr *ngFor="let item of commonserviceoption">
                           <td>{{ item.name }}</td>
-                          <td>{{ item.value | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                          <td>{{ item.value | number: '1.2-2' }}</td>
                           <td>
                             <input type="checkbox" (change)="onServiceSelectionChange(item, $event)" />
                           </td>
@@ -707,13 +733,13 @@
                     <tbody>
                       <tr *ngFor="let service of selectedcommonServices">
                         <td>{{ service.name }}</td>
-                        <td>{{ service.value | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                        <td>{{ service.value | number: '1.2-2' }}</td>
                       </tr>
                     </tbody>
                     <tfoot>
                       <tr>
                         <th>Total</th>
-                        <th>{{ totalcommonServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2' }}</th>
+                        <th>{{ totalcommonServiceCharge | number: '1.2-2' }}</th>
                       </tr>
                     </tfoot>
                   </table>
@@ -722,7 +748,7 @@
                 <div class="mt-3 p-3 border">
                   <h5>
                     Total Common Service Charge:
-                    <span class="fw-bold">{{ totalcommonServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                    <span class="fw-bold">{{ totalcommonServiceCharge | number: '1.2-2' }}</span>
                   </h5>
                 </div>
                 <jhi-autojobsaleinvoicecommonservicecharge-update></jhi-autojobsaleinvoicecommonservicecharge-update>
@@ -820,20 +846,20 @@
               <div class="border p-2 rounded" style="background-color: #e9e8f2; font-size: 0.85rem">
                 <p>
                   <strong>Item Charges:</strong>
-                  <span class="float-right">{{ calculateTotalWithDiscount() | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                  <span class="float-right">{{ calculateTotalWithDiscount() | number: '1.2-2' }}</span>
                 </p>
                 <p>
                   <strong>Service Charges:</strong>
-                  <span class="float-right">{{ totalServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                  <span class="float-right">{{ totalServiceCharge | number: '1.2-2' }}</span>
                 </p>
                 <p>
                   <strong>Common Service:</strong>
-                  <span class="float-right">{{ totalcommonServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2' }}</span>
+                  <span class="float-right">{{ totalcommonServiceCharge | number: '1.2-2' }}</span>
                 </p>
                 <p class="text-danger font-weight-bold">
                   <strong>Total Bill:</strong>
                   <span class="float-right">{{
-                    totalServiceCharge + calculateTotalWithDiscount() + totalcommonServiceCharge | currency: 'LKR' : 'symbol' : '1.2-2'
+                    totalServiceCharge + calculateTotalWithDiscount() + totalcommonServiceCharge | number: '1.2-2'
                   }}</span>
                 </p>
               </div>
@@ -891,7 +917,7 @@
                 <td>{{ item.lastsellingprice }}</td>
                 <td>{{ item.requestedQuantity }}</td>
                 <td>{{ item.discountPercentage }}</td>
-                <td>{{ calculateItemTotal(item) | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ calculateItemTotal(item) | number: '1.2-2' }}</td>
               </tr>
 
               <tr>
@@ -902,7 +928,7 @@
                 <td>{{ service.value }}</td>
                 <td>1</td>
                 <td>0</td>
-                <td>{{ service.value | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ service.value | number: '1.2-2' }}</td>
               </tr>
 
               <tr>
@@ -913,7 +939,7 @@
                 <td>{{ service.value }}</td>
                 <td>1</td>
                 <td>0</td>
-                <td>{{ service.value | currency: 'LKR' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ service.value | number: '1.2-2' }}</td>
                 <td></td>
               </tr>
             </tbody>
@@ -923,9 +949,7 @@
             <h4>
               <strong
                 >TOTAL VALUE:
-                <span class="text-primary">{{
-                  totalServiceCharge + calculateTotalWithDiscount() | currency: 'LKR' : 'symbol' : '1.2-2'
-                }}</span></strong
+                <span class="text-primary">{{ totalServiceCharge + calculateTotalWithDiscount() | number: '1.2-2' }}</span></strong
               >
             </h4>
           </div>

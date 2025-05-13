@@ -1,0 +1,34 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (empFunctions(); as empFunctionsRef) {
+      <div>
+        <h2 data-cy="empFunctionsDetailsHeading"><span>Emp Functions</span></h2>
+
+        <hr />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>Function Id</span></dt>
+          <dd>
+            <span>{{ empFunctionsRef.functionId }}</span>
+          </dd>
+          <dt><span>Function Name</span></dt>
+          <dd>
+            <span>{{ empFunctionsRef.functionName }}</span>
+          </dd>
+          <dt><span>Module Id</span></dt>
+          <dd>
+            <span>{{ empFunctionsRef.moduleId }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/emp-functions', empFunctionsRef.functionId, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

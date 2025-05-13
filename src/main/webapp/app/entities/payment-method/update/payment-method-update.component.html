@@ -1,0 +1,90 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()">
+      <h2 id="jhi-payment-method-heading" data-cy="PaymentMethodCreateUpdateHeading">Create or edit a Payment Method</h2>
+
+      <div>
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_paymentMethodName">Payment Method Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="paymentMethodName"
+            id="field_paymentMethodName"
+            data-cy="paymentMethodName"
+            formControlName="paymentMethodName"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_commission">Commission</label>
+          <input
+            type="number"
+            class="form-control"
+            name="commission"
+            id="field_commission"
+            data-cy="commission"
+            formControlName="commission"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_companyBankAccountId">Company Bank Account Id</label>
+          <input
+            type="number"
+            class="form-control"
+            name="companyBankAccountId"
+            id="field_companyBankAccountId"
+            data-cy="companyBankAccountId"
+            formControlName="companyBankAccountId"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lmd">Lmd</label>
+          <div class="d-flex">
+            <input
+              id="field_lmd"
+              data-cy="lmd"
+              type="datetime-local"
+              class="form-control"
+              name="lmd"
+              formControlName="lmd"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lmu">Lmu</label>
+          <input type="number" class="form-control" name="lmu" id="field_lmu" data-cy="lmu" formControlName="lmu" />
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          id="cancel-save"
+          data-cy="entityCreateCancelButton"
+          class="btn btn-secondary"
+          (click)="previousState()"
+        ></button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        ></button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -89,8 +89,9 @@
     "ngx-infinite-scroll": "17.0.0",
     "number-to-words": "^1.2.4",
     "rac": "file:",
-    "rxjs": "7.8.1",
+    "rxjs": "^7.8.2",
     "tslib": "2.6.2",
+    "uuid": "^11.1.0",
     "zone.js": "0.14.4"
   },
   "devDependencies": {

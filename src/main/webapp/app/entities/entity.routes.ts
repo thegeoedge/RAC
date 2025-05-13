@@ -340,6 +340,41 @@ const routes: Routes = [
     data: { pageTitle: 'SalesInvoiceLineBatches' },
     loadChildren: () => import('./sales-invoice-line-batch/sales-invoice-line-batch.routes'),
   },
+  {
+    path: 'bin-card',
+    data: { pageTitle: 'BinCards' },
+    loadChildren: () => import('./bin-card/bin-card.routes'),
+  },
+  {
+    path: 'auto-care-vehicle',
+    data: { pageTitle: 'AutoCareVehicles' },
+    loadChildren: () => import('./auto-care-vehicle/auto-care-vehicle.routes'),
+  },
+  {
+    path: 'payment-method',
+    data: { pageTitle: 'PaymentMethods' },
+    loadChildren: () => import('./payment-method/payment-method.routes'),
+  },
+  {
+    path: 'emp-functions',
+    data: { pageTitle: 'EmpFunctions' },
+    loadChildren: () => import('./emp-functions/emp-functions.routes'),
+  },
+  {
+    path: 'emp-roles',
+    data: { pageTitle: 'EmpRoles' },
+    loadChildren: () => import('./emp-roles/emp-roles.routes'),
+  },
+  {
+    path: 'emp-role-function-permission',
+    data: { pageTitle: 'EmpRoleFunctionPermissions' },
+    loadChildren: () => import('./emp-role-function-permission/emp-role-function-permission.routes'),
+  },
+  {
+    path: 'transactions',
+    data: { pageTitle: 'Transactions' },
+    loadChildren: () => import('./transactions/transactions.routes'),
+  },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];
 

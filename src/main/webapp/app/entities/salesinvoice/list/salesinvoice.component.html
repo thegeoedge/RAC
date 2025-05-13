@@ -37,31 +37,79 @@
 <div class="container-fluid p-4">
   <!-- Page Heading -->
   <h2 id="page-heading" data-cy="SalesinvoiceHeading">
-    <span>Sales Invoices</span>
-
     <!-- Action Buttons -->
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2 ms-3" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span>Refresh List</span>
-      </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-salesinvoice"
-        [routerLink]="['/salesinvoice/new']"
-        *ngIf="false"
-      >
-        <fa-icon icon="plus"></fa-icon>
-        <span>Create New Sales Invoice</span>
-      </button>
+    <div class="d-flex justify-content-between align-items-center py-5">
+      <!-- Left Side -->
+      <div class="col-md-6">
+        <input
+          [type]="selectedSearchType === 'jobdate' ? 'date' : 'text'"
+          class="form-control"
+          name="inputA"
+          [(ngModel)]="searchValue"
+          [id]="field_input1"
+          data-cy="inputA"
+          placeholder="Search or filter..."
+          (ngModelChange)="onInputChange()"
+        />
+      </div>
+
+      <!-- Right Side -->
+      <div class="col-md-6 d-flex gap-3 align-items-center">
+        <div class="form-check form-check-inline" style="font-size: 0.875rem">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="searchType"
+            id="vehicleRadio"
+            value="vehicle"
+            [(ngModel)]="selectedSearchType"
+            style="transform: scale(0.85); margin-top: 0.1rem"
+          />
+          <label class="form-check-label" for="vehicleRadio">Vehicle</label>
+        </div>
+
+        <div class="form-check form-check-inline" style="font-size: 0.875rem">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="searchType"
+            id="customerRadio"
+            value="customer"
+            [(ngModel)]="selectedSearchType"
+            style="transform: scale(0.85); margin-top: 0.1rem"
+          />
+          <label class="form-check-label" for="customerRadio">Customer</label>
+        </div>
+
+        <div class="form-check form-check-inline" style="font-size: 0.875rem">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="searchType"
+            id="jobdateRadio"
+            value="jobdate"
+            [(ngModel)]="selectedSearchType"
+            style="transform: scale(0.85); margin-top: 0.1rem"
+          />
+          <label class="form-check-label" for="jobdateRadio">Job Date</label>
+        </div>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary jh-create-entity create-salesinvoice"
+          [routerLink]="['/salesinvoice/new']"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span>Create New Sales Invoice</span>
+        </button>
+      </div>
     </div>
   </h2>
 
   <!-- Error and Alert Messages -->
   <jhi-alert-error></jhi-alert-error>
-  <jhi-alert></jhi-alert>
 
   <!-- No Results Message -->
   @if (salesinvoices?.length === 0) {
@@ -144,11 +192,21 @@
               <td>{{ salesinvoice.vehicleno }}</td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a [routerLink]="['/salesinvoice', salesinvoice.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                  <a
+                    [routerLink]="['/salesinvoice', salesinvoice.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                    *ngIf="false"
+                  >
                     <fa-icon icon="eye"></fa-icon>
                     <!-- <span class="d-none d-md-inline">View</span> -->
                   </a>
-                  <a [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a
+                    [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                    *ngIf="false"
+                  >
                     <fa-icon icon="pencil-alt"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Edit</span> -->
                   </a>
@@ -157,11 +215,18 @@
                     class="btn btn-secondary btn-sm"
                     data-cy="entityEditButton"
                     [queryParams]="{ id: salesinvoice.id, invoice: salesinvoice.invoicedate }"
+                    *ngIf="false"
                   >
                     <fa-icon icon="book"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Dummy Invoice</span> -->
                   </a>
-                  <button type="submit" (click)="delete(salesinvoice)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button
+                    type="submit"
+                    (click)="delete(salesinvoice)"
+                    class="btn btn-danger btn-sm"
+                    data-cy="entityDeleteButton"
+                    *ngIf="false"
+                  >
                     <fa-icon icon="times"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Delete</span> -->
                   </button>

@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autocarejob;
 import com.heavenscode.rac.repository.AutocarejobRepository;
+import com.heavenscode.rac.service.AutocarejobQueryService;
+import com.heavenscode.rac.service.AutocarejobService;
+import com.heavenscode.rac.service.criteria.AutocarejobCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,29 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/autocarejobs")
-@Transactional
 public class AutocarejobResource {
 
-    private final Logger log = LoggerFactory.getLogger(AutocarejobResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AutocarejobResource.class);
 
     private static final String ENTITY_NAME = "autocarejob";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final AutocarejobService autocarejobService;
+
     private final AutocarejobRepository autocarejobRepository;
 
-    public AutocarejobResource(AutocarejobRepository autocarejobRepository) {
+    private final AutocarejobQueryService autocarejobQueryService;
+
+    public AutocarejobResource(
+        AutocarejobService autocarejobService,
+        AutocarejobRepository autocarejobRepository,
+        AutocarejobQueryService autocarejobQueryService
+    ) {
+        this.autocarejobService = autocarejobService;
         this.autocarejobRepository = autocarejobRepository;
+        this.autocarejobQueryService = autocarejobQueryService;
     }
 
     /**
@@ -52,11 +63,11 @@ public class AutocarejobResource {
      */
     @PostMapping("")
     public ResponseEntity<Autocarejob> createAutocarejob(@RequestBody Autocarejob autocarejob) throws URISyntaxException {
-        log.debug("REST request to save Autocarejob : {}", autocarejob);
+        LOG.debug("REST request to save Autocarejob : {}", autocarejob);
         if (autocarejob.getId() != null) {
             throw new BadRequestAlertException("A new autocarejob cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        autocarejob = autocarejobRepository.save(autocarejob);
+        autocarejob = autocarejobService.save(autocarejob);
         return ResponseEntity.created(new URI("/api/autocarejobs/" + autocarejob.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autocarejob.getId().toString()))
             .body(autocarejob);
@@ -77,7 +88,7 @@ public class AutocarejobResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Autocarejob autocarejob
     ) throws URISyntaxException {
-        log.debug("REST request to update Autocarejob : {}, {}", id, autocarejob);
+        LOG.debug("REST request to update Autocarejob : {}, {}", id, autocarejob);
         if (autocarejob.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -89,7 +100,7 @@ public class AutocarejobResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        autocarejob = autocarejobRepository.save(autocarejob);
+        autocarejob = autocarejobService.update(autocarejob);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autocarejob.getId().toString()))
             .body(autocarejob);
@@ -111,7 +122,7 @@ public class AutocarejobResource {
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Autocarejob autocarejob
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Autocarejob partially : {}, {}", id, autocarejob);
+        LOG.debug("REST request to partial update Autocarejob partially : {}, {}", id, autocarejob);
         if (autocarejob.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -123,142 +134,7 @@ public class AutocarejobResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Autocarejob> result = autocarejobRepository
-            .findById(autocarejob.getId())
-            .map(existingAutocarejob -> {
-                if (autocarejob.getJobnumber() != null) {
-                    existingAutocarejob.setJobnumber(autocarejob.getJobnumber());
-                }
-                if (autocarejob.getVehicleid() != null) {
-                    existingAutocarejob.setVehicleid(autocarejob.getVehicleid());
-                }
-                if (autocarejob.getVehiclenumber() != null) {
-                    existingAutocarejob.setVehiclenumber(autocarejob.getVehiclenumber());
-                }
-                if (autocarejob.getMillage() != null) {
-                    existingAutocarejob.setMillage(autocarejob.getMillage());
-                }
-                if (autocarejob.getNextmillage() != null) {
-                    existingAutocarejob.setNextmillage(autocarejob.getNextmillage());
-                }
-                if (autocarejob.getNextservicedate() != null) {
-                    existingAutocarejob.setNextservicedate(autocarejob.getNextservicedate());
-                }
-                if (autocarejob.getVehicletypeid() != null) {
-                    existingAutocarejob.setVehicletypeid(autocarejob.getVehicletypeid());
-                }
-                if (autocarejob.getJobtypeid() != null) {
-                    existingAutocarejob.setJobtypeid(autocarejob.getJobtypeid());
-                }
-                if (autocarejob.getJobtypename() != null) {
-                    existingAutocarejob.setJobtypename(autocarejob.getJobtypename());
-                }
-                if (autocarejob.getJobopenby() != null) {
-                    existingAutocarejob.setJobopenby(autocarejob.getJobopenby());
-                }
-                if (autocarejob.getJobopentime() != null) {
-                    existingAutocarejob.setJobopentime(autocarejob.getJobopentime());
-                }
-                if (autocarejob.getLmu() != null) {
-                    existingAutocarejob.setLmu(autocarejob.getLmu());
-                }
-                if (autocarejob.getLmd() != null) {
-                    existingAutocarejob.setLmd(autocarejob.getLmd());
-                }
-                if (autocarejob.getSpecialrquirments() != null) {
-                    existingAutocarejob.setSpecialrquirments(autocarejob.getSpecialrquirments());
-                }
-                if (autocarejob.getSpecialinstructions() != null) {
-                    existingAutocarejob.setSpecialinstructions(autocarejob.getSpecialinstructions());
-                }
-                if (autocarejob.getRemarks() != null) {
-                    existingAutocarejob.setRemarks(autocarejob.getRemarks());
-                }
-                if (autocarejob.getNextserviceinstructions() != null) {
-                    existingAutocarejob.setNextserviceinstructions(autocarejob.getNextserviceinstructions());
-                }
-                if (autocarejob.getLastserviceinstructions() != null) {
-                    existingAutocarejob.setLastserviceinstructions(autocarejob.getLastserviceinstructions());
-                }
-                if (autocarejob.getIsadvisorchecked() != null) {
-                    existingAutocarejob.setIsadvisorchecked(autocarejob.getIsadvisorchecked());
-                }
-                if (autocarejob.getIsempallocated() != null) {
-                    existingAutocarejob.setIsempallocated(autocarejob.getIsempallocated());
-                }
-                if (autocarejob.getJobclosetime() != null) {
-                    existingAutocarejob.setJobclosetime(autocarejob.getJobclosetime());
-                }
-                if (autocarejob.getIsjobclose() != null) {
-                    existingAutocarejob.setIsjobclose(autocarejob.getIsjobclose());
-                }
-                if (autocarejob.getIsfeedback() != null) {
-                    existingAutocarejob.setIsfeedback(autocarejob.getIsfeedback());
-                }
-                if (autocarejob.getFeedbackstatusid() != null) {
-                    existingAutocarejob.setFeedbackstatusid(autocarejob.getFeedbackstatusid());
-                }
-                if (autocarejob.getCustomername() != null) {
-                    existingAutocarejob.setCustomername(autocarejob.getCustomername());
-                }
-                if (autocarejob.getCustomertel() != null) {
-                    existingAutocarejob.setCustomertel(autocarejob.getCustomertel());
-                }
-                if (autocarejob.getCustomerid() != null) {
-                    existingAutocarejob.setCustomerid(autocarejob.getCustomerid());
-                }
-                if (autocarejob.getAdvisorfinalcheck() != null) {
-                    existingAutocarejob.setAdvisorfinalcheck(autocarejob.getAdvisorfinalcheck());
-                }
-                if (autocarejob.getJobdate() != null) {
-                    existingAutocarejob.setJobdate(autocarejob.getJobdate());
-                }
-                if (autocarejob.getIscompanyservice() != null) {
-                    existingAutocarejob.setIscompanyservice(autocarejob.getIscompanyservice());
-                }
-                if (autocarejob.getFreeservicenumber() != null) {
-                    existingAutocarejob.setFreeservicenumber(autocarejob.getFreeservicenumber());
-                }
-                if (autocarejob.getCompanyid() != null) {
-                    existingAutocarejob.setCompanyid(autocarejob.getCompanyid());
-                }
-                if (autocarejob.getUpdatetocustomer() != null) {
-                    existingAutocarejob.setUpdatetocustomer(autocarejob.getUpdatetocustomer());
-                }
-                if (autocarejob.getNextgearoilmilage() != null) {
-                    existingAutocarejob.setNextgearoilmilage(autocarejob.getNextgearoilmilage());
-                }
-                if (autocarejob.getIsjobinvoiced() != null) {
-                    existingAutocarejob.setIsjobinvoiced(autocarejob.getIsjobinvoiced());
-                }
-                if (autocarejob.getIswaiting() != null) {
-                    existingAutocarejob.setIswaiting(autocarejob.getIswaiting());
-                }
-                if (autocarejob.getIscustomercomment() != null) {
-                    existingAutocarejob.setIscustomercomment(autocarejob.getIscustomercomment());
-                }
-                if (autocarejob.getImagefolder() != null) {
-                    existingAutocarejob.setImagefolder(autocarejob.getImagefolder());
-                }
-                if (autocarejob.getFrontimage() != null) {
-                    existingAutocarejob.setFrontimage(autocarejob.getFrontimage());
-                }
-                if (autocarejob.getLeftimage() != null) {
-                    existingAutocarejob.setLeftimage(autocarejob.getLeftimage());
-                }
-                if (autocarejob.getRightimage() != null) {
-                    existingAutocarejob.setRightimage(autocarejob.getRightimage());
-                }
-                if (autocarejob.getBackimage() != null) {
-                    existingAutocarejob.setBackimage(autocarejob.getBackimage());
-                }
-                if (autocarejob.getDashboardimage() != null) {
-                    existingAutocarejob.setDashboardimage(autocarejob.getDashboardimage());
-                }
-
-                return existingAutocarejob;
-            })
-            .map(autocarejobRepository::save);
+        Optional<Autocarejob> result = autocarejobService.partialUpdate(autocarejob);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -270,14 +146,31 @@ public class AutocarejobResource {
      * {@code GET  /autocarejobs} : get all the autocarejobs.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autocarejobs in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<Autocarejob>> getAllAutocarejobs(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        log.debug("REST request to get a page of Autocarejobs");
-        Page<Autocarejob> page = autocarejobRepository.findAll(pageable);
+    public ResponseEntity<List<Autocarejob>> getAllAutocarejobs(
+        AutocarejobCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Autocarejobs by criteria: {}", criteria);
+
+        Page<Autocarejob> page = autocarejobQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /autocarejobs/count} : count all the autocarejobs.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countAutocarejobs(AutocarejobCriteria criteria) {
+        LOG.debug("REST request to count Autocarejobs by criteria: {}", criteria);
+        return ResponseEntity.ok().body(autocarejobQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -288,8 +181,8 @@ public class AutocarejobResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Autocarejob> getAutocarejob(@PathVariable("id") Long id) {
-        log.debug("REST request to get Autocarejob : {}", id);
-        Optional<Autocarejob> autocarejob = autocarejobRepository.findById(id);
+        LOG.debug("REST request to get Autocarejob : {}", id);
+        Optional<Autocarejob> autocarejob = autocarejobService.findOne(id);
         return ResponseUtil.wrapOrNotFound(autocarejob);
     }
 
@@ -301,8 +194,8 @@ public class AutocarejobResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutocarejob(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Autocarejob : {}", id);
-        autocarejobRepository.deleteById(id);
+        LOG.debug("REST request to delete Autocarejob : {}", id);
+        autocarejobService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

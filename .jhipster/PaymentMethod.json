@@ -1,0 +1,33 @@
+{
+  "annotations": {
+    "changelogDate": "20250423120926"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "paymentMethodName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "commission",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "companyBankAccountId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "Integer"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "PaymentMethod",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

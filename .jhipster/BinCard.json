@@ -1,0 +1,82 @@
+{
+  "annotations": {
+    "changelogDate": "20250402140824"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "itemID",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "itemCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "reference",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "txDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "qtyIn",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "qtyOut",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "lMU",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "lMD",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "referenceCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "recordDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "batchId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "locationID",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "locationCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "opening",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "referenceDoc",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "BinCard",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

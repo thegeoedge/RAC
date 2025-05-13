@@ -1,0 +1,16 @@
+entity Transactions {
+    accountId Integer
+    accountCode String  
+    debit Double
+    credit Double
+    date Instant
+    refDoc String  
+    refId Integer
+    subId TextBlob
+    source String  
+    paymentTermId Integer
+    paymentTermName String  
+    lmu Integer
+    lmd Instant
+  }
+  filter all

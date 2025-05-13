@@ -1,0 +1,65 @@
+{
+  "annotations": {
+    "changelogDate": "20250504184304"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "accountId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "accountCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "debit",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "credit",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "date",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "refDoc",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "refId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "subId",
+      "fieldType": "TextBlob"
+    },
+    {
+      "fieldName": "source",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "paymentTermId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "paymentTermName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Transactions",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

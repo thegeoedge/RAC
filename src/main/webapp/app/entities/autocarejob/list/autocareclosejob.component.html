@@ -35,10 +35,65 @@
 </style>
 
 <div class="container-fluid">
-
   <h2 id="page-heading" data-cy="AutocarejobHeading">
     <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
-      <input type="text" class="form-control w-25" [(ngModel)]="searchText" (input)="filterJobs()" placeholder="Search by Vehicle Number" />
+      <div class="d-flex justify-content-between align-items-center py-5">
+        <!-- Left Side -->
+        <div class="col-md-6">
+          <input
+            [type]="selectedSearchType === 'jobdate' ? 'date' : 'text'"
+            class="form-control"
+            name="inputA"
+            [(ngModel)]="searchValue"
+            [id]="field_input1"
+            data-cy="inputA"
+            placeholder="Search or filter..."
+            (ngModelChange)="onInputChange()"
+          />
+        </div>
+
+        <!-- Right Side -->
+        <div class="col-md-6 d-flex gap-3 align-items-center">
+          <div class="form-check form-check-inline" style="font-size: 0.875rem">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="searchType"
+              id="vehicleRadio"
+              value="vehicle"
+              [(ngModel)]="selectedSearchType"
+              style="transform: scale(0.85); margin-top: 0.1rem"
+            />
+            <label class="form-check-label" for="vehicleRadio">Vehicle</label>
+          </div>
+
+          <div class="form-check form-check-inline" style="font-size: 0.875rem">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="searchType"
+              id="customerRadio"
+              value="customer"
+              [(ngModel)]="selectedSearchType"
+              style="transform: scale(0.85); margin-top: 0.1rem"
+            />
+            <label class="form-check-label" for="customerRadio">Customer</label>
+          </div>
+
+          <div class="form-check form-check-inline" style="font-size: 0.875rem">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="searchType"
+              id="jobdateRadio"
+              value="jobdate"
+              [(ngModel)]="selectedSearchType"
+              style="transform: scale(0.85); margin-top: 0.1rem"
+            />
+            <label class="form-check-label" for="jobdateRadio">Job Date</label>
+          </div>
+        </div>
+      </div>
       <div class="d-flex gap-2" *ngIf="false">
         <button class="btn btn-info me-2 ms-3" (click)="load()" [disabled]="isLoading">
           <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
@@ -59,8 +114,6 @@
   </h2>
 
   <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
 
   @if (autocarejobs?.length === 0) {
     <div class="alert alert-warning" id="no-result">
@@ -436,44 +489,66 @@
 
                 <td class="text-end">
                   <div class="btn-group">
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'view']"
+                      class="btn btn-info btn-sm"
+                      data-cy="entityDetailsButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="eye"></fa-icon>
                       <!-- <span class="d-none d-md-inline">View</span> -->
                     </a>
 
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <a
+                      [routerLink]="['/autocarejob', autocarejob.id, 'edit']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="pencil-alt"></fa-icon>
                       <!-- <span class="d-none d-md-inline">Edit</span> -->
                     </a>
 
                     <a
                       [routerLink]="['/autocarejob', autocarejob.id, 'instructions']"
-
                       class="btn btn-warning btn-sm"
-
                       data-cy="entityEditButton"
+                      *ngIf="false"
                     >
                       <fa-icon icon="tasks"></fa-icon>
                       <!-- <span class="d-none d-md-inline">instruction</span> -->
                     </a>
 
-                    <a [routerLink]="['/autocarejob', autocarejob.id, 'history']" class="btn btn-warning btn-sm" data-cy="entityEditButton">
-                      <fa-icon icon="tasks"></fa-icon>
-                      <!-- <span class="d-none d-md-inline">History</span> -->
-
+                    <a
+                      *ngIf="showJobLink"
+                      [routerLink]="['/salesinvoice', 'new']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                      [queryParams]="{ id: autocarejob.id }"
+                      title="Go to Invoice"
+                    >
+                      <fa-icon icon="book"></fa-icon>
+                      <!-- <span class="d-none d-md-inline">invoice</span> -->
                     </a>
 
                     <a
                       [routerLink]="['/autocarejob', autocarejob.id, 'itemissue']"
                       class="btn btn-primary btn-sm"
                       data-cy="entityEditButton"
+                      title="Go to Item Issue"
+                      *ngIf="false"
                     >
                       <fa-icon icon="asterisk"></fa-icon>
                       <!-- <span class="d-none d-md-inline"> Item</span> -->
-
                     </a>
 
-                    <button type="submit" (click)="delete(autocarejob)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <button
+                      type="submit"
+                      (click)="delete(autocarejob)"
+                      class="btn btn-danger btn-sm"
+                      data-cy="entityDeleteButton"
+                      *ngIf="false"
+                    >
                       <fa-icon icon="times"></fa-icon>
                       <!-- <span class="d-none d-md-inline">Delete</span> -->
                     </button>

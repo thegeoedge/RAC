@@ -2,9 +2,15 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.SalesInvoiceLineBatch;
 import com.heavenscode.rac.repository.SalesInvoiceLineBatchRepository;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +25,48 @@ public class SalesInvoiceLineBatchService {
 
     private final SalesInvoiceLineBatchRepository salesInvoiceLineBatchRepository;
 
-    public SalesInvoiceLineBatchService(SalesInvoiceLineBatchRepository salesInvoiceLineBatchRepository) {
+    private static final Logger logger = LoggerFactory.getLogger(SalesInvoiceLineBatchService.class);
+
+    private final JdbcTemplate jdbcTemplate;
+
+    public SalesInvoiceLineBatchService(SalesInvoiceLineBatchRepository salesInvoiceLineBatchRepository, JdbcTemplate jdbcTemplate) {
         this.salesInvoiceLineBatchRepository = salesInvoiceLineBatchRepository;
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public int insertSalesInvoiceLineBatch(SalesInvoiceLineBatch batch) {
+        // Define SQL for inserting the batch
+        String sql =
+            "INSERT INTO SalesInvoiceLineBatches " +
+            "(ID,LineId, BatchLineId, ItemID, Code, BatchId, BatchCode, TxDate, " +
+            "ManufactureDate, ExpiredDate, Qty, Cost, Price, Notes, " +
+            "LMU, LMD, AddedById) " +
+            "VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        return jdbcTemplate.update(
+            sql, // The SQL query should be the first parameter
+            batch.getId(), // ID
+            batch.getLineId(), // LineId
+            batch.getBatchLineId(), // BatchLineId
+            batch.getItemId(), // ItemID
+            batch.getCode(), // Code
+            batch.getBatchId(), // BatchId
+            batch.getBatchCode(), // BatchCode
+            toTimestamp(batch.getTxDate()), // TxDate
+            toTimestamp(batch.getManufactureDate()), // ManufactureDate
+            toTimestamp(batch.getExpiredDate()), // ExpiredDate   // ExpiredDate
+            batch.getQty(), // Qty
+            batch.getCost(), // Cost
+            batch.getPrice(), // Price
+            batch.getNotes(), // Notes
+            batch.getLmu(), // LMU
+            toTimestamp(batch.getLmd()), // LMD
+            batch.getAddedById() // AddedById
+        );
+    }
+
+    private Timestamp toTimestamp(Instant instant) {
+        return (instant != null) ? Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneId.systemDefault())) : null;
     }
 
     /**

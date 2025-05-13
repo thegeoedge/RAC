@@ -53,6 +53,7 @@ import { SalesInvoiceLinesDummyService } from 'app/entities/sales-invoice-lines-
 import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
 import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
 import { PartialUpdateSystemSettings, SystemSettingsService } from 'app/entities/system-settings/service/system-settings.service';
+import { AutoCareVehicleService } from 'app/entities/auto-care-vehicle/service/auto-care-vehicle.service';
 
 @Component({
   standalone: true,
@@ -80,6 +81,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   autojobsaleinvoicecommonservicechargeComponent!: AutojobsaleinvoicecommonservicechargeUpdateComponent;
   @ViewChild(AutojobsinvoicelinesUpdateComponent) autojobsinvoicelinesComponent!: AutojobsinvoicelinesUpdateComponent;
   jobinvoicelines = inject(AutojobsinvoicelinesService);
+  vehicle = inject(AutoCareVehicleService);
   searchname = inject(SalesInvoiceLinesDummyService);
   jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
   jobservice = inject(AutojobsalesinvoiceservicechargelineService);
@@ -175,6 +177,7 @@ export class AutocarejobInstructionComponent implements OnInit {
           console.log('No body found in response');
         }
       });
+      this.fetchjob();
       this.loadDataFromOtherEntities();
       this.loadDataFromBrandEntities();
       this.loadDataFromServicesEntities();
@@ -189,6 +192,31 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.setAutoNextServiceDate();
     });
   }
+  fetchjob() {
+    const vehicleNumber = this.editForm.get('vehiclenumber')?.value;
+    console.log('Selected Vehicle Number:', vehicleNumber);
+
+    this.autocarejobService
+      .query({
+        'vehiclenumber.contains': vehicleNumber,
+        sort: ['id,desc'],
+      })
+      .subscribe({
+        next: (res: HttpResponse<IAutocarejob[]>) => {
+          if (res.body) {
+            console.log('Sorted Job Response (desc):', res.body[1].nextserviceinstructions);
+            this.editForm.patchValue({ lastserviceinstructions: res.body[1].nextserviceinstructions });
+          } else {
+            console.log('No jobs found in the response.');
+          }
+          console.log(vehicleNumber);
+        },
+        error: err => {
+          console.error('Error:', err);
+        },
+      });
+  }
+
   incrementId(id: string): string {
     const match = id.match(/^([A-Za-z]+)(\d+)$/);
     if (!match) return id; // Return as is if it doesn't match the pattern
@@ -214,40 +242,33 @@ export class AutocarejobInstructionComponent implements OnInit {
     });
   }
 
-  loadBillingServiceOptions(): void {
+  loadBillingServiceOptions(call?: Function): void {
     let page = 0;
-    const pageSize = 20;
+    const pageSize = 2000;
     this.billingserviceoption = [];
     console.log(this.billingserviceoption);
-    const fetchPage = () => {
-      this.billingserviceoptionService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
-        (res: HttpResponse<IBillingserviceoption[]>) => {
-          this.billingserviceoption = [...this.billingserviceoption, ...(res.body || [])];
 
-          const totalItems = res.headers.get('X-Total-Count');
-          const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
+    this.billingserviceoptionService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
+      (res: HttpResponse<IBillingserviceoption[]>) => {
+        this.billingserviceoption = [...this.billingserviceoption, ...(res.body || [])];
 
-          if (this.billingserviceoption.length < totalRecords) {
-            page++;
-            fetchPage();
-          } else {
-          }
-        },
-        error => {},
-      );
-    };
-
-    fetchPage();
+        const totalItems = res.headers.get('X-Total-Count');
+        const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
+        if (call) {
+          call();
+        }
+      },
+      error => {},
+    );
   }
 
   billingOptionsByVehicleType: { [key: number]: IBillingserviceoptionvalues[] } = {};
 
   loadBillingServiceOptionValues(): void {
     let page = 0;
-    const pageSize = 20;
+    const pageSize = 2000;
     this.billingserviceoptionvalues = [];
-
-    const fetchPage = () => {
+    this.loadBillingServiceOptions(() => {
       this.billingserviceoptionvaluesService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
         (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
           console.log('Response:', res); // Log the full response
@@ -260,36 +281,39 @@ export class AutocarejobInstructionComponent implements OnInit {
 
           const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
 
-          if (this.billingserviceoptionvalues.length < totalRecords) {
-            page++;
-            fetchPage();
-          } else {
-            console.log('Final Billing Service Option Values:', this.billingserviceoptionvalues);
-            this.createBillingOptionsLookup();
-            // this.filterBillingServiceOptionValues();
-          }
+          console.log('Final Billing Service Option Values:', this.billingserviceoptionvalues);
+          this.createBillingOptionsLookup();
         },
         error => {
           console.error('Error fetching data:', error); // Log any errors
         },
       );
-    };
-
-    fetchPage();
+    });
   }
 
   createBillingOptionsLookup(): void {
     this.billingOptionsByVehicleType = {};
-    console.log('nnnnnnnnnnn', this.billingOptionsByVehicleType);
+    // console.log('nnnnnnnnnnn', this.billingOptionsByVehicleType);
+    // alert(this.vehicletypeId!)
+    this.billingOptionsByVehicleType[this.vehicletypeId!] = [];
 
     this.billingserviceoptionvalues.forEach(value => {
       if (value.vehicletypeid != null && !this.billingOptionsByVehicleType[value.vehicletypeid]) {
         this.billingOptionsByVehicleType[value.vehicletypeid] = [];
       }
-      if (value.vehicletypeid != null) {
-        this.billingOptionsByVehicleType[value.vehicletypeid].push(value);
-      }
+      // if (value.vehicletypeid != null) {
+      //   this.billingOptionsByVehicleType[value.vehicletypeid].push(value);
+      // }
+
+      this.billingOptionsByVehicleType[value.vehicletypeid!].push(value);
     });
+    if (this.selectedVehicleTypeId) {
+      this.filteredBillingServiceOptionValues = this.billingOptionsByVehicleType[this.selectedVehicleTypeId] || [];
+    } else {
+      this.filteredBillingServiceOptionValues = this.billingserviceoptionvalues;
+    }
+
+    // this.filterBillingServiceOptionValues();
 
     console.log('Billing Options Lookup:', this.billingOptionsByVehicleType); // Debugging
   }
@@ -311,9 +335,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (billingserviceoptionId == null) {
       return 'Unknown';
     }
-    console.log('billingserviceoptionId', billingserviceoptionId);
+    // console.log('billingserviceoptionId', billingserviceoptionId);
     const option = this.billingserviceoption.find(opt => opt.id === billingserviceoptionId);
-    console.log('option response', option);
+    // console.log('option response', option);
     // console.log('Billing Service Optionssssssssss:', option); // Debugging
     return option && option.servicename ? option.servicename : 'Unknown';
   }
@@ -554,21 +578,39 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   id: number = 0;
   selectedworkItems: Array<IWorkshopworklist> = []; // Assuming this is defined elsewhere]
-
+  vehicleid: number = 0;
+  model: string = '';
+  brand: string = '';
+  millage: number = 0;
   onworkServiceSelectionChange(item: IWorkshopworklist, event: any) {
+    const vehicleno = this.editForm.get('vehiclenumber')?.value || '';
+
+    console.log('Vehicle Numberrrrrrrrrrrrrrrrrrrrrrr:', vehicleno);
+    this.vehicle.query({ 'vehicleNumber.equals': vehicleno }).subscribe((res: HttpResponse<any[]>) => {
+      if (res.body && res.body[0]) {
+        console.log('Vehicle query response:', res.body[0]); // <-- Added log for response body
+        this.vehicleid = res.body[0].id;
+        this.model = res.body[0].model || ''; // <-- Added log for model
+        this.brand = res.body[0].brandName || ''; // <-- Added log for brand
+
+        this.millage = res.body[0].mileage || 0; // <-- Added log for mileage
+      } else {
+        console.log('Vehicle query response is null or empty');
+      }
+    });
     if (event.target.checked) {
       const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.selectedworkItems.push(item);
       this.workArray.push({
         id: 0,
         jobid: this.editForm.controls.id.value ?? 0,
-        vehicleid: Number(this.editForm.get('vehicleid')?.value) || 0,
+        vehicleid: this.vehicleid || 0,
         customerid: Number(this.editForm.get('customerid')?.value) || 0,
         customername: this.editForm.get('customername')?.value || '',
         contactno: this.editForm.get('contactno')?.value || '',
-        vehicleno: this.editForm.get('vehicleno')?.value || '',
-        vehiclebrand: '',
-        vehiclemodel: '',
+        vehicleno: this.editForm.get('vehiclenumber')?.value || '',
+        vehiclebrand: this.brand || '',
+        vehiclemodel: this.model || '',
         mileage: this.nextmillage?.toString() || '',
         addeddate: dayjs('2025-02-27T16:44:59.467Z').format(),
         iscalltocustomer: false,
@@ -596,6 +638,14 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.workArray = this.workArray.filter(work => work.jobid !== this.editForm.controls.id.value);
     }
     console.log('workshop items:', this.selectedworkItems);
+  }
+  onServiceAmountChange(service: any): void {
+    console.log('Amount changed for:', service);
+    // You can also add validation or recalculation logic here
+  }
+  onValueChange(event: Event, service: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    service.value = parseFloat(inputElement.value);
   }
 
   onworkSelectionChange(service: ICommonserviceoption, event: any) {
@@ -705,8 +755,8 @@ export class AutocarejobInstructionComponent implements OnInit {
         description: selectedItem.description ?? '',
         unitofmeasurement: selectedItem.unitofmeasurement ?? '',
         quantity: 1,
-        itemcost: 0,
-        itemprice: 0,
+        itemcost: selectedItem.lastcost ?? 0,
+        itemprice: selectedItem.lastsellingprice ?? 0,
         discount: 0,
         tax: 0,
         sellingprice: selectedItem.lastsellingprice ?? 0,
@@ -735,16 +785,25 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.updateItemTotal(); // Update totals after deletion
   }
 
-  calculateItemTotal(item: IInventory & { discountPercentage: number; requestedQuantity: number }): number {
+  calculateItemTotal(item: any): number {
     const price = item.lastsellingprice || 0;
-    const discountAmount = (price * item.discountPercentage) / 100;
-    const discountedPrice = price - discountAmount;
+    const quantity = item.requestedQuantity || 0;
+    const discount = item.discountPercentage || 0;
 
-    console.log(
-      `Item Total: ${discountedPrice * item.requestedQuantity} (Price: ${price}, Discount: ${discountAmount}, Qty: ${item.requestedQuantity})`,
-    );
+    let total = 0;
 
-    return discountedPrice * item.requestedQuantity;
+    if (item.activeitem) {
+      // Fixed discount amount per item
+      total = (price - discount) * quantity;
+    } else {
+      // Percentage discount
+      const discountAmount = (price * discount) / 100;
+      total = (price - discountAmount) * quantity;
+    }
+
+    console.log(`Item Total: ${total} (Price: ${price}, Discount: ${discount}, Qty: ${quantity}, Fixed: ${item.activeitem})`);
+
+    return total;
   }
 
   calculateTotalWithoutDiscount(): number {
@@ -752,10 +811,19 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   calculateTotalDiscount(): number {
-    return this.selectedItems.reduce(
-      (total, item) => total + ((item.lastsellingprice || 0) * item.discountPercentage * item.requestedQuantity) / 100,
-      0,
-    );
+    return this.selectedItems.reduce((total, item) => {
+      const price = item.lastsellingprice || 0;
+      const quantity = item.requestedQuantity || 0;
+      const discount = item.discountPercentage || 0;
+
+      if (item.activeitem) {
+        // Treat discount as fixed amount per item
+        return total + discount * quantity;
+      } else {
+        // Treat discount as percentage
+        return total + (price * discount * quantity) / 100;
+      }
+    }, 0);
   }
 
   calculateTotalWithDiscount(): number {
@@ -1024,7 +1092,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   protected onSaveSuccess(): void {
-    this.router.navigate(['/autojobsinvoice']);
+    this.router.navigate(['/']);
   }
 
   protected onSaveError(): void {

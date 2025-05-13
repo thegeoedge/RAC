@@ -41,18 +41,19 @@ export class SalesInvoiceLinesComponent implements OnInit {
 
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
-
+  field_input1: string = 'field_input1';
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
-
+  selectedSearchType: string = 'jobdate';
+  searchValue: string = '';
   public router = inject(Router);
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   protected activatedRoute = inject(ActivatedRoute);
   protected sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
-
+  salesinvoicelines = inject(SalesInvoiceLinesService);
   trackId = (item: ISalesInvoiceLines): number => this.salesInvoiceLinesService.getSalesInvoiceLinesIdentifier(item);
 
   ngOnInit(): void {
@@ -77,11 +78,18 @@ export class SalesInvoiceLinesComponent implements OnInit {
       )
       .subscribe();
   }
-
+  onInputChange(): void {
+    //this.page = 1; // optional: reset to first page
+    this.load();
+  }
   load(): void {
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
+        console.log('Response from Backend:', res); // Log the response to console
         this.onResponseSuccess(res);
+      },
+      error: err => {
+        console.error('Error fetching data:', err); // Log any errors that occur
       },
     });
   }
@@ -116,19 +124,38 @@ export class SalesInvoiceLinesComponent implements OnInit {
   }
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
-    const { page, filters } = this;
-
+    const { page } = this;
     this.isLoading = true;
     const pageToLoad: number = page;
+
     const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
-    filters.filterOptions.forEach(filterOption => {
-      queryObject[filterOption.name] = filterOption.values;
-    });
-    return this.salesInvoiceLinesService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
+
+    if (this.selectedSearchType === 'jobdate') {
+      let jobDate = this.searchValue;
+
+      if (!jobDate) {
+        const today = new Date().toISOString().split('T')[0];
+        jobDate = today;
+      }
+
+      queryObject['jobdate.greaterThan'] = `${jobDate}T00:00:00.000Z`;
+    } else if (this.selectedSearchType === 'vehicle') {
+      if (this.searchValue) {
+        queryObject['vehiclenumber.contains'] = this.searchValue;
+      }
+    } else if (this.selectedSearchType === 'customer') {
+      if (this.searchValue) {
+        queryObject['customername.contains'] = this.searchValue;
+      }
+    }
+
+    console.log('Query Object:', queryObject);
+
+    return this.salesinvoicelines.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -10,6 +10,7 @@ import { createRequestOption } from 'app/core/request/request-util';
 import { ISalesInvoiceLines, NewSalesInvoiceLines } from '../sales-invoice-lines.model';
 import { IInventory } from 'app/entities/inventory/inventory.model';
 import { RestInventory } from 'app/entities/inventory/service/inventory.service';
+import { FormArray } from '@angular/forms';
 export type PartialUpdateSalesInvoiceLines = Partial<ISalesInvoiceLines> & Pick<ISalesInvoiceLines, 'id'>;
 
 type RestOf<T extends ISalesInvoiceLines | NewSalesInvoiceLines> = Omit<T, 'lmd'> & {
@@ -67,11 +68,41 @@ export class SalesInvoiceLinesService {
       })
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
+  private profit: number = 0;
+  getprofit(): number {
+    return this.profit;
+  }
+  setprofit(profit: number): void {
+    this.profit = profit;
+  }
+  private subId: string = '';
 
+  setSubId(id: string): void {
+    this.subId = id;
+  }
+
+  getSubId(): string {
+    return this.subId;
+  }
   find(id: number): Observable<EntityResponseType> {
     return this.http
       .get<RestSalesInvoiceLines>(`${this.resourceUrl}/${id}`, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+  salesInvoiceLinesSource = new BehaviorSubject<FormArray<any>>(new FormArray<any>([]));
+  salesInvoiceLines$ = this.salesInvoiceLinesSource.asObservable();
+
+  updateSalesInvoiceLines(salesInvoiceLines: FormArray): void {
+    console.log('updateSalesInvoiceLines called witggggggggggh:', salesInvoiceLines.value);
+    this.salesInvoiceLinesSource.next(salesInvoiceLines);
+  }
+
+  salesInvoiceCommonLinesSource = new BehaviorSubject<FormArray<any>>(new FormArray<any>([]));
+  salesInvoiceCommonLines$ = this.salesInvoiceCommonLinesSource.asObservable();
+
+  updateSalesInvoiceCommonLines(salesInvoiceCommonLines: FormArray): void {
+    console.log('updateSalesInvoiceLines called witggggggggggh:', salesInvoiceCommonLines.value);
+    this.salesInvoiceLinesSource.next(salesInvoiceCommonLines);
   }
 
   query(req?: any): Observable<EntityArrayResponseType> {

@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (autoCareVehicle(); as autoCareVehicleRef) {
+      <div>
+        <h2 data-cy="autoCareVehicleDetailsHeading"><span>Auto Care Vehicle</span></h2>
+
+        <hr />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.id }}</span>
+          </dd>
+          <dt><span>Customer Id</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.customerId }}</span>
+          </dd>
+          <dt><span>Customer Name</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.customerName }}</span>
+          </dd>
+          <dt><span>Customer Tel</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.customerTel }}</span>
+          </dd>
+          <dt><span>Vehicle Number</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.vehicleNumber }}</span>
+          </dd>
+          <dt><span>Brand Id</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.brandId }}</span>
+          </dd>
+          <dt><span>Brand Name</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.brandName }}</span>
+          </dd>
+          <dt><span>Model</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.model }}</span>
+          </dd>
+          <dt><span>Millage</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.millage }}</span>
+          </dd>
+          <dt><span>Manufacture Year</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.manufactureYear }}</span>
+          </dd>
+          <dt><span>Last Service Date</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.lastServiceDate | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Next Service Date</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.nextServiceDate | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Description</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.description }}</span>
+          </dd>
+          <dt><span>Lmu</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.lmu }}</span>
+          </dd>
+          <dt><span>Lmd</span></dt>
+          <dd>
+            <span>{{ autoCareVehicleRef.lmd | formatMediumDatetime }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/auto-care-vehicle', autoCareVehicleRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
