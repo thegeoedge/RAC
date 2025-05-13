@@ -55,7 +55,10 @@ export class AutocareopenjobComponent implements OnInit {
   protected ngZone = inject(NgZone);
 
   trackId = (_index: number, item: IAutocarejob): number => this.autocarejobService.getAutocarejobIdentifier(item);
-
+  emproles: string[] = [];
+  showJobLink: boolean = false;
+  showJobLink1: boolean = false;
+  showJobLink2: boolean = false;
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -63,6 +66,15 @@ export class AutocareopenjobComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+    const emprolesString = localStorage.getItem('emproles');
+    this.emproles = emprolesString ? JSON.parse(emprolesString) : [];
+
+    console.log('checckkkkkkkk', this.emproles);
+    //Add new inventory item
+    // Advisor Instruction     Issue Items   Add new sales invoice
+    this.showJobLink = this.emproles.includes('Add new inventory item');
+    this.showJobLink1 = this.emproles.includes('Issue Items');
+    this.showJobLink2 = this.emproles.includes('Add new inventory item');
   }
 
   delete(autocarejob: IAutocarejob): void {

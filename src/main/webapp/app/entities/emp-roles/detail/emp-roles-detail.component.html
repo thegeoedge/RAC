@@ -1,0 +1,24 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (empRoles(); as empRolesRef) {
+      <div>
+        <h2 data-cy="empRolesDetailsHeading"><span>Emp Roles</span></h2>
+
+        <hr />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>Role Id</span></dt>
+          <dd>
+            <span>{{ empRolesRef.roleId }}</span>
+          </dd>
+          <dt><span>Role Name</span></dt>
+          <dd>
+            <span>{{ empRolesRef.roleName }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton"></button>
+      </div>
+    }
+  </div>
+</div>

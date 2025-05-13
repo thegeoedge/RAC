@@ -16,7 +16,8 @@ import {
 } from './sales-invoice-service-charge-line-form.service';
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
-
+import { MessageCommunicationService } from 'app/core/util/message.communication.service';
+import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-service-charge-line-update',
@@ -32,7 +33,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   protected salesInvoiceServiceChargeLineFormService = inject(SalesInvoiceServiceChargeLineFormService);
   protected activatedRoute = inject(ActivatedRoute);
   protected fb = inject(FormBuilder);
-
+  messagenotify = inject(MessageCommunicationService);
   @Output() totalUpdated = new EventEmitter<number>(); // Emit total to parent
   protected vehicletypesService = inject(VehicletypeService);
   @Input() fetchedServices: any;
@@ -40,7 +41,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   editForm: FormGroup = new FormGroup({
     serviceChargeLines: new FormArray([]),
   });
-
+  salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   typeid: number = 0;
   totalfetch: number = 0;
   vehicletypes: IVehicletype[] = [];
@@ -53,7 +54,8 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       this.fetchedServices.forEach((item: any) => {
         this.addItemToFormArray(item);
       });
-      console.log('Fetched Items on Change:', this.fetchedServices); // Log fetched items
+      this.salesInvoiceLinesService.updateSalesInvoiceLines(this.serviceChargeLinesArray);
+      console.log('Fetched Items on Change:', this.serviceChargeLinesArray); // Log fetched items
     }
   }
   addItemToFormArray(item: any): void {
@@ -69,12 +71,17 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     this.totalvalue(newItem);
   }
   ngOnInit(): void {
+    this.messagenotify.notificationAnnounced$.subscribe(message => {
+      if (message.topic === 'DELETE_ITEM') {
+        const itemId = message.message;
+        this.removeInvoiceLinecode(itemId);
+      }
+    });
+    console.log('Total fetched valuezzzzzzzzzzzzz:', this.serviceChargeLinesArray);
     this.activatedRoute.data.subscribe(({ salesInvoiceServiceChargeLines }) => {
       if (salesInvoiceServiceChargeLines && salesInvoiceServiceChargeLines.length > 0) {
         this.salesInvoiceServiceChargeLine = salesInvoiceServiceChargeLines;
         this.updateForm(salesInvoiceServiceChargeLines);
-      } else {
-        this.addServiceChargeLine();
       }
     });
     this.loadVehicleTypes();
@@ -164,51 +171,38 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
   addToTable() {
     if (this.selectedServices.length === 0) {
-      return; // No selected services, nothing to add
+      return;
     }
 
     const existingRows = this.serviceChargeLinesArray.controls.length;
     console.log('typeid:', this.typeid);
 
-    // Temporary map to store responses
-    const serviceResponses = new Map<number, any>();
-
-    // Iterate over selected services
-    let completedRequests = 0; // Track completed API requests
+    let completedRequests = 0;
     let totalFetchedValue = 0;
+
     this.selectedServices.forEach((service, index) => {
       console.log('Selected service ID:', service.id);
-
       console.log(`Sending API request to fetch billing values with params: service.id=${service.id}, typeid=${this.typeid}`);
 
       this.salesInvoiceServiceChargeLineService.biliingvalues(service.id, this.typeid).subscribe(response => {
-        console.log('API Response:', response);
+        console.log('API Responseeeeeee:', response);
 
         const billingValues = response.body;
         const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
-        totalFetchedValue += fetchedValue ?? 0; // Assuming the response contains the data in 'body'
-        console.log('Billing values:', billingValues);
+        totalFetchedValue += fetchedValue ?? 0;
 
-        serviceResponses.set(service.id, billingValues && billingValues.length > 0 ? billingValues[0].value : '');
+        // Always add a new row instead of modifying existing ones
+        this.serviceChargeLinesArray.push(
+          this.fb.group({
+            serviceName: [service.servicename],
+            value: [fetchedValue],
+            isCustomerService: [false],
+            id: [service.id],
+          }),
+        );
 
-        if (index === 0 && existingRows > 0) {
-          // Update first row if it exists
-          const firstRow = this.serviceChargeLinesArray.controls[0];
-          firstRow.get('serviceName')?.setValue(service.servicename);
-          firstRow.get('iqd')?.setValue(service.id);
-          firstRow.get('value')?.setValue(fetchedValue);
-        } else {
-          // Add new row with fetched value
-          this.serviceChargeLinesArray.push(
-            this.fb.group({
-              serviceName: [service.servicename],
-              value: [fetchedValue], // Set fetched value
-              isCustomerService: [false],
-              id: [service.id],
-            }),
-          );
-        }
         completedRequests++;
+        this.salesInvoiceLinesService.updateSalesInvoiceLines(this.serviceChargeLinesArray);
         this.totalfetch = totalFetchedValue;
         console.log('Current total fetched value:', this.totalfetch);
 
@@ -216,8 +210,6 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       });
     });
 
-    // Reset selected services after processing
-    // Reset selected services after processing
     this.selectedServices = [];
   }
 
@@ -234,6 +226,15 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
     // Log selected services to the console
     console.log('Selected Services:', this.selectedServices);
+    const formArray = new FormArray(
+      this.selectedServices.map(service =>
+        this.fb.group({
+          id: [service.id],
+          servicename: [service.servicename],
+        }),
+      ),
+    );
+    // this.salesInvoiceLinesService.updateSalesInvoiceCommonLines(formArray);
   }
 
   onDropdownChan1ge(event: Event): number {
@@ -276,6 +277,19 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
           this.filteredItems[index] = []; // Clear suggestions on error
         },
       });
+  }
+  removeInvoiceLinecode(code: any): void {
+    // Find index of the form group in the array matching the lineId
+    const index = this.serviceChargeLinesArray.controls.findIndex(control => {
+      const group = control as FormGroup;
+      return group.get('id')?.value === code || group.get('serviceName')?.value === code;
+    });
+
+    // If found, remove it and notify
+    if (index !== -1) {
+      this.serviceChargeLinesArray.removeAt(index);
+      this.messagenotify.pushNotification('DELETE_ITEM', code);
+    }
   }
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)

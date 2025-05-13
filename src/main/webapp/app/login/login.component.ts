@@ -27,9 +27,16 @@ export default class LoginComponent implements OnInit, AfterViewInit {
   private accountService = inject(AccountService);
   private loginService = inject(LoginService);
   private router = inject(Router);
-
+  private hasRefreshed = false;
   ngOnInit(): void {
     // if already authenticated then navigate to home page
+    console.log('refreshhhhhhhhhhhhhh', this.hasRefreshed);
+    if (!localStorage.getItem('hasRefreshed')) {
+      setTimeout(() => {
+        localStorage.setItem('hasRefreshed', 'true'); // Mark as refreshed in localStorage
+        window.location.reload(); // This will refresh the page
+      }, 1000); // 1-second delay
+    }
     this.accountService.identity().subscribe(() => {
       if (this.accountService.isAuthenticated()) {
         this.router.navigate(['']);

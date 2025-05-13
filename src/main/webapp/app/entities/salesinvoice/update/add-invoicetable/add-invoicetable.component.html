@@ -1,0 +1,68 @@
+<!-- ALLITEM Button -->
+<br />
+<button type="button" class="btn btn-primary mb-2" (click)="toggleInvoiceLines()">ALL ITEM</button>
+<style>
+  input {
+    text-align: right;
+  }
+
+  /* Add border to table */
+  .table {
+    border: 1px solid #ddd; /* Border around the entire table */
+    border-collapse: collapse; /* Ensure borders collapse into one */
+  }
+
+  /* Add borders to each table cell */
+  .table th,
+  .table td {
+    border: 1px solid #ddd; /* Border around cells */
+    padding: 8px; /* Add padding for better spacing */
+    text-align: left; /* Align text in the cells to the left */
+  }
+
+  /* Optional: Add background color to headers */
+  .table th {
+    background-color: #f8f9fa;
+  }
+</style>
+
+<!-- If there are salesInvoiceLines to display -->
+<div *ngIf="showInvoiceLines && salesInvoiceLines && salesInvoiceLines.length > 0">
+  <form [formGroup]="form">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody formArrayName="salesInvoiceLines">
+        <tr *ngFor="let line of salesInvoiceLines.controls; let i = index" [formGroupName]="i">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <input formControlName="description" placeholder="Description" class="form-control" readonly />
+          </td>
+          <td>
+            <input
+              formControlName="itemprice"
+              class="form-control"
+              [ngModel]="line.get('itemprice')?.value | number: '1.2-2'"
+              (ngModelChange)="line.get('itemprice')?.setValue($event)"
+              readonly
+            />
+          </td>
+          <td>
+            <button type="button" class="btn btn-danger" (click)="removeLine(i)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+</div>
+
+<!-- If no salesInvoiceLines are available -->
+<div *ngIf="showInvoiceLines && (!salesInvoiceLines || salesInvoiceLines.length === 0)">
+  <p>No invoice lines available</p>
+</div>

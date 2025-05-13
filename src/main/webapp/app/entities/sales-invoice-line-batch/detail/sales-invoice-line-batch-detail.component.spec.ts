@@ -18,7 +18,7 @@ describe('SalesInvoiceLineBatch Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./sales-invoice-line-batch-detail.component').then(m => m.SalesInvoiceLineBatchDetailComponent),
-              resolve: { salesInvoiceLineBatch: () => of({ id: 123 }) },
+              resolve: { salesInvoiceLineBatch: () => of({ id: 9680 }) },
             },
           ],
           withComponentInputBinding(),
@@ -40,7 +40,7 @@ describe('SalesInvoiceLineBatch Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', SalesInvoiceLineBatchDetailComponent);
 
       // THEN
-      expect(instance.salesInvoiceLineBatch()).toEqual(expect.objectContaining({ id: 123 }));
+      expect(instance.salesInvoiceLineBatch()).toEqual(expect.objectContaining({ id: 9680 }));
     });
   });
 

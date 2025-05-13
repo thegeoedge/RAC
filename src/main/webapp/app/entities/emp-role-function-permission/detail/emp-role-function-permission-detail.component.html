@@ -1,0 +1,38 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (empRoleFunctionPermission(); as empRoleFunctionPermissionRef) {
+      <div>
+        <h2 data-cy="empRoleFunctionPermissionDetailsHeading"><span>Emp Role Function Permission</span></h2>
+
+        <hr />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>Id</span></dt>
+          <dd>
+            <span>{{ empRoleFunctionPermissionRef.id }}</span>
+          </dd>
+          <dt><span>Role Id</span></dt>
+          <dd>
+            <span>{{ empRoleFunctionPermissionRef.roleId }}</span>
+          </dd>
+          <dt><span>Function Id</span></dt>
+          <dd>
+            <span>{{ empRoleFunctionPermissionRef.functionId }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button
+          type="button"
+          [routerLink]="['/emp-role-function-permission', empRoleFunctionPermissionRef.id, 'edit']"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

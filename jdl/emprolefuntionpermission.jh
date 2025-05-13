@@ -1,0 +1,8 @@
+entity EmpRoleFunctionPermission {
+    @id
+    Id Integer required
+    RoleId Integer
+    FunctionId Integer
+  }
+    paginate * with pagination
+    filter all

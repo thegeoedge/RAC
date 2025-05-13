@@ -1,0 +1,17 @@
+@if (empRoles) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(empRoles.roleId!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="empRolesDeleteDialogHeading">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <p id="jhi-delete-empRoles-heading">Are you sure you want to delete Emp Roles {{ empRoles.roleId }}?</p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()"></button>
+
+      <button id="jhi-confirm-delete-empRoles" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger"></button>
+    </div>
+  </form>
+}

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,13 +9,13 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { ICustomer } from '../customer.model';
 import { CustomerService } from '../service/customer.service';
-import { CustomerFormService, CustomerFormGroup } from './customer-form.service';
+import { CustomerFormGroup, CustomerFormService } from './customer-form.service';
 
 @Component({
-  standalone: true,
   selector: 'jhi-customer-update',
   templateUrl: './customer-update.component.html',
   imports: [SharedModule, FormsModule, ReactiveFormsModule],
+  standalone: true,
 })
 export class CustomerUpdateComponent implements OnInit {
   isSaving = false;

@@ -6,7 +6,7 @@ import { finalize } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { IAutocareappointment } from '../autocareappointment.model';
 import { AutocareappointmentService } from '../service/autocareappointment.service';
 import { AutocareappointmentFormService, AutocareappointmentFormGroup } from './autocareappointment-form.service';
@@ -33,7 +33,7 @@ dayjs.extend(utc);
   selector: 'jhi-autocareappointment-update',
   templateUrl: './autocareappointment-update.component.html',
   encapsulation: ViewEncapsulation.None,
-  imports: [SharedModule, FormsModule, ReactiveFormsModule, NgbAccordionHeader, NgbAccordionCollapse],
+  imports: [SharedModule, FormsModule, ReactiveFormsModule, NgbAccordionHeader, NgbAccordionCollapse, FontAwesomeModule],
   styles: [
     `
       .form-group {
@@ -109,7 +109,35 @@ export class AutocareappointmentUpdateComponent implements OnInit {
       // this.loadCustomerDetails();
       this.loadHoistAppointmentTime();
     });
+    const today = new Date().toISOString().split('T')[0];
+    this.editForm.get('appointmentdate')?.patchValue(today);
+
+    // Manually call the same logic
+    this.onDateChange({
+      target: { value: today },
+    } as unknown as Event); // Cast to Event to satisfy TS
+
+    // this.fetchappointment()
   }
+  goToPreviousDay(): void {
+    const currentDate = this.editForm.get('appointmentdate')?.value;
+    const newDate = dayjs(currentDate).subtract(1, 'day').format('YYYY-MM-DD');
+    this.editForm.get('appointmentdate')?.patchValue(newDate);
+    this.onDateChange({
+      target: { value: newDate },
+    } as unknown as Event); // Trigger the onDateChange method to reflect the change
+  }
+
+  // Function to handle the next day click
+  goToNextDay(): void {
+    const currentDate = this.editForm.get('appointmentdate')?.value;
+    const newDate = dayjs(currentDate).add(1, 'day').format('YYYY-MM-DD');
+    this.editForm.get('appointmentdate')?.patchValue(newDate);
+    this.onDateChange({
+      target: { value: newDate },
+    } as unknown as Event); // Trigger the onDateChange method to reflect the change
+  }
+
   openIndex: number | null = null;
 
   openAccordion(index: number) {
@@ -177,17 +205,53 @@ export class AutocareappointmentUpdateComponent implements OnInit {
 
       // Update the appointmenttime in the form
       this.editForm.get('appointmenttime')?.patchValue(timetable.hoisttime);
+      this.editForm.get('appointmentdate')?.patchValue(timetable.hoisttime);
       const appointmentDat = this.editForm.get('appointmenttime')?.value;
       console.log('new appointment timeeeeeeeeee : ', appointmentDat);
       console.log('hoistid :', hoistId);
       this.editForm.get('hoistid')?.patchValue(hoistId);
-
+      console.log('hoistid :', timetable.hoisttime);
       // Optionally store the selected time and hoist for reference
-      this.selectedTime = timetable.hoisttime;
+      this.selectedTime = timetable.hoisttime + String(hoistId);
+
       this.selectedHoist = timetable.hoistid;
+      console.log('Updated selected time:', this.selectedTime);
+
       this.loadHoistAppointmentTime();
     } else {
       alert('Please select an Appointment Date');
+    }
+  }
+  knownAppointments: { vehicleNumber: string; hoistId: number; hoistTime: string }[] = [];
+
+  fetchappointment() {
+    this.autocareappointmentService.query({ 'appointmenttime.greaterThan': this.date }).subscribe(
+      (res: any) => {
+        console.log('Appointment Queryyyyyyyy Response:', res.body);
+
+        this.knownAppointments = res.body.map((appointment: any) => ({
+          vehicleNumber: appointment.vehiclenumber,
+          hoistId: appointment.hoistid,
+          hoistTime: dayjs(appointment.appointmenttime).format('YYYY-MM-DDTHH:mm'),
+        }));
+
+        console.log('Updated knownAppointments:', this.knownAppointments);
+      },
+      (error: any) => {
+        console.error('Error fetching appointment:', error);
+      },
+    );
+  }
+
+  getVehicleDisplay(hoistId: number, hoistTime: string): { text: string; isVehicle: boolean } {
+    const formattedTime = dayjs(hoistTime).format('YYYY-MM-DDTHH:mm');
+
+    const match = this.knownAppointments.find(entry => entry.hoistId === hoistId && entry.hoistTime === formattedTime);
+
+    if (match) {
+      return { text: match.vehicleNumber, isVehicle: true };
+    } else {
+      return { text: dayjs(hoistTime).format('HH:mm'), isVehicle: false };
     }
   }
 
@@ -278,7 +342,7 @@ export class AutocareappointmentUpdateComponent implements OnInit {
   filteredTimeSlots: any[] = []; // Add this property to store time slots
   allAppointments: any[] = [];
   // Ensure dayjs is imported for date manipulation
-
+  date: any;
   onDateChange(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     const appointmentDate = inputElement.value; // Get selected date
@@ -286,7 +350,9 @@ export class AutocareappointmentUpdateComponent implements OnInit {
     console.log('Selected Date:', appointmentDate);
     const fulldate = appointmentDate + 'T00:00:00';
     console.log('Selected Date:', fulldate);
-
+    this.date = fulldate + '.000Z';
+    console.log('Selected Datesss:', this.date);
+    this.fetchappointment();
     const selectedDate = new Date(fulldate).toISOString(); // Convert to ISO 8601 format
     console.log('Selected Date (ISO Format):', selectedDate);
 
@@ -336,13 +402,14 @@ export class AutocareappointmentUpdateComponent implements OnInit {
             return {
               hoisttypename: timetable.hoisttypename,
               hoisttime: formattedDateTime,
+              vehicleNumber: '',
               hoisttypeid: timetable.hoisttypeid,
               id: timetable.id,
             };
           })
           .filter(Boolean); // Remove null values if any hoist time or name was missing
 
-        console.log('Generated Time Slots:', this.filteredTimeSlots);
+        console.log('Generated Time Slotsssssssssss:', this.filteredTimeSlots);
 
         // Now, check for matches between filtered time slots and appointments
         this.filteredTimeSlots.forEach(filteredSlot => {
@@ -412,7 +479,8 @@ export class AutocareappointmentUpdateComponent implements OnInit {
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    // this.previousState();
+    window.location.reload();
   }
 
   protected onSaveError(): void {

@@ -81,7 +81,7 @@
           </thead>
           <tbody formArrayName="serviceCharges">
             <tr *ngFor="let dummy of serviceChargesArray.controls; let i = index" [formGroupName]="i">
-              <td>
+              <td *ngIf="false">
                 <input type="number" class="form-control" formControlName="id" [readonly]="true" *ngIf="dummy.get('id')?.value" />
               </td>
 
@@ -97,7 +97,7 @@
               <td *ngIf="false">
                 <input type="number" class="form-control" formControlName="mainid" />
               </td>
-              <td>
+              <td *ngIf="false">
                 <input formControlName="code" type="text" class="form-control" />
               </td>
               <td>

@@ -55,24 +55,91 @@ public class SalesInvoiceLineBatchResource {
     }
 
     /**
+     * {@code POST  /sales-invoice-line-batches} : Create a new SalesInvoiceLineBatch.
+     *
+     * @param batch The sales invoice line batch data.
+     * @return ResponseEntity with status {@code 201 (Created)} or {@code 400 (Bad Request)} if insertion fails.
+     
+    @PostMapping("")
+    public ResponseEntity<String> createSalesInvoiceLineBatch(@RequestBody SalesInvoiceLineBatch batch)
+            throws URISyntaxException {
+
+        // Log the incoming batch data
+        LOG.info("Creating SalesInvoiceLineBatch with the following details:");
+        LOG.info("LineId: {}", batch.getLineId());
+        LOG.info("BatchLineId: {}", batch.getBatchLineId());
+        LOG.info("ItemID: {}", batch.getItemId());
+        LOG.info("Code: {}", batch.getCode());
+        LOG.info("BatchId: {}", batch.getBatchId());
+        LOG.info("BatchCode: {}", batch.getBatchCode());
+        LOG.info("TxDate: {}", batch.getTxDate());
+        LOG.info("ManufactureDate: {}", batch.getManufactureDate());
+        LOG.info("ExpiredDate: {}", batch.getExpiredDate());
+        LOG.info("Qty: {}", batch.getQty());
+        LOG.info("Cost: {}", batch.getCost());
+        LOG.info("Price: {}", batch.getPrice());
+        LOG.info("Notes: {}", batch.getNotes());
+        LOG.info("LMU: {}", batch.getLmu());
+        LOG.info("LMD: {}", batch.getLmd());
+        LOG.info("NBT: {}", batch.getNbt());
+        LOG.info("VAT: {}", batch.getVat());
+        LOG.info("AddedById: {}", batch.getAddedById());
+
+        // Call the service to insert the batch
+        int rowsAffected = salesInvoiceLineBatchService.insertSalesInvoiceLineBatch(batch);
+
+        // Return appropriate response based on the result
+        if (rowsAffected > 0) {
+            return ResponseEntity.created(new URI("/api/sales-invoice-line-batches"))
+                    .body("Sales Invoice Line Batch created successfully!");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to create Sales Invoice Line Batch.");
+        }
+    }
+
+*/
+
+    @PostMapping("")
+    public ResponseEntity<String> createSalesInvoiceLineBatches(@RequestBody List<SalesInvoiceLineBatch> batches)
+        throws URISyntaxException {
+        LOG.info("Creating {} SalesInvoiceLineBatches", batches.size());
+
+        int totalRowsAffected = 0;
+
+        for (SalesInvoiceLineBatch batch : batches) {
+            LOG.info("Processing BatchLineId: {}", batch.getBatchLineId());
+
+            int rowsAffected = salesInvoiceLineBatchService.insertSalesInvoiceLineBatch(batch);
+            totalRowsAffected += rowsAffected;
+        }
+
+        if (totalRowsAffected > 0) {
+            return ResponseEntity.created(new URI("/api/sales-invoice-line-batches")).body(
+                "Successfully created " + totalRowsAffected + " Sales Invoice Line Batches!"
+            );
+        } else {
+            return ResponseEntity.badRequest().body("Failed to create Sales Invoice Line Batches.");
+        }
+    }
+
+    /**
+    
      * {@code POST  /sales-invoice-line-batches} : Create a new salesInvoiceLineBatch.
      *
      * @param salesInvoiceLineBatch the salesInvoiceLineBatch to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new salesInvoiceLineBatch, or with status {@code 400 (Bad Request)} if the salesInvoiceLineBatch has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
-    public ResponseEntity<SalesInvoiceLineBatch> createSalesInvoiceLineBatch(@RequestBody SalesInvoiceLineBatch salesInvoiceLineBatch)
-        throws URISyntaxException {
-        LOG.debug("REST request to save SalesInvoiceLineBatch : {}", salesInvoiceLineBatch);
-        if (salesInvoiceLineBatch.getId() != null) {
-            throw new BadRequestAlertException("A new salesInvoiceLineBatch cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        salesInvoiceLineBatch = salesInvoiceLineBatchService.save(salesInvoiceLineBatch);
-        return ResponseEntity.created(new URI("/api/sales-invoice-line-batches/" + salesInvoiceLineBatch.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceLineBatch.getId().toString()))
-            .body(salesInvoiceLineBatch);
-    }
+    // @PostMapping("")
+    //// public ResponseEntity<SalesInvoiceLineBatch> createSalesInvoiceLineBatch(@RequestBody SalesInvoiceLineBatch salesInvoiceLineBatch)
+    //    throws URISyntaxException {
+    //    LOG.debug("REST request to save SalesInvoiceLineBatch : {}", salesInvoiceLineBatch);
+
+    //   salesInvoiceLineBatch = salesInvoiceLineBatchService.save(salesInvoiceLineBatch);
+    //   return ResponseEntity.created(new URI("/api/sales-invoice-line-batches/" + salesInvoiceLineBatch.getId()))
+    //      .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceLineBatch.getId().toString()))
+    //    .body(salesInvoiceLineBatch);
+    // }
 
     /**
      * {@code PUT  /sales-invoice-line-batches/:id} : Updates an existing salesInvoiceLineBatch.

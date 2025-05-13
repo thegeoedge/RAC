@@ -1,0 +1,71 @@
+<div>
+  <h2 id="page-heading" data-cy="EmpRolesHeading">
+    <span>Emp Roles</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <span>Refresh list</span>
+      </button>
+
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary jh-create-entity create-emp-roles">
+        <span>Create a new Emp Roles</span>
+      </button>
+    </div>
+  </h2>
+
+  @if (empRoles().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span>No Emp Roles found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr>
+            <th scope="col" jhiSortBy="roleId">
+              <div class="d-flex">
+                <span>Role Id</span>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="roleName">
+              <div class="d-flex">
+                <span>Role Name</span>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (empRoles of empRoles(); track trackRoleId(empRoles)) {
+            <tr data-cy="entityTable">
+              <td></td>
+              <td>{{ empRoles.roleName }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <span class="d-none d-md-inline">View</span>
+                  </a>
+
+                  <a class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <span class="d-none d-md-inline">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(empRoles)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <span class="d-none d-md-inline">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (empRoles().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center"></div>
+
+      <div class="d-flex justify-content-center"></div>
+    </div>
+  }
+</div>

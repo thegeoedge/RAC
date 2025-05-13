@@ -8,9 +8,9 @@ import { ICustomer } from '../customer.model';
 import { CustomerService } from '../service/customer.service';
 
 @Component({
-  standalone: true,
   templateUrl: './customer-delete-dialog.component.html',
   imports: [SharedModule, FormsModule],
+  standalone: true,
 })
 export class CustomerDeleteDialogComponent {
   customer?: ICustomer;

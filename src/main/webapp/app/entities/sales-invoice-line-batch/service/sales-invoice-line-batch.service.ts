@@ -34,11 +34,10 @@ export class SalesInvoiceLineBatchService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-line-batches');
 
-  create(salesInvoiceLineBatch: NewSalesInvoiceLineBatch): Observable<EntityResponseType> {
-    const copy = this.convertDateFromClient(salesInvoiceLineBatch);
-    return this.http
-      .post<RestSalesInvoiceLineBatch>(this.resourceUrl, copy, { observe: 'response' })
-      .pipe(map(res => this.convertResponseFromServer(res)));
+  create(copy: any): Observable<any> {
+    // const copy =  salesInvoiceLineBatch.map((w:any)=>this.convertDateFromClient(w))
+    // const copy = this.convertDateFromClient(salesInvoiceLineBatch);
+    return this.http.post<any>(this.resourceUrl, copy, { observe: 'response' }).pipe(map(res => res.body)); // Modify the response handling if needed
   }
 
   update(salesInvoiceLineBatch: ISalesInvoiceLineBatch): Observable<EntityResponseType> {

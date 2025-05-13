@@ -37,13 +37,39 @@ export default class SidenavbarComponent implements OnInit {
       this.version = VERSION.toLowerCase().startsWith('v') ? VERSION : `v${VERSION}`;
     }
   }
+  checkURL(url: string): boolean {
+    return this.router.url === url;
+  }
+  emproles: string[] = [];
+  showJobLink: boolean = false;
+  showJobLink2: boolean = false;
 
   ngOnInit(): void {
     this.entitiesNavbarItems = EntityNavbarItems;
+    this.router.events.subscribe(() => {
+      if (this.checkURL('/login')) {
+        const sidenav = document.querySelector('.sidenav') as HTMLElement;
+        if (sidenav) {
+          sidenav.style.display = 'none'; // Hide the sidenav
+        }
+      } else {
+        const sidenav = document.querySelector('.sidenav') as HTMLElement;
+        if (sidenav) {
+          sidenav.style.display = 'block'; // Show the sidenav
+        }
+      }
+    });
     this.profileService.getProfileInfo().subscribe(profileInfo => {
       this.inProduction = profileInfo.inProduction;
       this.openAPIEnabled = profileInfo.openAPIEnabled;
     });
+    const emprolesString = localStorage.getItem('emproles');
+    this.emproles = emprolesString ? JSON.parse(emprolesString) : [];
+
+    console.log('checckkkkkkkk', this.emproles);
+    //Add new inventory item
+    this.showJobLink = this.emproles.includes('Add new inventory item');
+    this.showJobLink2 = this.emproles.includes('Add new inventory item');
   }
 
   login(): void {
@@ -52,6 +78,6 @@ export default class SidenavbarComponent implements OnInit {
 
   logout(): void {
     this.loginService.logout();
-    this.router.navigate(['']);
+    this.router.navigate(['/login']);
   }
 }

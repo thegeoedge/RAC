@@ -1,11 +1,9 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <form name="editForm" novalidate (ngSubmit)="save()">
       <h2 id="jhi-customer-heading" data-cy="CustomerCreateUpdateHeading">Create or edit a Customer</h2>
 
       <div>
-        <jhi-alert-error></jhi-alert-error>
-
         @if (editForm.controls.id.value !== null) {
           <div class="mb-3">
             <label class="form-label" for="field_id">ID</label>
@@ -79,12 +77,8 @@
               class="form-control"
               name="nicissueddate"
               ngbDatepicker
-              #nicissueddateDp="ngbDatepicker"
               formControlName="nicissueddate"
             />
-            <button type="button" class="btn btn-secondary" (click)="nicissueddateDp.toggle()">
-              <fa-icon icon="calendar-alt"></fa-icon>
-            </button>
           </div>
         </div>
 
@@ -98,12 +92,9 @@
               class="form-control"
               name="dateofbirth"
               ngbDatepicker
-              #dateofbirthDp="ngbDatepicker"
               formControlName="dateofbirth"
             />
-            <button type="button" class="btn btn-secondary" (click)="dateofbirthDp.toggle()">
-              <fa-icon icon="calendar-alt"></fa-icon>
-            </button>
+            <button type="button" class="btn btn-secondary"></button>
           </div>
         </div>
 
@@ -146,12 +137,9 @@
               class="form-control"
               name="marrieddate"
               ngbDatepicker
-              #marrieddateDp="ngbDatepicker"
               formControlName="marrieddate"
             />
-            <button type="button" class="btn btn-secondary" (click)="marrieddateDp.toggle()">
-              <fa-icon icon="calendar-alt"></fa-icon>
-            </button>
+            <button type="button" class="btn btn-secondary"></button>
           </div>
         </div>
 
@@ -204,12 +192,9 @@
               class="form-control"
               name="businessregdate"
               ngbDatepicker
-              #businessregdateDp="ngbDatepicker"
               formControlName="businessregdate"
             />
-            <button type="button" class="btn btn-secondary" (click)="businessregdateDp.toggle()">
-              <fa-icon icon="calendar-alt"></fa-icon>
-            </button>
+            <button type="button" class="btn btn-secondary"></button>
           </div>
         </div>
 
@@ -897,9 +882,13 @@
       </div>
 
       <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
-        </button>
+        <button
+          type="button"
+          id="cancel-save"
+          data-cy="entityCreateCancelButton"
+          class="btn btn-secondary"
+          (click)="previousState()"
+        ></button>
 
         <button
           type="submit"
@@ -907,9 +896,7 @@
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
           class="btn btn-primary"
-        >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
-        </button>
+        ></button>
       </div>
     </form>
   </div>

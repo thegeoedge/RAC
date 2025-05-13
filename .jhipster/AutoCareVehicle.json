@@ -1,0 +1,70 @@
+{
+  "annotations": {
+    "changelogDate": "20250406113930"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "customerId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "customerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerTel",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "vehicleNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "brandId",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "brandName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "model",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "millage",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "manufactureYear",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lastServiceDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "nextServiceDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lmu",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "lmd",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "AutoCareVehicle",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

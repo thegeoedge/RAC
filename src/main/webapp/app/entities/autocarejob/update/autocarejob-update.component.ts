@@ -57,6 +57,7 @@ export class AutocarejobUpdateComponent implements OnInit {
     });
     // Fetch all appointments
     this.loadAllAppointments();
+    // this.loadAppointments();
   }
 
   private getNextJobNumber(): number {
@@ -83,7 +84,8 @@ export class AutocarejobUpdateComponent implements OnInit {
     const size = 20;
 
     const fetchPage = () => {
-      const yesterday = dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
+      const yesterday = dayjs().subtract(1, 'day').hour(23).minute(59).second(0).format('YYYY-MM-DDTHH:mm:ss[Z]');
+
       console.log('Yesterday (ISO Format):', yesterday);
 
       this.autocareappointmentService.fetchDate(yesterday).subscribe({
@@ -131,7 +133,8 @@ export class AutocarejobUpdateComponent implements OnInit {
     this.jobtypeid = appointment.appointmenttype;
 
     this.customerid = appointment?.customerid || 0;
-    console.log('appointmemnt', appointment.customerid);
+    console.log('appointmemntsssssssssss', appointment.customerid);
+    this.editForm.get('customerid')?.patchValue(appointment.customerid);
     const apiParams = {
       'vehiclenumber.equals': appointment.vehiclenumber,
       page: 0,

@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (transactions(); as transactionsRef) {
+      <div>
+        <h2 data-cy="transactionsDetailsHeading"><span>Transactions</span></h2>
+
+        <hr />
+
+        <jhi-alert-error></jhi-alert-error>
+
+        <jhi-alert></jhi-alert>
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ transactionsRef.id }}</span>
+          </dd>
+          <dt><span>Account Id</span></dt>
+          <dd>
+            <span>{{ transactionsRef.accountId }}</span>
+          </dd>
+          <dt><span>Account Code</span></dt>
+          <dd>
+            <span>{{ transactionsRef.accountCode }}</span>
+          </dd>
+          <dt><span>Debit</span></dt>
+          <dd>
+            <span>{{ transactionsRef.debit }}</span>
+          </dd>
+          <dt><span>Credit</span></dt>
+          <dd>
+            <span>{{ transactionsRef.credit }}</span>
+          </dd>
+          <dt><span>Date</span></dt>
+          <dd>
+            <span>{{ transactionsRef.date | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Ref Doc</span></dt>
+          <dd>
+            <span>{{ transactionsRef.refDoc }}</span>
+          </dd>
+          <dt><span>Ref Id</span></dt>
+          <dd>
+            <span>{{ transactionsRef.refId }}</span>
+          </dd>
+          <dt><span>Sub Id</span></dt>
+          <dd>
+            <span>{{ transactionsRef.subId }}</span>
+          </dd>
+          <dt><span>Source</span></dt>
+          <dd>
+            <span>{{ transactionsRef.source }}</span>
+          </dd>
+          <dt><span>Payment Term Id</span></dt>
+          <dd>
+            <span>{{ transactionsRef.paymentTermId }}</span>
+          </dd>
+          <dt><span>Payment Term Name</span></dt>
+          <dd>
+            <span>{{ transactionsRef.paymentTermName }}</span>
+          </dd>
+          <dt><span>Lmu</span></dt>
+          <dd>
+            <span>{{ transactionsRef.lmu }}</span>
+          </dd>
+          <dt><span>Lmd</span></dt>
+          <dd>
+            <span>{{ transactionsRef.lmd | formatMediumDatetime }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/transactions', transactionsRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,20 @@
+entity AutoCareVehicle {
+    customerId Integer,
+    customerName String  ,
+    customerTel String  ,
+    vehicleNumber String , 
+    brandId Integer,
+    brandName String  ,
+    model String  ,
+    millage Double,
+    manufactureYear String  ,
+    lastServiceDate Instant,
+    nextServiceDate Instant,
+    description String,
+    lmu Integer,
+    lmd Instant
+  }
+  
+  paginate * with pagination
+  filter all
+  

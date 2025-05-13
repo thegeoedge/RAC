@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
 import SalesinvoiceResolve from './route/salesinvoice-routing-resolve.service';
+import { AddInvoicetableComponent } from './update/add-invoicetable/add-invoicetable.component';
 
 const salesinvoiceRoute: Routes = [
   {
@@ -28,6 +29,10 @@ const salesinvoiceRoute: Routes = [
       salesinvoice: SalesinvoiceResolve,
     },
     canActivate: [UserRouteAccessService],
+  },
+  {
+    path: 'add-invoice-table',
+    component: AddInvoicetableComponent,
   },
   {
     path: ':id/edit',

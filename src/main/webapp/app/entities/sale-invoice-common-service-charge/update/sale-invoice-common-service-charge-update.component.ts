@@ -14,7 +14,8 @@ import {
 } from './sale-invoice-common-service-charge-form.service';
 import { IServicesubcategory } from 'app/entities/servicesubcategory/servicesubcategory.model';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
-
+import { MessageCommunicationService } from 'app/core/util/message.communication.service';
+import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 @Component({
   standalone: true,
   selector: 'jhi-sale-invoice-common-service-charge-update',
@@ -26,9 +27,11 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   saleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge[] = [];
   filteredItems: IServicesubcategory[][] = [];
   showCodeField: boolean = true;
+  messagenotify = inject(MessageCommunicationService);
   protected saleInvoiceCommonServiceChargeService = inject(SaleInvoiceCommonServiceChargeService);
   protected saleInvoiceCommonServiceChargeFormService = inject(SaleInvoiceCommonServiceChargeFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   @Input() fetchedServicesCommon: any;
   commonServiceOptions: ICommonserviceoption[] = [];
   @Output() totalUpdated = new EventEmitter<number>();
@@ -56,6 +59,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       this.fetchedServicesCommon.forEach((item: any) => {
         this.addItemToFormArray(item);
       });
+      this.salesInvoiceLinesService.updateSalesInvoiceLines(this.serviceChargesArray);
       console.log('Fetched Items on Change:', this.fetchedServicesCommon); // Log fetched items
     }
   }
@@ -71,6 +75,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
     // Add the new form group to the form array
     this.serviceChargesArray.push(newItem);
+    //  this.salesInvoiceLinesService.updateSalesInvoiceCommonLines(this.serviceChargesArray);
     this.totalvalue(newItem);
   }
   totalvalue(formGroup: FormGroup): void {
@@ -83,12 +88,16 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     this.updateLineTotal();
   }
   ngOnInit(): void {
+    this.messagenotify.notificationAnnounced$.subscribe(message => {
+      if (message.topic === 'DELETE_ITEM') {
+        const itemId = message.message;
+        this.removeInvoiceLinecode(itemId);
+      }
+    });
     this.activatedRoute.data.subscribe(({ saleInvoiceCommonServiceCharges }) => {
       if (saleInvoiceCommonServiceCharges && saleInvoiceCommonServiceCharges.length > 0) {
         this.saleInvoiceCommonServiceCharge = saleInvoiceCommonServiceCharges;
         this.updateForm(saleInvoiceCommonServiceCharges);
-      } else {
-        this.addServiceChargeDummy(); // Add default row when no data is available
       }
     });
     this.fetchCommonServiceOptions();
@@ -107,63 +116,56 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         },
       });
   }
+  removeInvoiceLinecode(code: any): void {
+    // Find index of the form group in the array matching the lineId
+    const index = this.serviceChargesArray.controls.findIndex(control => {
+      const group = control as FormGroup;
+      return group.get('name')?.value === code;
+    });
+
+    // If found, remove it and notify
+    if (index !== -1) {
+      this.serviceChargesArray.removeAt(index);
+      this.messagenotify.pushNotification('DELETE_ITEM', code);
+    }
+  }
+
   totalfetch: number = 0;
   onCheckboxChange(event: Event, option: ICommonserviceoption): void {
     const checkbox = event.target as HTMLInputElement;
-
-    // Log the checkbox state (checked or unchecked) and the option details
     console.log('Checkbox changed:', checkbox.checked);
     console.log('Selected option:', option);
 
     if (checkbox.checked) {
       this.totalfetch += option.value ?? 0;
-      // Create the form group for the selected option
+
       const formGroup = new FormGroup({
         id: new FormControl(option.id),
         description: new FormControl(option.description),
         name: new FormControl(option.name),
         value: new FormControl(option.value),
         mainid: new FormControl(option.mainid),
-        code: new FormControl(''),
+        code: new FormControl(option.code),
       });
 
-      // Check if this is the first row being added
-      if (this.serviceChargesArray.length === 0) {
-        // Add the first selected option to the first row (default row behavior)
-        this.serviceChargesArray.push(formGroup);
-      } else {
-        // If the array already has rows, insert the selected option at the start of the array
-        const firstRow = this.serviceChargesArray.at(0) as FormGroup;
-
-        // Check if there's already a default row and replace its values with the new selection
-        if (!firstRow.get('id')?.value) {
-          // Replace the default row with the first selected value
-          firstRow.patchValue({
-            id: option.id,
-            description: option.description,
-            name: option.name,
-            value: option.value,
-            mainid: option.mainid,
-          });
-        } else {
-          // If there is no default row, simply push to the array
-          this.serviceChargesArray.push(formGroup);
-        }
-      }
+      // Always push a new item without overwriting anything
+      this.serviceChargesArray.push(formGroup);
     } else {
-      // Remove the option if unchecked from the serviceChargeDummies FormArray
       const index = this.serviceChargesArray.controls.findIndex(control => {
-        const group = control as FormGroup;
-        return group.get('id')?.value === option.id;
+        return control.get('id')?.value === option.id;
       });
 
       if (index !== -1) {
         this.serviceChargesArray.removeAt(index);
+        this.totalfetch -= option.value ?? 0;
       }
     }
+
     console.log('Total Fetched Value:', this.totalfetch);
     this.calculateTotal(this.totalfetch);
+    this.salesInvoiceLinesService.updateSalesInvoiceCommonLines(this.serviceChargesArray);
   }
+
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)
     const inputElement = <HTMLInputElement>event.target;
@@ -240,33 +242,37 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
     const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => ({
       ...line,
-      invoiceId: inid, // Assign invoice ID
-      lineId: line.lineid ?? index + 1, // Ensure unique line ID
-      optionId: index + 1, // Default option ID to 0
+      invoiceId: inid,
+      lineId: line.lineid ?? index + 1,
+      optionId: index + 1,
+      mainId: 1,
+      id: null, // Ensures the backend treats it as a new entity
     }));
 
-    console.log('Modified sales invoice lines:', serviceCharges);
-
-    // Log each dummy's id to check its value
-    console.log('Service Charge Dummies before saving:', serviceCharges);
+    console.log('Creating service charges with invoice ID:', inid);
+    console.log('Prepared service charges for creation:', serviceCharges);
 
     const requests: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>[] = serviceCharges.map(
-      (dummy: ISaleInvoiceCommonServiceCharge | NewSaleInvoiceCommonServiceCharge) => {
-        console.log('Processing Dummy - ID:', dummy.id); // Log ID of each dummy
-
-        return dummy.id
-          ? this.saleInvoiceCommonServiceChargeService.update(dummy)
-          : this.saleInvoiceCommonServiceChargeService.create({ ...dummy, id: null });
-      },
+      (dummy: NewSaleInvoiceCommonServiceCharge) => this.saleInvoiceCommonServiceChargeService.create(dummy),
     );
 
     forkJoin(requests)
       .pipe(finalize(() => this.onSaveFinalize()))
       .subscribe({
-        //   next: () => //this.onSaveSuccess(),
-        error: () => this.onSaveError(),
+        next: responses => {
+          console.log('All service charges successfully created:');
+          responses.forEach((res, index) => {
+            console.log(`Service charge #${index + 1} response:`, res.body);
+          });
+          // this.onSaveSuccess(); // Optional
+        },
+        error: err => {
+          console.error('Error occurred while creating service charges:', err);
+          this.onSaveError();
+        },
       });
   }
+
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       //  next: () => this.onSaveSuccess(),

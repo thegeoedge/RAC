@@ -1,0 +1,22 @@
+entity BinCard {
+  
+    ItemID Long,
+    ItemCode String  ,
+    Reference String  ,
+    TxDate Instant,
+    QtyIn Double,
+    QtyOut Double,
+    Price Double,
+    LMU Integer,
+    LMD Instant,
+    ReferenceCode String  ,
+    RecordDate Instant,
+    BatchId Long,
+    LocationID Long,
+    LocationCode String  ,
+    Opening Double,
+    Description String ,
+    ReferenceDoc String 
+  }
+  paginate * with pagination
+filter all

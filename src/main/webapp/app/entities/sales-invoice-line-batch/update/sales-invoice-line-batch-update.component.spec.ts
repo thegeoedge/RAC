@@ -44,7 +44,7 @@ describe('SalesInvoiceLineBatch Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const salesInvoiceLineBatch: ISalesInvoiceLineBatch = { id: 456 };
+      const salesInvoiceLineBatch: ISalesInvoiceLineBatch = { id: 9777 };
 
       activatedRoute.data = of({ salesInvoiceLineBatch });
       comp.ngOnInit();
@@ -57,7 +57,7 @@ describe('SalesInvoiceLineBatch Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ISalesInvoiceLineBatch>>();
-      const salesInvoiceLineBatch = { id: 123 };
+      const salesInvoiceLineBatch = { id: 9680 };
       jest.spyOn(salesInvoiceLineBatchFormService, 'getSalesInvoiceLineBatch').mockReturnValue(salesInvoiceLineBatch);
       jest.spyOn(salesInvoiceLineBatchService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +80,7 @@ describe('SalesInvoiceLineBatch Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ISalesInvoiceLineBatch>>();
-      const salesInvoiceLineBatch = { id: 123 };
+      const salesInvoiceLineBatch = { id: 9680 };
       jest.spyOn(salesInvoiceLineBatchFormService, 'getSalesInvoiceLineBatch').mockReturnValue({ id: null });
       jest.spyOn(salesInvoiceLineBatchService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +103,7 @@ describe('SalesInvoiceLineBatch Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ISalesInvoiceLineBatch>>();
-      const salesInvoiceLineBatch = { id: 123 };
+      const salesInvoiceLineBatch = { id: 9680 };
       jest.spyOn(salesInvoiceLineBatchService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ salesInvoiceLineBatch });

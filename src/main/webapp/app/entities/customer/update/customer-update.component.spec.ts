@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject, from } from 'rxjs';
+import { Subject, from, of } from 'rxjs';
 
 import { CustomerService } from '../service/customer.service';
 import { ICustomer } from '../customer.model';
@@ -20,8 +19,9 @@ describe('Customer Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, CustomerUpdateComponent],
+      imports: [CustomerUpdateComponent],
       providers: [
+        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -44,7 +44,7 @@ describe('Customer Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const customer: ICustomer = { id: 456 };
+      const customer: ICustomer = { id: 21032 };
 
       activatedRoute.data = of({ customer });
       comp.ngOnInit();
@@ -57,7 +57,7 @@ describe('Customer Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICustomer>>();
-      const customer = { id: 123 };
+      const customer = { id: 26915 };
       jest.spyOn(customerFormService, 'getCustomer').mockReturnValue(customer);
       jest.spyOn(customerService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +80,7 @@ describe('Customer Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICustomer>>();
-      const customer = { id: 123 };
+      const customer = { id: 26915 };
       jest.spyOn(customerFormService, 'getCustomer').mockReturnValue({ id: null });
       jest.spyOn(customerService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +103,7 @@ describe('Customer Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICustomer>>();
-      const customer = { id: 123 };
+      const customer = { id: 26915 };
       jest.spyOn(customerService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ customer });

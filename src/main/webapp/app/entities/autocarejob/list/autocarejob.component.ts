@@ -36,7 +36,7 @@ export class AutocarejobComponent implements OnInit {
   subscription: Subscription | null = null;
   autocarejobs?: IAutocarejob[];
   isLoading = false;
-
+  field_input1: string = 'field_input1';
   sortState = sortStateSignal({});
 
   itemsPerPage = ITEMS_PER_PAGE;
@@ -49,6 +49,9 @@ export class AutocarejobComponent implements OnInit {
   protected sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
+  selectedSearchType: string = 'jobdate'; // default selected
+
+  searchValue: string = '';
 
   trackId = (_index: number, item: IAutocarejob): number => this.autocarejobService.getAutocarejobIdentifier(item);
 
@@ -59,6 +62,9 @@ export class AutocarejobComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+    const today = new Date().toISOString().split('T')[0];
+    this.searchValue = today;
+    this.selectedSearchType = 'jobdate';
   }
 
   delete(autocarejob: IAutocarejob): void {
@@ -76,7 +82,11 @@ export class AutocarejobComponent implements OnInit {
   load(): void {
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
+        console.log('Response from Backend:', res); // Log the response to console
         this.onResponseSuccess(res);
+      },
+      error: err => {
+        console.error('Error fetching data:', err); // Log any errors that occur
       },
     });
   }
@@ -108,17 +118,43 @@ export class AutocarejobComponent implements OnInit {
   protected fillComponentAttributesFromResponseHeader(headers: HttpHeaders): void {
     this.totalItems = Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER));
   }
+  onInputChange(): void {
+    //this.page = 1; // optional: reset to first page
+    this.load();
+  }
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
     const { page } = this;
-
     this.isLoading = true;
     const pageToLoad: number = page;
+
     const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+
+    if (this.selectedSearchType === 'jobdate') {
+      let jobDate = this.searchValue;
+
+      if (!jobDate) {
+        const today = new Date().toISOString().split('T')[0];
+        jobDate = today;
+      }
+
+      queryObject['jobdate.greaterThan'] = `${jobDate}T00:00:00.000Z`;
+    } else if (this.selectedSearchType === 'vehicle') {
+      if (this.searchValue) {
+        queryObject['vehiclenumber.contains'] = this.searchValue;
+      }
+    } else if (this.selectedSearchType === 'customer') {
+      if (this.searchValue) {
+        queryObject['customername.contains'] = this.searchValue;
+      }
+    }
+
+    console.log('Query Object:', queryObject);
+
     return this.autocarejobService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 

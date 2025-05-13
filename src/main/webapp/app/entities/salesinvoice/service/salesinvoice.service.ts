@@ -59,6 +59,15 @@ export class SalesinvoiceService {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
   }
+  private customername: string = '';
+  setcustomer(name: string): void {
+    this.customername = name;
+  }
+
+  getCustomerName(): string {
+    return this.customername;
+  }
+
   fetchReceiptCode(): Observable<HttpResponse<any>> {
     return this.http.get<HttpResponse<any>>('/api/receipts?page=0&size=20&sort=id,desc', { observe: 'response' });
   }
@@ -91,7 +100,9 @@ export class SalesinvoiceService {
   }
 
   getElementsByUserInputCode(userInputCode: string): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(`api/inventories?code.contains=${userInputCode}&page=0&size=20`);
+    const url = this.applicationConfigService.getEndpointFor(
+      `api/inventories?code.contains=${userInputCode}&availablequantity.greaterThan=0&page=0&size=20`,
+    );
     return this.http
       .get<IInventory[]>(url, { observe: 'response' })
       .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));

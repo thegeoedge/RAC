@@ -61,7 +61,7 @@ describe('SalesInvoiceLineBatch Management Component', () => {
       .mockReturnValueOnce(
         of(
           new HttpResponse({
-            body: [{ id: 123 }],
+            body: [{ id: 9680 }],
             headers: new HttpHeaders({
               link: '<http://localhost/api/foo?page=1&size=20>; rel="next"',
             }),
@@ -71,7 +71,7 @@ describe('SalesInvoiceLineBatch Management Component', () => {
       .mockReturnValueOnce(
         of(
           new HttpResponse({
-            body: [{ id: 456 }],
+            body: [{ id: 9777 }],
             headers: new HttpHeaders({
               link: '<http://localhost/api/foo?page=0&size=20>; rel="prev",<http://localhost/api/foo?page=2&size=20>; rel="next"',
             }),
@@ -86,12 +86,12 @@ describe('SalesInvoiceLineBatch Management Component', () => {
 
     // THEN
     expect(service.query).toHaveBeenCalled();
-    expect(comp.salesInvoiceLineBatches?.[0]).toEqual(expect.objectContaining({ id: 123 }));
+    expect(comp.salesInvoiceLineBatches()[0]).toEqual(expect.objectContaining({ id: 9680 }));
   });
 
   describe('trackId', () => {
     it('Should forward to salesInvoiceLineBatchService', () => {
-      const entity = { id: 123 };
+      const entity = { id: 9680 };
       jest.spyOn(service, 'getSalesInvoiceLineBatchIdentifier');
       const id = comp.trackId(entity);
       expect(service.getSalesInvoiceLineBatchIdentifier).toHaveBeenCalledWith(entity);

@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { CustomerComponent } from './list/customer.component';
-import { CustomerDetailComponent } from './detail/customer-detail.component';
-import { CustomerUpdateComponent } from './update/customer-update.component';
 import CustomerResolve from './route/customer-routing-resolve.service';
 
 const customerRoute: Routes = [
   {
     path: '',
-    component: CustomerComponent,
+    loadComponent: () => import('./list/customer.component').then(m => m.CustomerComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: CustomerDetailComponent,
+    loadComponent: () => import('./detail/customer-detail.component').then(m => m.CustomerDetailComponent),
     resolve: {
       customer: CustomerResolve,
     },
@@ -26,7 +23,7 @@ const customerRoute: Routes = [
   },
   {
     path: 'new',
-    component: CustomerUpdateComponent,
+    loadComponent: () => import('./update/customer-update.component').then(m => m.CustomerUpdateComponent),
     resolve: {
       customer: CustomerResolve,
     },
@@ -34,7 +31,7 @@ const customerRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: CustomerUpdateComponent,
+    loadComponent: () => import('./update/customer-update.component').then(m => m.CustomerUpdateComponent),
     resolve: {
       customer: CustomerResolve,
     },

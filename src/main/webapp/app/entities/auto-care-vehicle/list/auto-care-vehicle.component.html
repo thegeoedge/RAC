@@ -1,0 +1,217 @@
+<div>
+  <h2 id="page-heading" data-cy="AutoCareVehicleHeading">
+    <span>Auto Care Vehicles</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
+        <span>Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-auto-care-vehicle"
+        [routerLink]="['/auto-care-vehicle/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span>Create a new Auto Care Vehicle</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <jhi-filter [filters]="filters"></jhi-filter>
+
+  @if (autoCareVehicles().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span>No Auto Care Vehicles found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr>
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span>ID</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="customerId">
+              <div class="d-flex">
+                <span>Customer Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="customerName">
+              <div class="d-flex">
+                <span>Customer Name</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="customerTel">
+              <div class="d-flex">
+                <span>Customer Tel</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="vehicleNumber">
+              <div class="d-flex">
+                <span>Vehicle Number</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="brandId">
+              <div class="d-flex">
+                <span>Brand Id</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="brandName">
+              <div class="d-flex">
+                <span>Brand Name</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="model">
+              <div class="d-flex">
+                <span>Model</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="millage">
+              <div class="d-flex">
+                <span>Millage</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="manufactureYear">
+              <div class="d-flex">
+                <span>Manufacture Year</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lastServiceDate">
+              <div class="d-flex">
+                <span>Last Service Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="nextServiceDate">
+              <div class="d-flex">
+                <span>Next Service Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="description">
+              <div class="d-flex">
+                <span>Description</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lmu">
+              <div class="d-flex">
+                <span>Lmu</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lmd">
+              <div class="d-flex">
+                <span>Lmd</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (autoCareVehicle of autoCareVehicles(); track trackId(autoCareVehicle)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/auto-care-vehicle', autoCareVehicle.id, 'view']">{{ autoCareVehicle.id }}</a>
+              </td>
+              <td>{{ autoCareVehicle.customerId }}</td>
+              <td>{{ autoCareVehicle.customerName }}</td>
+              <td>{{ autoCareVehicle.customerTel }}</td>
+              <td>{{ autoCareVehicle.vehicleNumber }}</td>
+              <td>{{ autoCareVehicle.brandId }}</td>
+              <td>{{ autoCareVehicle.brandName }}</td>
+              <td>{{ autoCareVehicle.model }}</td>
+              <td>{{ autoCareVehicle.millage }}</td>
+              <td>{{ autoCareVehicle.manufactureYear }}</td>
+              <td>{{ autoCareVehicle.lastServiceDate | formatMediumDatetime }}</td>
+              <td>{{ autoCareVehicle.nextServiceDate | formatMediumDatetime }}</td>
+              <td>{{ autoCareVehicle.description }}</td>
+              <td>{{ autoCareVehicle.lmu }}</td>
+              <td>{{ autoCareVehicle.lmd | formatMediumDatetime }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a
+                    [routerLink]="['/auto-care-vehicle', autoCareVehicle.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
+                    <fa-icon icon="eye"></fa-icon>
+                    <span class="d-none d-md-inline">View</span>
+                  </a>
+
+                  <a
+                    [routerLink]="['/auto-care-vehicle', autoCareVehicle.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                    <span class="d-none d-md-inline">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(autoCareVehicle)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times"></fa-icon>
+                    <span class="d-none d-md-inline">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (autoCareVehicles().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
+    </div>
+  }
+</div>

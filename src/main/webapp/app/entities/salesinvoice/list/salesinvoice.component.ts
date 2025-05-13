@@ -39,7 +39,9 @@ export class SalesinvoiceComponent implements OnInit {
   isLoading = false;
   faPrint = faPrint;
   sortState = sortStateSignal({});
-
+  searchValue: string = '';
+  selectedSearchType: string = 'jobdate';
+  field_input1: string = 'field_input1';
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
@@ -60,6 +62,9 @@ export class SalesinvoiceComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+    const today = new Date().toISOString().split('T')[0];
+    this.searchValue = today;
+    this.selectedSearchType = 'jobdate';
   }
 
   delete(salesinvoice: ISalesinvoice): void {
@@ -73,7 +78,10 @@ export class SalesinvoiceComponent implements OnInit {
       )
       .subscribe();
   }
-
+  onInputChange(): void {
+    //this.page = 1; // optional: reset to first page
+    this.load();
+  }
   load(): void {
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
@@ -112,14 +120,36 @@ export class SalesinvoiceComponent implements OnInit {
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
     const { page } = this;
-
     this.isLoading = true;
     const pageToLoad: number = page;
+
     const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+
+    if (this.selectedSearchType === 'jobdate') {
+      let jobDate = this.searchValue;
+
+      if (!jobDate) {
+        const today = new Date().toISOString().split('T')[0];
+        jobDate = today;
+      }
+
+      queryObject['invoicedate.greaterThan'] = `${jobDate}T00:00:00.000Z`;
+    } else if (this.selectedSearchType === 'vehicle') {
+      if (this.searchValue) {
+        queryObject['vehicleno.contains'] = this.searchValue;
+      }
+    } else if (this.selectedSearchType === 'customer') {
+      if (this.searchValue) {
+        queryObject['customername.contains'] = this.searchValue;
+      }
+    }
+
+    console.log('Query Object:', queryObject);
+
     return this.salesinvoiceService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 

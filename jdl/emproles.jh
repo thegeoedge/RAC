@@ -1,0 +1,7 @@
+entity EmpRoles {
+    @id
+    RoleId Integer required
+    RoleName String
+  }
+    paginate * with pagination
+ filter all  
