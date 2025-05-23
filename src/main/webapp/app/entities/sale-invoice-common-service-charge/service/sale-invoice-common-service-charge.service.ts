@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IServicesubcategory } from 'app/entities/servicesubcategory/servicesubcategory.model';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
@@ -35,7 +35,13 @@ export class SaleInvoiceCommonServiceChargeService {
     return res.clone({ body });
   }
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sale-invoice-common-service-charges');
-
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor(
+    'api/sale-invoice-common-service-charges/by-invoice-idss',
+  );
+  fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params, observe: 'response' });
+  }
   create(saleInvoiceCommonServiceCharge: NewSaleInvoiceCommonServiceCharge): Observable<EntityResponseType> {
     return this.http.post<ISaleInvoiceCommonServiceCharge>(this.resourceUrl, saleInvoiceCommonServiceCharge, { observe: 'response' });
   }
@@ -50,7 +56,13 @@ export class SaleInvoiceCommonServiceChargeService {
         ),
       );
   }
-
+  private totalservicecommonlines: number = 0;
+  gettotalservicecommonlines(): number {
+    return this.totalservicecommonlines;
+  }
+  settotalservicecommonlines(totalservicecommonlines: number): void {
+    this.totalservicecommonlines = totalservicecommonlines;
+  }
   update(saleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge): Observable<EntityResponseType> {
     return this.http.put<ISaleInvoiceCommonServiceCharge>(
       `${this.resourceUrl}/${this.getSaleInvoiceCommonServiceChargeIdentifier(saleInvoiceCommonServiceCharge)}`,

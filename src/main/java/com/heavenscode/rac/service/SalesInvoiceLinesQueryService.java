@@ -68,9 +68,7 @@ public class SalesInvoiceLinesQueryService extends QueryService<SalesInvoiceLine
             if (criteria.getDistinct() != null) {
                 specification = specification.and(distinct(criteria.getDistinct()));
             }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), SalesInvoiceLines_.id));
-            }
+
             if (criteria.getInvoiceid() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getInvoiceid(), SalesInvoiceLines_.invoiceid));
             }

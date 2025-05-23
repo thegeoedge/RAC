@@ -22,8 +22,6 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
 
     private static final long serialVersionUID = 1L;
 
-    private LongFilter id;
-
     private IntegerFilter invoiceid;
 
     private IntegerFilter lineid;
@@ -65,7 +63,6 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
     public SalesInvoiceLinesCriteria() {}
 
     public SalesInvoiceLinesCriteria(SalesInvoiceLinesCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invoiceid = other.optionalInvoiceid().map(IntegerFilter::copy).orElse(null);
         this.lineid = other.optionalLineid().map(IntegerFilter::copy).orElse(null);
         this.itemid = other.optionalItemid().map(IntegerFilter::copy).orElse(null);
@@ -90,25 +87,6 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
     @Override
     public SalesInvoiceLinesCriteria copy() {
         return new SalesInvoiceLinesCriteria(this);
-    }
-
-    public LongFilter getId() {
-        return id;
-    }
-
-    public Optional<LongFilter> optionalId() {
-        return Optional.ofNullable(id);
-    }
-
-    public LongFilter id() {
-        if (id == null) {
-            setId(new LongFilter());
-        }
-        return id;
-    }
-
-    public void setId(LongFilter id) {
-        this.id = id;
     }
 
     public IntegerFilter getInvoiceid() {
@@ -482,7 +460,6 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
         }
         final SalesInvoiceLinesCriteria that = (SalesInvoiceLinesCriteria) o;
         return (
-            Objects.equals(id, that.id) &&
             Objects.equals(invoiceid, that.invoiceid) &&
             Objects.equals(lineid, that.lineid) &&
             Objects.equals(itemid, that.itemid) &&
@@ -508,7 +485,6 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
     @Override
     public int hashCode() {
         return Objects.hash(
-            id,
             invoiceid,
             lineid,
             itemid,
@@ -535,7 +511,7 @@ public class SalesInvoiceLinesCriteria implements Serializable, Criteria {
     @Override
     public String toString() {
         return "SalesInvoiceLinesCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            
             optionalInvoiceid().map(f -> "invoiceid=" + f + ", ").orElse("") +
             optionalLineid().map(f -> "lineid=" + f + ", ").orElse("") +
             optionalItemid().map(f -> "itemid=" + f + ", ").orElse("") +

@@ -73,7 +73,7 @@ export class AutocareopenjobComponent implements OnInit {
     //Add new inventory item
     // Advisor Instruction     Issue Items   Add new sales invoice
     this.showJobLink = this.emproles.includes('Add new inventory item');
-    this.showJobLink1 = this.emproles.includes('Issue Items');
+    this.showJobLink1 = this.emproles.includes('Add new inventory item');
     this.showJobLink2 = this.emproles.includes('Add new inventory item');
   }
 
@@ -96,7 +96,7 @@ export class AutocareopenjobComponent implements OnInit {
         const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
         this.autocarejobs = this.autocarejobs?.filter(
-          job => !job.isjobclose && job.jobdate?.format('YYYY-MM-DD') === today, // Only show open jobs for today
+          job => !job.isjobclose, // Only show open jobs for today
         );
 
         this.filterJobs(); // Apply filtering when loading data
@@ -110,10 +110,7 @@ export class AutocareopenjobComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
     this.filteredAutocarejobs = this.autocarejobs.filter(
-      job =>
-        job.vehiclenumber?.toLowerCase().includes(this.searchText.toLowerCase()) &&
-        !job.isjobclose &&
-        job.jobdate?.format('YYYY-MM-DD') === today, // Ensure job date matches today
+      job => job.vehiclenumber?.toLowerCase().includes(this.searchText.toLowerCase()) && !job.isjobclose, // Ensure job date matches today
     );
   }
 

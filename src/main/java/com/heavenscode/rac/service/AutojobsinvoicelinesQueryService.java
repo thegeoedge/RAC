@@ -4,6 +4,7 @@ import com.heavenscode.rac.domain.*; // for static metamodels
 import com.heavenscode.rac.domain.Autojobsinvoicelines;
 import com.heavenscode.rac.repository.AutojobsinvoicelinesRepository;
 import com.heavenscode.rac.service.criteria.AutojobsinvoicelinesCriteria;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -27,8 +28,14 @@ public class AutojobsinvoicelinesQueryService extends QueryService<Autojobsinvoi
 
     private final AutojobsinvoicelinesRepository autojobsinvoicelinesRepository;
 
-    public AutojobsinvoicelinesQueryService(AutojobsinvoicelinesRepository autojobsinvoicelinesRepository) {
+    private final AutojobsinvoicelinesService autojobsinvoicelinesService;
+
+    public AutojobsinvoicelinesQueryService(
+        AutojobsinvoicelinesRepository autojobsinvoicelinesRepository,
+        AutojobsinvoicelinesService autojobsinvoicelinesService
+    ) {
         this.autojobsinvoicelinesRepository = autojobsinvoicelinesRepository;
+        this.autojobsinvoicelinesService = autojobsinvoicelinesService;
     }
 
     /**
@@ -68,11 +75,20 @@ public class AutojobsinvoicelinesQueryService extends QueryService<Autojobsinvoi
             if (criteria.getDistinct() != null) {
                 specification = specification.and(distinct(criteria.getDistinct()));
             }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), Autojobsinvoicelines_.id));
-            }
+
             if (criteria.getInvocieid() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getInvocieid(), Autojobsinvoicelines_.invocieid));
+                // Fetch job invoice lines using custom service method
+                Integer invoiceId = criteria.getInvocieid().getEquals();
+
+                List<Autojobsinvoicelines> jobInvoiceLines = autojobsinvoicelinesService.fetchJobInvoiceLines(invoiceId);
+
+                // Use the fetched jobInvoiceLines to create a Specification for filtering by invoiceId
+                specification = specification.and(
+                    (root, query, criteriaBuilder) -> root.get(Autojobsinvoicelines_.invocieid).in(invoiceId)
+                );
+
+                // Optionally log or do something with the fetched data
+                LOG.debug("Fetched job invoice lines: {}", jobInvoiceLines);
             }
             if (criteria.getLineid() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getLineid(), Autojobsinvoicelines_.lineid));

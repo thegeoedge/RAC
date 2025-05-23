@@ -47,7 +47,6 @@ public class SalesInvoiceServiceChargeLineCriteria implements Serializable, Crit
     public SalesInvoiceServiceChargeLineCriteria() {}
 
     public SalesInvoiceServiceChargeLineCriteria(SalesInvoiceServiceChargeLineCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invoiceId = other.optionalInvoiceId().map(IntegerFilter::copy).orElse(null);
         this.lineId = other.optionalLineId().map(IntegerFilter::copy).orElse(null);
         this.optionId = other.optionalOptionId().map(IntegerFilter::copy).orElse(null);

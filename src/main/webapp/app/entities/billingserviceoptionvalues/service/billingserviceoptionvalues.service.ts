@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
@@ -30,7 +30,12 @@ export class BillingserviceoptionvaluesService {
   protected applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/billingserviceoptionvalues');
+  protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/billingserviceoptionvalues/by-bill-idss');
 
+  fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('vehicletypeid', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlz}`, { params, observe: 'response' });
+  }
   create(billingserviceoptionvalues: NewBillingserviceoptionvalues): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(billingserviceoptionvalues);
     return this.http

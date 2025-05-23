@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.Autojobsaleinvoicecommonservicecharge;
 import com.heavenscode.rac.repository.AutojobsaleinvoicecommonservicechargeRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,14 @@ public class AutojobsaleinvoicecommonservicechargeService {
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsaleinvoicecommonservicechargeService.class);
 
     private final AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public AutojobsaleinvoicecommonservicechargeService(
-        AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository
+        AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository,
+        JdbcTemplate jdbcTemplate
     ) {
         this.autojobsaleinvoicecommonservicechargeRepository = autojobsaleinvoicecommonservicechargeRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -47,6 +52,25 @@ public class AutojobsaleinvoicecommonservicechargeService {
         return autojobsaleinvoicecommonservicechargeRepository.save(autojobsaleinvoicecommonservicecharge);
     }
 
+    public List<Autojobsaleinvoicecommonservicecharge> fetchJobInvoiceLiness(int invoiceID) {
+        String sql = "SELECT * FROM AutoJobSaleInvoiceCommonServiceCharge WHERE InvoiceID = ?";
+        return jdbcTemplate.query(sql, new Object[] { invoiceID }, (rs, rowNum) -> {
+            Autojobsaleinvoicecommonservicecharge line = new Autojobsaleinvoicecommonservicecharge();
+            line.setInvoiceid(rs.getInt("InvoiceID"));
+            line.setLineid(rs.getInt("LineID"));
+            line.setOptionid(rs.getInt("OptionID"));
+            line.setMainid(rs.getInt("MainID"));
+            line.setCode(rs.getString("Code"));
+            line.setName(rs.getString("Name"));
+            line.setDescription(rs.getString("Description"));
+            line.setValue(rs.getFloat("Value"));
+            line.setAddedbyid(rs.getInt("AddedById"));
+            line.setDiscount(rs.getFloat("Discount"));
+            line.setServiceprice(rs.getFloat("ServicePrice"));
+            return line;
+        });
+    }
+
     /**
      * Partially update a autojobsaleinvoicecommonservicecharge.
      *
@@ -59,11 +83,8 @@ public class AutojobsaleinvoicecommonservicechargeService {
         LOG.debug("Request to partially update Autojobsaleinvoicecommonservicecharge : {}", autojobsaleinvoicecommonservicecharge);
 
         return autojobsaleinvoicecommonservicechargeRepository
-            .findById(autojobsaleinvoicecommonservicecharge.getId())
+            .findById(autojobsaleinvoicecommonservicecharge.getInvoiceid())
             .map(existingAutojobsaleinvoicecommonservicecharge -> {
-                if (autojobsaleinvoicecommonservicecharge.getInvoiceid() != null) {
-                    existingAutojobsaleinvoicecommonservicecharge.setInvoiceid(autojobsaleinvoicecommonservicecharge.getInvoiceid());
-                }
                 if (autojobsaleinvoicecommonservicecharge.getLineid() != null) {
                     existingAutojobsaleinvoicecommonservicecharge.setLineid(autojobsaleinvoicecommonservicecharge.getLineid());
                 }
@@ -107,7 +128,7 @@ public class AutojobsaleinvoicecommonservicechargeService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<Autojobsaleinvoicecommonservicecharge> findOne(Long id) {
+    public Optional<Autojobsaleinvoicecommonservicecharge> findOne(Integer id) {
         LOG.debug("Request to get Autojobsaleinvoicecommonservicecharge : {}", id);
         return autojobsaleinvoicecommonservicechargeRepository.findById(id);
     }
@@ -117,7 +138,7 @@ public class AutojobsaleinvoicecommonservicechargeService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete Autojobsaleinvoicecommonservicecharge : {}", id);
         autojobsaleinvoicecommonservicechargeRepository.deleteById(id);
     }

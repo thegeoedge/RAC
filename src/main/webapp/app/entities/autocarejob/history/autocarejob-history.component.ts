@@ -124,17 +124,17 @@ export class AutocarejobhistoryComponent implements OnInit {
             };
 
             // Fetch Invoice Lines
-            this.autojobsinvoicelinesService.query({ 'invocieid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
+            this.autojobsinvoicelinesService.fetchInvoiceLines(invoiceId).subscribe((linesRes: HttpResponse<any[]>) => {
               this.autojobsInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
             });
 
             // Fetch Service Charges
-            this.autojobsservicelinesService.query({ 'invoiceid.equals': invoiceId }).subscribe((servicesRes: HttpResponse<any[]>) => {
+            this.autojobsinvoicelinesService.fetchService(invoiceId).subscribe((servicesRes: HttpResponse<any[]>) => {
               this.autojobsInvoicesMap[invoiceId].serviceLines = servicesRes.body || [];
             });
 
             // Fetch Common Service Charges
-            this.autojobsalescommonService.query({ 'invoiceid.equals': invoiceId }).subscribe((chargesRes: HttpResponse<any[]>) => {
+            this.autojobsinvoicelinesService.fetchServiceCommon(invoiceId).subscribe((chargesRes: HttpResponse<any[]>) => {
               this.autojobsInvoicesMap[invoiceId].commonServiceCharges = chargesRes.body || [];
             });
           });
@@ -170,21 +170,19 @@ export class AutocarejobhistoryComponent implements OnInit {
             };
 
             // Fetch Invoice Lines
-            this.salesinvoicelineService.query({ 'invoiceid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
+            this.salesinvoicelineService.fetchInvoiceLines(invoiceId).subscribe((linesRes: HttpResponse<any[]>) => {
               this.salesInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
               console.log(`Invoice Lines for ID ${invoiceId}:`, linesRes.body);
             });
 
             // Fetch Service Charges
-            this.salesinvoiceservicechargelineService
-              .query({ 'invoiceId.equals': invoiceId })
-              .subscribe((servicesRes: HttpResponse<any[]>) => {
-                this.salesInvoicesMap[invoiceId].serviceLines = servicesRes.body || [];
-                console.log(`Service Lines for ID ${invoiceId}:`, servicesRes.body);
-              });
+            this.salesinvoiceservicechargelineService.fetchService(invoiceId).subscribe((servicesRes: HttpResponse<any[]>) => {
+              this.salesInvoicesMap[invoiceId].serviceLines = servicesRes.body || [];
+              console.log(`Service Lines for ID ${invoiceId}:`, servicesRes.body);
+            });
 
             // Fetch Common Service Charges
-            this.salesinvoicecommonservicechargeService.query({ 'id.equals': invoiceId }).subscribe((chargesRes: HttpResponse<any[]>) => {
+            this.salesinvoicecommonservicechargeService.fetchServiceCommon(invoiceId).subscribe((chargesRes: HttpResponse<any[]>) => {
               this.salesInvoicesMap[invoiceId].commonServiceCharges = chargesRes.body || [];
             });
           });

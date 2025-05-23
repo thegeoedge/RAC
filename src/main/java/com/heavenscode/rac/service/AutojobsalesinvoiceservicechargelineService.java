@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.Autojobsalesinvoiceservicechargeline;
 import com.heavenscode.rac.repository.AutojobsalesinvoiceservicechargelineRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,14 @@ public class AutojobsalesinvoiceservicechargelineService {
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsalesinvoiceservicechargelineService.class);
 
     private final AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public AutojobsalesinvoiceservicechargelineService(
-        AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository
+        AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository,
+        JdbcTemplate jdbcTemplate
     ) {
         this.autojobsalesinvoiceservicechargelineRepository = autojobsalesinvoiceservicechargelineRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -47,6 +52,24 @@ public class AutojobsalesinvoiceservicechargelineService {
         return autojobsalesinvoiceservicechargelineRepository.save(autojobsalesinvoiceservicechargeline);
     }
 
+    public List<Autojobsalesinvoiceservicechargeline> fetchServiceChargeLines(int invoiceId) {
+        String sql = "SELECT * FROM AutoJobSalesInvoiceServiceChargeLine WHERE InvoiceId  = ?";
+        return jdbcTemplate.query(sql, new Object[] { invoiceId }, (rs, rowNum) -> {
+            Autojobsalesinvoiceservicechargeline line = new Autojobsalesinvoiceservicechargeline();
+            line.setInvoiceid(rs.getInt("invoiceid"));
+            line.setLineid(rs.getInt("lineid"));
+            line.setOptionid(rs.getInt("optionid"));
+            line.setServicename(rs.getString("servicename"));
+            line.setServicediscription(rs.getString("servicediscription"));
+            line.setValue(rs.getFloat("value"));
+            line.setAddedbyid(rs.getInt("addedbyid"));
+            line.setIscustomersrvice(rs.getBoolean("iscustomersrvice"));
+            line.setDiscount(rs.getFloat("discount"));
+            line.setServiceprice(rs.getFloat("serviceprice"));
+            return line;
+        });
+    }
+
     /**
      * Partially update a autojobsalesinvoiceservicechargeline.
      *
@@ -59,11 +82,8 @@ public class AutojobsalesinvoiceservicechargelineService {
         LOG.debug("Request to partially update Autojobsalesinvoiceservicechargeline : {}", autojobsalesinvoiceservicechargeline);
 
         return autojobsalesinvoiceservicechargelineRepository
-            .findById(autojobsalesinvoiceservicechargeline.getId())
+            .findById(autojobsalesinvoiceservicechargeline.getInvoiceid())
             .map(existingAutojobsalesinvoiceservicechargeline -> {
-                if (autojobsalesinvoiceservicechargeline.getInvoiceid() != null) {
-                    existingAutojobsalesinvoiceservicechargeline.setInvoiceid(autojobsalesinvoiceservicechargeline.getInvoiceid());
-                }
                 if (autojobsalesinvoiceservicechargeline.getLineid() != null) {
                     existingAutojobsalesinvoiceservicechargeline.setLineid(autojobsalesinvoiceservicechargeline.getLineid());
                 }
@@ -108,7 +128,7 @@ public class AutojobsalesinvoiceservicechargelineService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<Autojobsalesinvoiceservicechargeline> findOne(Long id) {
+    public Optional<Autojobsalesinvoiceservicechargeline> findOne(Integer id) {
         LOG.debug("Request to get Autojobsalesinvoiceservicechargeline : {}", id);
         return autojobsalesinvoiceservicechargelineRepository.findById(id);
     }
@@ -118,7 +138,7 @@ public class AutojobsalesinvoiceservicechargelineService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete Autojobsalesinvoiceservicechargeline : {}", id);
         autojobsalesinvoiceservicechargelineRepository.deleteById(id);
     }

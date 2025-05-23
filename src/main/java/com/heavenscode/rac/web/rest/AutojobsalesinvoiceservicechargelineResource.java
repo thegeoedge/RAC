@@ -8,6 +8,7 @@ import com.heavenscode.rac.service.criteria.Autojobsalesinvoiceservicechargeline
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,21 +67,17 @@ public class AutojobsalesinvoiceservicechargelineResource {
         @RequestBody Autojobsalesinvoiceservicechargeline autojobsalesinvoiceservicechargeline
     ) throws URISyntaxException {
         LOG.debug("REST request to save Autojobsalesinvoiceservicechargeline : {}", autojobsalesinvoiceservicechargeline);
-        if (autojobsalesinvoiceservicechargeline.getId() != null) {
-            throw new BadRequestAlertException(
-                "A new autojobsalesinvoiceservicechargeline cannot already have an ID",
-                ENTITY_NAME,
-                "idexists"
-            );
-        }
+
         autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineService.save(autojobsalesinvoiceservicechargeline);
-        return ResponseEntity.created(new URI("/api/autojobsalesinvoiceservicechargelines/" + autojobsalesinvoiceservicechargeline.getId()))
+        return ResponseEntity.created(
+            new URI("/api/autojobsalesinvoiceservicechargelines/" + autojobsalesinvoiceservicechargeline.getInvoiceid())
+        )
             .headers(
                 HeaderUtil.createEntityCreationAlert(
                     applicationName,
                     false,
                     ENTITY_NAME,
-                    autojobsalesinvoiceservicechargeline.getId().toString()
+                    autojobsalesinvoiceservicechargeline.getInvoiceid().toString()
                 )
             )
             .body(autojobsalesinvoiceservicechargeline);
@@ -96,20 +93,20 @@ public class AutojobsalesinvoiceservicechargelineResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsalesinvoiceservicechargeline couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{invoiceid}")
     public ResponseEntity<Autojobsalesinvoiceservicechargeline> updateAutojobsalesinvoiceservicechargeline(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
         @RequestBody Autojobsalesinvoiceservicechargeline autojobsalesinvoiceservicechargeline
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Autojobsalesinvoiceservicechargeline : {}, {}", id, autojobsalesinvoiceservicechargeline);
-        if (autojobsalesinvoiceservicechargeline.getId() == null) {
+        LOG.debug("REST request to update Autojobsalesinvoiceservicechargeline : {}, {}", invoiceid, autojobsalesinvoiceservicechargeline);
+        if (autojobsalesinvoiceservicechargeline.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsalesinvoiceservicechargeline.getId())) {
+        if (!Objects.equals(invoiceid, autojobsalesinvoiceservicechargeline.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsalesinvoiceservicechargelineRepository.existsById(id)) {
+        if (!autojobsalesinvoiceservicechargelineRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -120,7 +117,7 @@ public class AutojobsalesinvoiceservicechargelineResource {
                     applicationName,
                     false,
                     ENTITY_NAME,
-                    autojobsalesinvoiceservicechargeline.getId().toString()
+                    autojobsalesinvoiceservicechargeline.getInvoiceid().toString()
                 )
             )
             .body(autojobsalesinvoiceservicechargeline);
@@ -137,24 +134,24 @@ public class AutojobsalesinvoiceservicechargelineResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsalesinvoiceservicechargeline couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{invoiceid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Autojobsalesinvoiceservicechargeline> partialUpdateAutojobsalesinvoiceservicechargeline(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
         @RequestBody Autojobsalesinvoiceservicechargeline autojobsalesinvoiceservicechargeline
     ) throws URISyntaxException {
         LOG.debug(
             "REST request to partial update Autojobsalesinvoiceservicechargeline partially : {}, {}",
-            id,
+            invoiceid,
             autojobsalesinvoiceservicechargeline
         );
-        if (autojobsalesinvoiceservicechargeline.getId() == null) {
+        if (autojobsalesinvoiceservicechargeline.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsalesinvoiceservicechargeline.getId())) {
+        if (!Objects.equals(invoiceid, autojobsalesinvoiceservicechargeline.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsalesinvoiceservicechargelineRepository.existsById(id)) {
+        if (!autojobsalesinvoiceservicechargelineRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -164,7 +161,12 @@ public class AutojobsalesinvoiceservicechargelineResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsalesinvoiceservicechargeline.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(
+                applicationName,
+                false,
+                ENTITY_NAME,
+                autojobsalesinvoiceservicechargeline.getInvoiceid().toString()
+            )
         );
     }
 
@@ -197,9 +199,32 @@ public class AutojobsalesinvoiceservicechargelineResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
     @GetMapping("/count")
-    public ResponseEntity<Long> countAutojobsalesinvoiceservicechargelines(AutojobsalesinvoiceservicechargelineCriteria criteria) {
-        LOG.debug("REST request to count Autojobsalesinvoiceservicechargelines by criteria: {}", criteria);
-        return ResponseEntity.ok().body(autojobsalesinvoiceservicechargelineQueryService.countByCriteria(criteria));
+    public ResponseEntity<Integer> countAutojobsalesinvoiceservicechargelines(AutojobsalesinvoiceservicechargelineCriteria criteria) {
+        Long count = autojobsalesinvoiceservicechargelineQueryService.countByCriteria(criteria);
+        return ResponseEntity.ok().body(count.intValue());
+    }
+
+    /**
+     * {@code GET  /autojobsalesinvoiceservicechargelines/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param invoiceID the invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-invoice-ids")
+    public ResponseEntity<List<Autojobsalesinvoiceservicechargeline>> getAutojobsinvoicelinesByInvoiceId(
+        @RequestParam(required = false) Integer invoiceID
+    ) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", invoiceID);
+
+        List<Autojobsalesinvoiceservicechargeline> result;
+
+        if (invoiceID != null) {
+            result = autojobsalesinvoiceservicechargelineService.fetchServiceChargeLines(invoiceID);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -208,26 +233,27 @@ public class AutojobsalesinvoiceservicechargelineResource {
      * @param id the id of the autojobsalesinvoiceservicechargeline to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the autojobsalesinvoiceservicechargeline, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Autojobsalesinvoiceservicechargeline> getAutojobsalesinvoiceservicechargeline(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline : {}", id);
+    @GetMapping("/{invoiceid}")
+    public ResponseEntity<Autojobsalesinvoiceservicechargeline> getAutojobsalesinvoiceservicechargeline(
+        @PathVariable("invoiceid") Integer invoiceid
+    ) {
+        LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline : {}", invoiceid);
         Optional<Autojobsalesinvoiceservicechargeline> autojobsalesinvoiceservicechargeline =
-            autojobsalesinvoiceservicechargelineService.findOne(id);
+            autojobsalesinvoiceservicechargelineService.findOne(invoiceid);
         return ResponseUtil.wrapOrNotFound(autojobsalesinvoiceservicechargeline);
     }
-
     /**
      * {@code DELETE  /autojobsalesinvoiceservicechargelines/:id} : delete the "id" autojobsalesinvoiceservicechargeline.
      *
      * @param id the id of the autojobsalesinvoiceservicechargeline to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+    
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAutojobsalesinvoiceservicechargeline(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteAutojobsalesinvoiceservicechargeline(@PathVariable("id") Integer id) {
         LOG.debug("REST request to delete Autojobsalesinvoiceservicechargeline : {}", id);
         autojobsalesinvoiceservicechargelineService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
-    }
+    } */
 }

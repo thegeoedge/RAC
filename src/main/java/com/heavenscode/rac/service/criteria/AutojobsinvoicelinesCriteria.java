@@ -65,7 +65,6 @@ public class AutojobsinvoicelinesCriteria implements Serializable, Criteria {
     public AutojobsinvoicelinesCriteria() {}
 
     public AutojobsinvoicelinesCriteria(AutojobsinvoicelinesCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invocieid = other.optionalInvocieid().map(IntegerFilter::copy).orElse(null);
         this.lineid = other.optionalLineid().map(IntegerFilter::copy).orElse(null);
         this.itemid = other.optionalItemid().map(IntegerFilter::copy).orElse(null);

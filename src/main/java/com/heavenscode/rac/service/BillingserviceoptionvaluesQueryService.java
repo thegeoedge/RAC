@@ -69,9 +69,7 @@ public class BillingserviceoptionvaluesQueryService extends QueryService<Billing
             if (criteria.getDistinct() != null) {
                 specification = specification.and(distinct(criteria.getDistinct()));
             }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), Billingserviceoptionvalues_.id));
-            }
+
             if (criteria.getVehicletypeid() != null) {
                 specification = specification.and(
                     buildRangeSpecification(criteria.getVehicletypeid(), Billingserviceoptionvalues_.vehicletypeid)

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
@@ -36,6 +36,30 @@ export class AutocarejobService {
   protected applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/autocarejobs');
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor(
+    'api/autojobsaleinvoicecommonservicecharges/by-invoice-idss',
+  );
+  protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines/by-invoice-id');
+  resourceJobInvoiceLinesUrly = this.applicationConfigService.getEndpointFor('api/autojobsalesinvoiceservicechargelines/by-invoice-ids');
+  protected resourceJobInvoiceLinesUrlsalesinvoice = this.applicationConfigService.getEndpointFor(
+    'api/sales-invoice-service-charge-lines/by-invoice-id',
+  );
+  fetchServicesales(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlsalesinvoice}`, { params, observe: 'response' });
+  }
+  fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invocieID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlz}`, { params, observe: 'response' });
+  }
+  fetchService(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrly}`, { params, observe: 'response' });
+  }
+  fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params, observe: 'response' });
+  }
 
   create(autocarejob: NewAutocarejob): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(autocarejob);

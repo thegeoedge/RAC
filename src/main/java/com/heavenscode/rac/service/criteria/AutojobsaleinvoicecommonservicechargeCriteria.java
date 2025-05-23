@@ -51,7 +51,6 @@ public class AutojobsaleinvoicecommonservicechargeCriteria implements Serializab
     public AutojobsaleinvoicecommonservicechargeCriteria() {}
 
     public AutojobsaleinvoicecommonservicechargeCriteria(AutojobsaleinvoicecommonservicechargeCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invoiceid = other.optionalInvoiceid().map(IntegerFilter::copy).orElse(null);
         this.lineid = other.optionalLineid().map(IntegerFilter::copy).orElse(null);
         this.optionid = other.optionalOptionid().map(IntegerFilter::copy).orElse(null);

@@ -66,13 +66,13 @@ public class Accounts implements Serializable {
     private Boolean canedit;
 
     @Column(name = "amount")
-    private Float amount;
+    private Double amount;
 
     @Column(name = "creditamount")
     private Float creditamount;
 
     @Column(name = "debitamount")
-    private Float debitamount;
+    private Double debitamount;
 
     @Column(name = "debitorcredit")
     private String debitorcredit;
@@ -290,16 +290,16 @@ public class Accounts implements Serializable {
         this.canedit = canedit;
     }
 
-    public Float getAmount() {
+    public Double getAmount() {
         return this.amount;
     }
 
-    public Accounts amount(Float amount) {
+    public Accounts amount(Double amount) {
         this.setAmount(amount);
         return this;
     }
 
-    public void setAmount(Float amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 
@@ -316,16 +316,16 @@ public class Accounts implements Serializable {
         this.creditamount = creditamount;
     }
 
-    public Float getDebitamount() {
+    public Double getDebitamount() {
         return this.debitamount;
     }
 
-    public Accounts debitamount(Float debitamount) {
+    public Accounts debitamount(Double debitamount) {
         this.setDebitamount(debitamount);
         return this;
     }
 
-    public void setDebitamount(Float debitamount) {
+    public void setDebitamount(Double debitamount) {
         this.debitamount = debitamount;
     }
 

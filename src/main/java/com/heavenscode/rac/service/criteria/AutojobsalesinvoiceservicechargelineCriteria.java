@@ -49,7 +49,6 @@ public class AutojobsalesinvoiceservicechargelineCriteria implements Serializabl
     public AutojobsalesinvoiceservicechargelineCriteria() {}
 
     public AutojobsalesinvoiceservicechargelineCriteria(AutojobsalesinvoiceservicechargelineCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invoiceid = other.optionalInvoiceid().map(IntegerFilter::copy).orElse(null);
         this.lineid = other.optionalLineid().map(IntegerFilter::copy).orElse(null);
         this.optionid = other.optionalOptionid().map(IntegerFilter::copy).orElse(null);

@@ -14,11 +14,7 @@ public class SaleInvoiceCommonServiceCharge implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
-    private Long id;
-
-    @Column(name = "invoiceid")
+    @Column(name = "invoiceid", nullable = false)
     private Integer invoiceId;
 
     @Column(name = "lineid")
@@ -49,19 +45,6 @@ public class SaleInvoiceCommonServiceCharge implements Serializable {
     private Float servicePrice;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public SaleInvoiceCommonServiceCharge id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getInvoiceId() {
         return this.invoiceId;
@@ -203,7 +186,7 @@ public class SaleInvoiceCommonServiceCharge implements Serializable {
         if (!(o instanceof SaleInvoiceCommonServiceCharge)) {
             return false;
         }
-        return getId() != null && getId().equals(((SaleInvoiceCommonServiceCharge) o).getId());
+        return getInvoiceId() != null && getInvoiceId().equals(((SaleInvoiceCommonServiceCharge) o).getInvoiceId());
     }
 
     @Override
@@ -216,8 +199,8 @@ public class SaleInvoiceCommonServiceCharge implements Serializable {
     @Override
     public String toString() {
         return "SaleInvoiceCommonServiceCharge{" +
-            "id=" + getId() +
-            ", invoiceId=" + getInvoiceId() +
+           
+            "invoiceId=" + getInvoiceId() +
             ", lineId=" + getLineId() +
             ", optionId=" + getOptionId() +
             ", mainId=" + getMainId() +

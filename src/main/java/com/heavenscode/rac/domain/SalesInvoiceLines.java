@@ -1,6 +1,7 @@
 package com.heavenscode.rac.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -15,11 +16,7 @@ public class SalesInvoiceLines implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
-    private Long id;
-
-    @Column(name = "invocieid")
+    @Column(name = "invocieid", nullable = false)
     private Integer invoiceid;
 
     @Column(name = "lineid")
@@ -74,19 +71,6 @@ public class SalesInvoiceLines implements Serializable {
     private Boolean vat;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public SalesInvoiceLines id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getInvoiceid() {
         return this.invoiceid;
@@ -332,7 +316,7 @@ public class SalesInvoiceLines implements Serializable {
         if (!(o instanceof SalesInvoiceLines)) {
             return false;
         }
-        return getId() != null && getId().equals(((SalesInvoiceLines) o).getId());
+        return getInvoiceid() != null && getInvoiceid().equals(((SalesInvoiceLines) o).getInvoiceid());
     }
 
     @Override
@@ -345,8 +329,7 @@ public class SalesInvoiceLines implements Serializable {
     @Override
     public String toString() {
         return "SalesInvoiceLines{" +
-            "id=" + getId() +
-            ", invoiceid=" + getInvoiceid() +
+            "invoiceid=" + getInvoiceid() +
             ", lineid=" + getLineid() +
             ", itemid=" + getItemid() +
             ", itemcode='" + getItemcode() + "'" +

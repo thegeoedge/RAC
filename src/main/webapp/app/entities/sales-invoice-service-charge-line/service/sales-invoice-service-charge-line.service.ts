@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IBillingserviceoption } from 'app/entities/billingserviceoption/billingserviceoption.model';
 import { IBillingserviceoptionvalues } from 'app/entities/billingserviceoptionvalues/billingserviceoptionvalues.model';
@@ -28,7 +28,18 @@ export class SalesInvoiceServiceChargeLineService {
     }));
     return res.clone({ body });
   }
-
+  resourceJobInvoiceLinesUrly = this.applicationConfigService.getEndpointFor('api/sales-invoice-service-charge-lines/by-invoice-ids');
+  fetchService(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrly}`, { params, observe: 'response' });
+  }
+  private totalservicelines: number = 0;
+  gettotalservicelines(): number {
+    return this.totalservicelines;
+  }
+  settotalservicelines(totalservicelines: number): void {
+    this.totalservicelines = totalservicelines;
+  }
   protected convertResponseArrayFromServe(
     res: HttpResponse<RestBillingserviceoptionvalues[]>,
   ): HttpResponse<IBillingserviceoptionvalues[]> {
@@ -56,10 +67,11 @@ export class SalesInvoiceServiceChargeLineService {
       );
   }
 
+  protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/billingserviceoptionvalues/by-bill-idss');
+
   getElementsByID(typeid: number): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(
-      `/api/billingserviceoptionvalues?vehicletypeid.equals=${typeid}&page=0&size=20`,
-    );
+    const url = `${this.resourceJobInvoiceLinesUrlz}?vehicletypeid=${typeid}`;
+
     return this.http
       .get<IBillingserviceoptionvalues[]>(url, { observe: 'response' })
       .pipe(

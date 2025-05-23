@@ -15,12 +15,7 @@ public class Billingserviceoptionvalues implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    @Column(name = "id")
-    private Long id;
-
-    @Column(name = "vehicletypeid")
+    @Column(name = "vehicletypeid", nullable = false)
     private Integer vehicletypeid;
 
     @Column(name = "billingserviceoptionid")
@@ -36,19 +31,6 @@ public class Billingserviceoptionvalues implements Serializable {
     private Integer lmu;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public Billingserviceoptionvalues id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getVehicletypeid() {
         return this.vehicletypeid;
@@ -125,7 +107,7 @@ public class Billingserviceoptionvalues implements Serializable {
         if (!(o instanceof Billingserviceoptionvalues)) {
             return false;
         }
-        return getId() != null && getId().equals(((Billingserviceoptionvalues) o).getId());
+        return getVehicletypeid() != null && getVehicletypeid().equals(((Billingserviceoptionvalues) o).getVehicletypeid());
     }
 
     @Override
@@ -138,8 +120,8 @@ public class Billingserviceoptionvalues implements Serializable {
     @Override
     public String toString() {
         return "Billingserviceoptionvalues{" +
-            "id=" + getId() +
-            ", vehicletypeid=" + getVehicletypeid() +
+            
+            "vehicletypeid=" + getVehicletypeid() +
             ", billingserviceoptionid=" + getBillingserviceoptionid() +
             ", value=" + getValue() +
             ", lmd='" + getLmd() + "'" +

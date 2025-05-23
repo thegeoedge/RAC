@@ -45,10 +45,11 @@ export default class MainComponent implements OnInit {
   ngOnInit(): void {
     this.accountService.identity().subscribe();
 
-    // Listen to router events to react to URL changes
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        if (this.checkURL('/login')) {
+        const url = event.urlAfterRedirects;
+
+        if (url === '/login' || url.startsWith('/printsalesinvoice')) {
           this.setSidebarVisibility(false);
         } else {
           this.setSidebarVisibility(true);

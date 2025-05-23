@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.SaleInvoiceCommonServiceCharge;
 import com.heavenscode.rac.repository.SaleInvoiceCommonServiceChargeRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,14 @@ public class SaleInvoiceCommonServiceChargeService {
     private static final Logger LOG = LoggerFactory.getLogger(SaleInvoiceCommonServiceChargeService.class);
 
     private final SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public SaleInvoiceCommonServiceChargeService(SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository) {
+    public SaleInvoiceCommonServiceChargeService(
+        SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository,
+        JdbcTemplate jdbcTemplate
+    ) {
         this.saleInvoiceCommonServiceChargeRepository = saleInvoiceCommonServiceChargeRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -45,6 +52,25 @@ public class SaleInvoiceCommonServiceChargeService {
         return saleInvoiceCommonServiceChargeRepository.save(saleInvoiceCommonServiceCharge);
     }
 
+    public List<SaleInvoiceCommonServiceCharge> fetchJobInvoiceLiness(int invoiceID) {
+        String sql = "SELECT * FROM SaleInvoiceCommonServiceCharge WHERE InvoiceID = ?";
+        return jdbcTemplate.query(sql, new Object[] { invoiceID }, (rs, rowNum) -> {
+            SaleInvoiceCommonServiceCharge line = new SaleInvoiceCommonServiceCharge();
+            line.setInvoiceId(rs.getInt("InvoiceID"));
+            line.setLineId(rs.getInt("LineID"));
+            line.setOptionId(rs.getInt("OptionID"));
+            line.setMainId(rs.getInt("MainID"));
+            line.setCode(rs.getString("Code"));
+            line.setName(rs.getString("Name"));
+            line.setDescription(rs.getString("Description"));
+            line.setValue(rs.getFloat("Value"));
+
+            line.setDiscount(rs.getFloat("Discount"));
+            line.setServicePrice(rs.getFloat("ServicePrice"));
+            return line;
+        });
+    }
+
     /**
      * Partially update a saleInvoiceCommonServiceCharge.
      *
@@ -55,11 +81,8 @@ public class SaleInvoiceCommonServiceChargeService {
         LOG.debug("Request to partially update SaleInvoiceCommonServiceCharge : {}", saleInvoiceCommonServiceCharge);
 
         return saleInvoiceCommonServiceChargeRepository
-            .findById(saleInvoiceCommonServiceCharge.getId())
+            .findById(saleInvoiceCommonServiceCharge.getInvoiceId())
             .map(existingSaleInvoiceCommonServiceCharge -> {
-                if (saleInvoiceCommonServiceCharge.getInvoiceId() != null) {
-                    existingSaleInvoiceCommonServiceCharge.setInvoiceId(saleInvoiceCommonServiceCharge.getInvoiceId());
-                }
                 if (saleInvoiceCommonServiceCharge.getLineId() != null) {
                     existingSaleInvoiceCommonServiceCharge.setLineId(saleInvoiceCommonServiceCharge.getLineId());
                 }
@@ -100,7 +123,7 @@ public class SaleInvoiceCommonServiceChargeService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<SaleInvoiceCommonServiceCharge> findOne(Long id) {
+    public Optional<SaleInvoiceCommonServiceCharge> findOne(Integer id) {
         LOG.debug("Request to get SaleInvoiceCommonServiceCharge : {}", id);
         return saleInvoiceCommonServiceChargeRepository.findById(id);
     }
@@ -110,7 +133,7 @@ public class SaleInvoiceCommonServiceChargeService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete SaleInvoiceCommonServiceCharge : {}", id);
         saleInvoiceCommonServiceChargeRepository.deleteById(id);
     }

@@ -1,7 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-invoice-dummy.service';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
+
+import { SalesInvoiceDummyService } from '../sales-invoice-dummy/service/sales-invoice-dummy.service';
+import { SalesInvoiceLinesService } from '../sales-invoice-lines/service/sales-invoice-lines.service';
+import { SalesInvoiceServiceChargeLineService } from 'app/entities/sales-invoice-service-charge-line/service/sales-invoice-service-charge-line.service';
+import { SaleInvoiceCommonServiceChargeService } from 'app/entities/sale-invoice-common-service-charge/service/sale-invoice-common-service-charge.service';
+
 @Component({
   selector: 'jhi-printsalesinvoice',
   standalone: true,
@@ -10,90 +16,100 @@ import { CommonModule } from '@angular/common';
   styleUrl: './printsalesinvoice.component.scss',
 })
 export class PrintsalesinvoiceComponent implements OnInit {
+  sidebarVisible: boolean = true;
+
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   protected salesInvoiceService = inject(SalesInvoiceDummyService);
+  salesinvoicelineService = inject(SalesInvoiceLinesService);
+  salesinvoiceservicechargelineService = inject(SalesInvoiceServiceChargeLineService);
+  salesinvoicecommonservicechargeService = inject(SaleInvoiceCommonServiceChargeService);
+
+  invoiceItems: any[] = [];
+  invoiceChargeItems: any[] = [];
+  invoicecommonChargeItems: any[] = [];
 
   ngOnInit(): void {
-    // Get 'id' from the query params
-    this.route.queryParams.subscribe(params => {
-      const id = params['id']; // Extract the ID
-      console.log('ID from URL:', id);
+    // Handle sidebar visibility based on route
 
+    // Fetch data when 'id' exists in query params
+    this.route.queryParams.subscribe(params => {
+      const id = params['id'];
       if (id) {
-        this.getSalesInvoice(id); // Call the function to fetch data
+        this.getSalesInvoice(id);
         this.getSalesInvoicelines(id);
         this.getSalesServicelines(id);
         this.getSalesSercolines(id);
       }
     });
   }
+
+  private shouldHideSidebar(url: string): boolean {
+    return url.includes('/printsalesinvoice') || url.includes('/login');
+  }
+
+  private setSidebarVisibility(isVisible: boolean): void {
+    const sidenav = document.querySelector('.sidebar') as HTMLElement;
+    if (sidenav) {
+      sidenav.classList.toggle('sidebar-hidden', !isVisible);
+    }
+  }
+  get totalInvoiceRows() {
+    return this.invoiceItems.length + this.invoiceChargeItems.length + this.invoicecommonChargeItems.length;
+  }
+
+  get blankRowsCount() {
+    // Only add blanks if less than 20 rows total
+    return this.totalInvoiceRows < 51 ? 51 - this.totalInvoiceRows : 0;
+  }
+
+  salesInvoice: any = null;
+
   getSalesInvoice(id: number): void {
     this.salesInvoiceService.find(id).subscribe({
       next: response => {
         console.log('Sales Invoice Data:', response.body);
+        this.salesInvoice = response.body;
       },
       error: err => {
         console.error('Error fetching Sales Invoice:', err);
       },
     });
   }
-  //: any[] = []; // Initialize an array to store invoice lines
 
   getSalesInvoicelines(id: number): void {
-    this.salesInvoiceService.fetchInvoiceLines(id).subscribe({
+    this.salesinvoicelineService.fetchInvoiceLines(id).subscribe({
       next: response => {
         console.log('Sales Invoice lines Data:', response.body);
-
-        // Ensure response.body is an array before assigning
-        if (Array.isArray(response.body)) {
-          this.invoiceItems = response.body; // Directly assign the response
-        } else {
-          console.error('Invalid data format: Expected an array', response.body);
-          this.invoiceItems = []; // Reset to avoid issues
-        }
-
-        console.log('Updated Invoice Items:', this.invoiceItems);
+        this.invoiceItems = Array.isArray(response.body) ? response.body : [];
       },
       error: err => {
-        console.error('Error fetching Sales Invoice:', err);
+        console.error('Error fetching Sales Invoice lines:', err);
       },
     });
   }
-
-  // Initialize as an empty array
-  invoiceItems: any[] = [];
-  invoiceChargeItems: any[] = [];
-  invoicecommonChargeItems: any[] = [];
 
   getSalesServicelines(id: number): void {
-    this.salesInvoiceService.fetchService(id).subscribe({
+    this.salesinvoiceservicechargelineService.fetchService(id).subscribe({
       next: response => {
         console.log('Sales Service lines Data:', response.body);
-        if (Array.isArray(response.body)) {
-          this.invoiceChargeItems = response.body; // Directly assign the response
-        } else {
-          console.error('Invalid data format: Expected an array', response.body);
-          this.invoiceChargeItems = []; // Reset to avoid issues
-        }
+        this.invoiceChargeItems = Array.isArray(response.body) ? response.body : [];
       },
       error: err => {
-        console.error('Error fetching Sales Invoice:', err);
+        console.error('Error fetching Sales Service lines:', err);
       },
     });
   }
+
   getSalesSercolines(id: number): void {
-    this.salesInvoiceService.fetchServiceCommon(id).subscribe({
+    this.salesinvoicecommonservicechargeService.fetchServiceCommon(id).subscribe({
       next: response => {
         console.log('Sales Service common Data:', response.body);
-        if (Array.isArray(response.body)) {
-          this.invoicecommonChargeItems = response.body; // Directly assign the response
-        } else {
-          console.error('Invalid data format: Expected an array', response.body);
-          this.invoicecommonChargeItems = []; // Reset to avoid issues
-        }
+        this.invoicecommonChargeItems = Array.isArray(response.body) ? response.body : [];
       },
       error: err => {
-        console.error('Error fetching Sales Invoice:', err);
+        console.error('Error fetching Sales Common Service lines:', err);
       },
     });
   }
@@ -101,20 +117,9 @@ export class PrintsalesinvoiceComponent implements OnInit {
   getTotalAmount(): number {
     let total = 0;
 
-    // Sum up invoiceItems line totals
-    if (this.invoiceItems) {
-      total += this.invoiceItems.reduce((sum, item) => sum + (item.linetotal || 0), 0);
-    }
-
-    // Sum up invoiceChargeItems service prices
-    if (this.invoiceChargeItems) {
-      total += this.invoiceChargeItems.reduce((sum, item) => sum + (item.servicePrice || 0), 0);
-    }
-
-    // Sum up invoicecommonChargeItems values
-    if (this.invoicecommonChargeItems) {
-      total += this.invoicecommonChargeItems.reduce((sum, item) => sum + (item.value || 0), 0);
-    }
+    total += this.invoiceItems.reduce((sum, item) => sum + (item.linetotal || 0), 0);
+    total += this.invoiceChargeItems.reduce((sum, item) => sum + (item.servicePrice || 0), 0);
+    total += this.invoicecommonChargeItems.reduce((sum, item) => sum + (item.value || 0), 0);
 
     return total;
   }

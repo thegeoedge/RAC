@@ -72,9 +72,7 @@ public class AutojobsalesinvoiceservicechargelineQueryService extends QueryServi
             if (criteria.getDistinct() != null) {
                 specification = specification.and(distinct(criteria.getDistinct()));
             }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), Autojobsalesinvoiceservicechargeline_.id));
-            }
+
             if (criteria.getInvoiceid() != null) {
                 specification = specification.and(
                     buildRangeSpecification(criteria.getInvoiceid(), Autojobsalesinvoiceservicechargeline_.invoiceid)

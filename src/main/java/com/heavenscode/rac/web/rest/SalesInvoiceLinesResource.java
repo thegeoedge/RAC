@@ -6,8 +6,12 @@ import com.heavenscode.rac.service.SalesInvoiceLinesQueryService;
 import com.heavenscode.rac.service.SalesInvoiceLinesService;
 import com.heavenscode.rac.service.criteria.SalesInvoiceLinesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,55 +66,53 @@ public class SalesInvoiceLinesResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<SalesInvoiceLines> createSalesInvoiceLines(@RequestBody SalesInvoiceLines salesInvoiceLines)
+    public ResponseEntity<SalesInvoiceLines> createSalesInvoiceLines(@Valid @RequestBody SalesInvoiceLines salesInvoiceLines)
         throws URISyntaxException {
         LOG.debug("REST request to save SalesInvoiceLines : {}", salesInvoiceLines);
-        if (salesInvoiceLines.getId() != null) {
-            throw new BadRequestAlertException("A new salesInvoiceLines cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         salesInvoiceLines = salesInvoiceLinesService.save(salesInvoiceLines);
-        return ResponseEntity.created(new URI("/api/sales-invoice-lines/" + salesInvoiceLines.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getId().toString()))
+        return ResponseEntity.created(new URI("/api/sales-invoice-lines/" + salesInvoiceLines.getInvoiceid()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getInvoiceid().toString()))
             .body(salesInvoiceLines);
     }
 
     /**
-     * {@code PUT  /sales-invoice-lines/:id} : Updates an existing salesInvoiceLines.
+     * {@code PUT  /sales-invoice-lines/:invoiceid} : Updates an existing salesInvoiceLines.
      *
-     * @param id the id of the salesInvoiceLines to save.
+     * @param invoiceid the id of the salesInvoiceLines to save.
      * @param salesInvoiceLines the salesInvoiceLines to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated salesInvoiceLines,
      * or with status {@code 400 (Bad Request)} if the salesInvoiceLines is not valid,
      * or with status {@code 500 (Internal Server Error)} if the salesInvoiceLines couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{invoiceid}")
     public ResponseEntity<SalesInvoiceLines> updateSalesInvoiceLines(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody SalesInvoiceLines salesInvoiceLines
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
+        @Valid @RequestBody SalesInvoiceLines salesInvoiceLines
     ) throws URISyntaxException {
-        LOG.debug("REST request to update SalesInvoiceLines : {}, {}", id, salesInvoiceLines);
-        if (salesInvoiceLines.getId() == null) {
+        LOG.debug("REST request to update SalesInvoiceLines : {}, {}", invoiceid, salesInvoiceLines);
+        if (salesInvoiceLines.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, salesInvoiceLines.getId())) {
+        if (!Objects.equals(invoiceid, salesInvoiceLines.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!salesInvoiceLinesRepository.existsById(id)) {
+        if (!salesInvoiceLinesRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         salesInvoiceLines = salesInvoiceLinesService.update(salesInvoiceLines);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getInvoiceid().toString()))
             .body(salesInvoiceLines);
     }
 
     /**
-     * {@code PATCH  /sales-invoice-lines/:id} : Partial updates given fields of an existing salesInvoiceLines, field will ignore if it is null
+     * {@code PATCH  /sales-invoice-lines/:invoiceid} : Partial updates given fields of an existing salesInvoiceLines, field will ignore if it is null
      *
-     * @param id the id of the salesInvoiceLines to save.
+     * @param invoiceid the id of the salesInvoiceLines to save.
      * @param salesInvoiceLines the salesInvoiceLines to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated salesInvoiceLines,
      * or with status {@code 400 (Bad Request)} if the salesInvoiceLines is not valid,
@@ -118,20 +120,20 @@ public class SalesInvoiceLinesResource {
      * or with status {@code 500 (Internal Server Error)} if the salesInvoiceLines couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{invoiceid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<SalesInvoiceLines> partialUpdateSalesInvoiceLines(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody SalesInvoiceLines salesInvoiceLines
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
+        @NotNull @RequestBody SalesInvoiceLines salesInvoiceLines
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update SalesInvoiceLines partially : {}, {}", id, salesInvoiceLines);
-        if (salesInvoiceLines.getId() == null) {
+        LOG.debug("REST request to partial update SalesInvoiceLines partially : {}, {}", invoiceid, salesInvoiceLines);
+        if (salesInvoiceLines.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, salesInvoiceLines.getId())) {
+        if (!Objects.equals(invoiceid, salesInvoiceLines.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!salesInvoiceLinesRepository.existsById(id)) {
+        if (!salesInvoiceLinesRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -139,7 +141,7 @@ public class SalesInvoiceLinesResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getInvoiceid().toString())
         );
     }
 
@@ -175,13 +177,34 @@ public class SalesInvoiceLinesResource {
     }
 
     /**
+     * {@code GET  /sales-invoice-lines/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param invocieID the invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-invoice-id")
+    public ResponseEntity<List<SalesInvoiceLines>> getAutojobsinvoicelinesByInvoiceId(@RequestParam(required = false) Integer invocieID) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", invocieID);
+
+        List<SalesInvoiceLines> result;
+
+        if (invocieID != null) {
+            result = salesInvoiceLinesService.fetchSalesInvoiceLines(invocieID);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
      * {@code GET  /sales-invoice-lines/:id} : get the "id" salesInvoiceLines.
      *
      * @param id the id of the salesInvoiceLines to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the salesInvoiceLines, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<SalesInvoiceLines> getSalesInvoiceLines(@PathVariable("id") Long id) {
+    public ResponseEntity<SalesInvoiceLines> getSalesInvoiceLines(@PathVariable("id") Integer id) {
         LOG.debug("REST request to get SalesInvoiceLines : {}", id);
         Optional<SalesInvoiceLines> salesInvoiceLines = salesInvoiceLinesService.findOne(id);
         return ResponseUtil.wrapOrNotFound(salesInvoiceLines);
@@ -194,7 +217,7 @@ public class SalesInvoiceLinesResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSalesInvoiceLines(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteSalesInvoiceLines(@PathVariable("id") Integer id) {
         LOG.debug("REST request to delete SalesInvoiceLines : {}", id);
         salesInvoiceLinesService.delete(id);
         return ResponseEntity.noContent()
