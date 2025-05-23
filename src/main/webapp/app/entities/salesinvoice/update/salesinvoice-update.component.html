@@ -9,12 +9,13 @@
     padding: 0;
   }
   .full-width-form .row {
-    marg .full-width-form .col-md-4,
-    .full-width-form .col-md-6,
-    .full-width-form .col-12 {
+    margin: 0;
+  }
+  .full-width-form .col-md-4,
+  .full-width-form .col-md-6,
+  .full-width-form .col-12 {
       padding: 10px;
     }
-  }
   html,
   body {
     margin: 0;
@@ -22,8 +23,8 @@
     width: 100%;
     height: 100%;
   }
-
-  .custom-can .custom-cancel-btn,
+ 
+    .custom-can .custom-cancel-btn,
   .custom-save-btn {
     width: 50%; /* Each button takes half the width */
     border: none;
@@ -36,12 +37,14 @@
   input {
     text-align: right;
   }
-
-  f5dc4d5685c3807b62c47de .button-container {
+  .button-container {
     display: flex;
     width: 100%; /* Ensures full width */
     gap: 4px; /* Minimal spacing between buttons */
     padding: 15px;
+  }
+  input[type='number'] {
+    text-align: right;
   }
 </style>
 <div justify-content-right class="row full-width-form">
@@ -449,11 +452,11 @@
       />
     </div>
 
-    <div class="mb-3" *ngif="false">
+
+     <div class="mb-3" *ngif="false">
       <label class="form-label" for="field_code">Code</label>
       <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
     </div>
-
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_createdDate">Created Date</label>
       <div class="d-flex">
@@ -721,7 +724,7 @@
         type="button"
         id="cancel-save"
         data-cy="entityCreateCancelButton"
-        class="btn btn-secondary custom-cancel-btn"
+        class="btn btn-secondary btn-lg w-50"
         (click)="previousState()"
       >
         <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
