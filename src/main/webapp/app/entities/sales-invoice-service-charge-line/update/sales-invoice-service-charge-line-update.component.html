@@ -20,15 +20,81 @@
           <br />
         </div>
 
-        <div *ngIf="allBillingServiceOptions.length > 0">
-          <div *ngFor="let optionsGroup of allBillingServiceOptions">
-            <div *ngFor="let option of optionsGroup">
+        <div class="pagination-box" *ngIf="paginatedOptions.length > 0">
+          <div *ngFor="let option of paginatedOptions" class="checkbox-item">
+            <label>
+              <input
+                type="checkbox"
+                [checked]="isServiceSelected(option.id)"
+                (change)="onCheckboxChange($event, option.servicename ?? '', option.id)"
+              />
               {{ option.servicename }}
-              <input type="checkbox" [value]="option.servicename" (change)="onCheckboxChange($event, option.servicename, option.id)" />
-            </div>
-            <br />
+            </label>
+          </div>
+
+          <div class="pagination-controls">
+            <button (click)="prevPage()" [disabled]="currentPage === 1" class="pagination-btn">Previous</button>
+            <span class="pagination-status">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="pagination-btn">Next</button>
           </div>
         </div>
+
+        <style>
+          .pagination-box {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            font-family: 'Segoe UI', sans-serif;
+          }
+
+          .checkbox-item {
+            margin: 8px 0;
+            font-size: 16px;
+            color: #000000;
+          }
+
+          .checkbox-item input[type='checkbox'] {
+            margin-right: 8px;
+            transform: scale(1.2);
+            cursor: pointer;
+          }
+
+          .pagination-controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .pagination-btn {
+            background-color: #d18f01;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+          }
+
+          .pagination-btn:hover:enabled {
+            background-color: #357ab8;
+          }
+
+          .pagination-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+          }
+
+          .pagination-status {
+            font-weight: 500;
+            color: #555;
+          }
+        </style>
+
         <button (click)="addToTable()">Add to Table</button>
 
         <table class="table">
@@ -84,11 +150,12 @@
           </tbody>
         </table>
 
-        <button type="button" class="btn btn-info btn-lg" (click)="addServiceChargeLine()">Add Line</button>
+        <button *ngIf="false" type="button" class="btn btn-info btn-lg" (click)="addServiceChargeLine()">Add Line</button>
       </div>
 
       <div class="mt-3" *ngIf="false">
         <button
+          *ngIf="false"
           type="button"
           id="cancel-save"
           data-cy="entityCreateCancelButton"
@@ -96,7 +163,7 @@
           style="flex: 1"
           (click)="previousState()"
         >
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span *ngIf="false"> </span>
         </button>
 
         <button

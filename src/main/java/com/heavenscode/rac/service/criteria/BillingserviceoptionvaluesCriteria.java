@@ -39,7 +39,6 @@ public class BillingserviceoptionvaluesCriteria implements Serializable, Criteri
     public BillingserviceoptionvaluesCriteria() {}
 
     public BillingserviceoptionvaluesCriteria(BillingserviceoptionvaluesCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.vehicletypeid = other.optionalVehicletypeid().map(IntegerFilter::copy).orElse(null);
         this.billingserviceoptionid = other.optionalBillingserviceoptionid().map(IntegerFilter::copy).orElse(null);
         this.value = other.optionalValue().map(FloatFilter::copy).orElse(null);

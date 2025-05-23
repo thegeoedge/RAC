@@ -8,6 +8,7 @@ import com.heavenscode.rac.service.criteria.Autojobsaleinvoicecommonservicecharg
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,23 +67,17 @@ public class AutojobsaleinvoicecommonservicechargeResource {
         @RequestBody Autojobsaleinvoicecommonservicecharge autojobsaleinvoicecommonservicecharge
     ) throws URISyntaxException {
         LOG.debug("REST request to save Autojobsaleinvoicecommonservicecharge : {}", autojobsaleinvoicecommonservicecharge);
-        if (autojobsaleinvoicecommonservicecharge.getId() != null) {
-            throw new BadRequestAlertException(
-                "A new autojobsaleinvoicecommonservicecharge cannot already have an ID",
-                ENTITY_NAME,
-                "idexists"
-            );
-        }
+
         autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeService.save(autojobsaleinvoicecommonservicecharge);
         return ResponseEntity.created(
-            new URI("/api/autojobsaleinvoicecommonservicecharges/" + autojobsaleinvoicecommonservicecharge.getId())
+            new URI("/api/autojobsaleinvoicecommonservicecharges/" + autojobsaleinvoicecommonservicecharge.getInvoiceid())
         )
             .headers(
                 HeaderUtil.createEntityCreationAlert(
                     applicationName,
                     false,
                     ENTITY_NAME,
-                    autojobsaleinvoicecommonservicecharge.getId().toString()
+                    autojobsaleinvoicecommonservicecharge.getInvoiceid().toString()
                 )
             )
             .body(autojobsaleinvoicecommonservicecharge);
@@ -98,20 +93,24 @@ public class AutojobsaleinvoicecommonservicechargeResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsaleinvoicecommonservicecharge couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{invoiceid}")
     public ResponseEntity<Autojobsaleinvoicecommonservicecharge> updateAutojobsaleinvoicecommonservicecharge(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
         @RequestBody Autojobsaleinvoicecommonservicecharge autojobsaleinvoicecommonservicecharge
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Autojobsaleinvoicecommonservicecharge : {}, {}", id, autojobsaleinvoicecommonservicecharge);
-        if (autojobsaleinvoicecommonservicecharge.getId() == null) {
+        LOG.debug(
+            "REST request to update Autojobsaleinvoicecommonservicecharge : {}, {}",
+            invoiceid,
+            autojobsaleinvoicecommonservicecharge
+        );
+        if (autojobsaleinvoicecommonservicecharge.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsaleinvoicecommonservicecharge.getId())) {
+        if (!Objects.equals(invoiceid, autojobsaleinvoicecommonservicecharge.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsaleinvoicecommonservicechargeRepository.existsById(id)) {
+        if (!autojobsaleinvoicecommonservicechargeRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -122,10 +121,33 @@ public class AutojobsaleinvoicecommonservicechargeResource {
                     applicationName,
                     false,
                     ENTITY_NAME,
-                    autojobsaleinvoicecommonservicecharge.getId().toString()
+                    autojobsaleinvoicecommonservicecharge.getInvoiceid().toString()
                 )
             )
             .body(autojobsaleinvoicecommonservicecharge);
+    }
+
+    /**
+     * {@code GET  /autojobsaleinvoicecommonservicecharges/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param invoiceID the invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-invoice-idss")
+    public ResponseEntity<List<Autojobsaleinvoicecommonservicecharge>> getAutojobsinvoicelinesByInvoiceId(
+        @RequestParam(required = false) Integer invoiceID
+    ) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", invoiceID);
+
+        List<Autojobsaleinvoicecommonservicecharge> result;
+
+        if (invoiceID != null) {
+            result = autojobsaleinvoicecommonservicechargeService.fetchJobInvoiceLiness(invoiceID);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -139,24 +161,24 @@ public class AutojobsaleinvoicecommonservicechargeResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsaleinvoicecommonservicecharge couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{invoiceid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Autojobsaleinvoicecommonservicecharge> partialUpdateAutojobsaleinvoicecommonservicecharge(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invoiceid", required = false) final Integer invoiceid,
         @RequestBody Autojobsaleinvoicecommonservicecharge autojobsaleinvoicecommonservicecharge
     ) throws URISyntaxException {
         LOG.debug(
             "REST request to partial update Autojobsaleinvoicecommonservicecharge partially : {}, {}",
-            id,
+            invoiceid,
             autojobsaleinvoicecommonservicecharge
         );
-        if (autojobsaleinvoicecommonservicecharge.getId() == null) {
+        if (autojobsaleinvoicecommonservicecharge.getInvoiceid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsaleinvoicecommonservicecharge.getId())) {
+        if (!Objects.equals(invoiceid, autojobsaleinvoicecommonservicecharge.getInvoiceid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsaleinvoicecommonservicechargeRepository.existsById(id)) {
+        if (!autojobsaleinvoicecommonservicechargeRepository.existsById(invoiceid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -170,7 +192,7 @@ public class AutojobsaleinvoicecommonservicechargeResource {
                 applicationName,
                 false,
                 ENTITY_NAME,
-                autojobsaleinvoicecommonservicecharge.getId().toString()
+                autojobsaleinvoicecommonservicecharge.getInvoiceid().toString()
             )
         );
     }
@@ -215,20 +237,21 @@ public class AutojobsaleinvoicecommonservicechargeResource {
      * @param id the id of the autojobsaleinvoicecommonservicecharge to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the autojobsaleinvoicecommonservicecharge, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Autojobsaleinvoicecommonservicecharge> getAutojobsaleinvoicecommonservicecharge(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge : {}", id);
+    @GetMapping("/{invoiceid}")
+    public ResponseEntity<Autojobsaleinvoicecommonservicecharge> getAutojobsaleinvoicecommonservicecharge(
+        @PathVariable("invoiceid") Integer invoiceid
+    ) {
+        LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge : {}", invoiceid);
         Optional<Autojobsaleinvoicecommonservicecharge> autojobsaleinvoicecommonservicecharge =
-            autojobsaleinvoicecommonservicechargeService.findOne(id);
+            autojobsaleinvoicecommonservicechargeService.findOne(invoiceid);
         return ResponseUtil.wrapOrNotFound(autojobsaleinvoicecommonservicecharge);
     }
-
     /**
      * {@code DELETE  /autojobsaleinvoicecommonservicecharges/:id} : delete the "id" autojobsaleinvoicecommonservicecharge.
      *
      * @param id the id of the autojobsaleinvoicecommonservicecharge to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutojobsaleinvoicecommonservicecharge(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Autojobsaleinvoicecommonservicecharge : {}", id);
@@ -236,5 +259,5 @@ public class AutojobsaleinvoicecommonservicechargeResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
-    }
+    }*/
 }

@@ -137,7 +137,8 @@ export class SalesinvoiceComponent implements OnInit {
         jobDate = today;
       }
 
-      queryObject['invoicedate.greaterThan'] = `${jobDate}T00:00:00.000Z`;
+      queryObject['invoicedate.greaterThanOrEqual'] = `${jobDate}T00:00:00.000Z`;
+      queryObject['invoicedate.lessThanOrEqual'] = `${jobDate}T23:59:59.999Z`;
     } else if (this.selectedSearchType === 'vehicle') {
       if (this.searchValue) {
         queryObject['vehicleno.contains'] = this.searchValue;

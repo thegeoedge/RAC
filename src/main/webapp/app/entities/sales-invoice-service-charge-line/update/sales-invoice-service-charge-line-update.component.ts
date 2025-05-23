@@ -18,6 +18,7 @@ import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
 import { MessageCommunicationService } from 'app/core/util/message.communication.service';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
+import { IBillingserviceoptionvalues } from 'app/entities/billingserviceoptionvalues/billingserviceoptionvalues.model';
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-service-charge-line-update',
@@ -45,6 +46,34 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   typeid: number = 0;
   totalfetch: number = 0;
   vehicletypes: IVehicletype[] = [];
+  showOptions = false;
+  // Pagination variables
+  currentPage = 1;
+  itemsPerPage = 8;
+
+  // Flatten the grouped options for simplicity
+  get paginatedOptions(): IBillingserviceoptionvalues[] {
+    const flatList = this.allBillingServiceOptions.flat();
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return flatList.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.allBillingServiceOptions.flat().length / this.itemsPerPage);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
   get serviceChargeLinesArray(): FormArray {
     return this.editForm.get('serviceChargeLines') as FormArray;
   }
@@ -85,6 +114,18 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       }
     });
     this.loadVehicleTypes();
+    const total = this.serviceChargeLinesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+    this.salesInvoiceServiceChargeLineService.settotalservicelines(total);
+
+    // Create a fake event for onDropdownChange
+    const fakeEvent = {
+      target: {
+        value: this.typeid.toString(),
+      },
+    } as unknown as Event;
+    this.onDropdownChange(fakeEvent);
   }
   totalvalue(formGroup: FormGroup): void {
     const value = formGroup.get('value');
@@ -118,8 +159,10 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   onDropdownChange(event: Event): void {
     // Get the selected dropdown value (the id of the selected vehicle type)
     const selectedValue = (event.target as HTMLSelectElement).value;
-    const typeid = Number(selectedValue); // Parse the selected value to a number
-
+    let typeid = Number(selectedValue); // Parse the selected value to a number
+    if (selectedValue === '0') {
+      typeid = 1;
+    }
     // Log the selected typeid to the console
     console.log('Selected Vehicle Type ID:', typeid);
     this.typeid = typeid;
@@ -138,20 +181,20 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
           const billingserviceoptionIds = response.body.map((item: any) => item.billingserviceoptionid);
 
           // Log the billingserviceoption ids to the console
-          console.log('Billing Service Option IDs:', billingserviceoptionIds);
+          // console.log('Billing Service Option IDs:', billingserviceoptionIds);
 
           // Now, use the getbillingid function to fetch details for each billingserviceoptionid
           billingserviceoptionIds.forEach(id => {
             this.salesInvoiceServiceChargeLineService.getbillingid(id).subscribe({
               next: billingResponse => {
                 // Log the detailed response for each billingserviceoption
-                console.log('Billing Service Option Details for ID ' + id, billingResponse.body);
+                // console.log('Billing Service Option Details for ID ' + id, billingResponse.body);
 
                 // Add the billing service option details to the allBillingServiceOptions array
                 if (billingResponse.body) {
                   this.allBillingServiceOptions.push(billingResponse.body);
                 }
-                console.log('All Billing Service Options:', this.allBillingServiceOptions);
+                //console.log('All Billing Service Options:', this.allBillingServiceOptions);
               },
 
               error: err => {
@@ -214,18 +257,21 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   }
 
   selectedServices: { id: number; servicename: string }[] = [];
+  isServiceSelected(id: number): boolean {
+    return this.selectedServices.some(service => service.id === id);
+  }
 
-  onCheckboxChange(event: any, servicename: string, id: number) {
+  onCheckboxChange(event: any, servicename: string, id: number): void {
     if (event.target.checked) {
-      // Add the service with its id to the selected services list
-      this.selectedServices.push({ id, servicename });
+      if (!this.isServiceSelected(id)) {
+        this.selectedServices.push({ id, servicename });
+      }
     } else {
-      // Remove the service with its id from the selected services list
       this.selectedServices = this.selectedServices.filter(service => service.id !== id);
     }
 
-    // Log selected services to the console
     console.log('Selected Services:', this.selectedServices);
+
     const formArray = new FormArray(
       this.selectedServices.map(service =>
         this.fb.group({
@@ -234,6 +280,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
         }),
       ),
     );
+
     // this.salesInvoiceLinesService.updateSalesInvoiceCommonLines(formArray);
   }
 
@@ -380,8 +427,19 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
   removeServiceChargeLine(index: number): void {
     this.serviceChargeLinesArray.removeAt(index);
+    this.updateTotalInvoiceLines();
   }
+  updateTotalInvoiceLines(): void {
+    const total = this.serviceChargeLinesArray.controls
+      .map(control => control.get('value')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
 
+    console.log('Updated Totallll:', total);
+    // this.salesInvoiceLinesService.settotalinvoicelines(total);
+    setTimeout(() => {
+      this.totalUpdated.emit(total);
+    });
+  }
   protected updateForm(salesInvoiceServiceChargeLines: ISalesInvoiceServiceChargeLine[]): void {
     this.serviceChargeLinesArray.clear();
     salesInvoiceServiceChargeLines.forEach(line => {

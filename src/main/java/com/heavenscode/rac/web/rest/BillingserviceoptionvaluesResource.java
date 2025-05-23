@@ -8,6 +8,8 @@ import com.heavenscode.rac.service.criteria.BillingserviceoptionvaluesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,13 +68,16 @@ public class BillingserviceoptionvaluesResource {
         @RequestBody Billingserviceoptionvalues billingserviceoptionvalues
     ) throws URISyntaxException {
         LOG.debug("REST request to save Billingserviceoptionvalues : {}", billingserviceoptionvalues);
-        if (billingserviceoptionvalues.getId() != null) {
-            throw new BadRequestAlertException("A new billingserviceoptionvalues cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         billingserviceoptionvalues = billingserviceoptionvaluesService.save(billingserviceoptionvalues);
-        return ResponseEntity.created(new URI("/api/billingserviceoptionvalues/" + billingserviceoptionvalues.getId()))
+        return ResponseEntity.created(new URI("/api/billingserviceoptionvalues/" + billingserviceoptionvalues.getVehicletypeid()))
             .headers(
-                HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, billingserviceoptionvalues.getId().toString())
+                HeaderUtil.createEntityCreationAlert(
+                    applicationName,
+                    false,
+                    ENTITY_NAME,
+                    billingserviceoptionvalues.getVehicletypeid().toString()
+                )
             )
             .body(billingserviceoptionvalues);
     }
@@ -87,26 +92,33 @@ public class BillingserviceoptionvaluesResource {
      * or with status {@code 500 (Internal Server Error)} if the billingserviceoptionvalues couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{vehicletypeid}")
     public ResponseEntity<Billingserviceoptionvalues> updateBillingserviceoptionvalues(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "vehicletypeid", required = false) final Integer vehicletypeid,
         @RequestBody Billingserviceoptionvalues billingserviceoptionvalues
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Billingserviceoptionvalues : {}, {}", id, billingserviceoptionvalues);
-        if (billingserviceoptionvalues.getId() == null) {
+        LOG.debug("REST request to update Billingserviceoptionvalues : {}, {}", vehicletypeid, billingserviceoptionvalues);
+        if (billingserviceoptionvalues.getVehicletypeid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, billingserviceoptionvalues.getId())) {
+        if (!Objects.equals(vehicletypeid, billingserviceoptionvalues.getVehicletypeid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!billingserviceoptionvaluesRepository.existsById(id)) {
+        if (!billingserviceoptionvaluesRepository.existsById(vehicletypeid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         billingserviceoptionvalues = billingserviceoptionvaluesService.update(billingserviceoptionvalues);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, billingserviceoptionvalues.getId().toString()))
+            .headers(
+                HeaderUtil.createEntityUpdateAlert(
+                    applicationName,
+                    false,
+                    ENTITY_NAME,
+                    billingserviceoptionvalues.getVehicletypeid().toString()
+                )
+            )
             .body(billingserviceoptionvalues);
     }
 
@@ -121,20 +133,24 @@ public class BillingserviceoptionvaluesResource {
      * or with status {@code 500 (Internal Server Error)} if the billingserviceoptionvalues couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{vehicletypeid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Billingserviceoptionvalues> partialUpdateBillingserviceoptionvalues(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "vehicletypeid", required = false) final Integer vehicletypeid,
         @RequestBody Billingserviceoptionvalues billingserviceoptionvalues
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Billingserviceoptionvalues partially : {}, {}", id, billingserviceoptionvalues);
-        if (billingserviceoptionvalues.getId() == null) {
+        LOG.debug(
+            "REST request to partial update Billingserviceoptionvalues partially : {}, {}",
+            vehicletypeid,
+            billingserviceoptionvalues
+        );
+        if (billingserviceoptionvalues.getVehicletypeid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, billingserviceoptionvalues.getId())) {
+        if (!Objects.equals(vehicletypeid, billingserviceoptionvalues.getVehicletypeid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!billingserviceoptionvaluesRepository.existsById(id)) {
+        if (!billingserviceoptionvaluesRepository.existsById(vehicletypeid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -142,8 +158,36 @@ public class BillingserviceoptionvaluesResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, billingserviceoptionvalues.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(
+                applicationName,
+                false,
+                ENTITY_NAME,
+                billingserviceoptionvalues.getVehicletypeid().toString()
+            )
         );
+    }
+
+    /**
+     * {@code GET  /autojobsaleinvoicecommonservicecharges/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param invoiceID the invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-bill-idss")
+    public ResponseEntity<List<Billingserviceoptionvalues>> getAutojobsinvoicelinesByInvoiceId(
+        @RequestParam(required = false) Integer vehicletypeid
+    ) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", vehicletypeid);
+
+        List<Billingserviceoptionvalues> result;
+
+        if (vehicletypeid != null) {
+            result = billingserviceoptionvaluesService.fetchoptionvalues(vehicletypeid);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -183,19 +227,18 @@ public class BillingserviceoptionvaluesResource {
      * @param id the id of the billingserviceoptionvalues to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the billingserviceoptionvalues, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Billingserviceoptionvalues> getBillingserviceoptionvalues(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Billingserviceoptionvalues : {}", id);
-        Optional<Billingserviceoptionvalues> billingserviceoptionvalues = billingserviceoptionvaluesService.findOne(id);
+    @GetMapping("/{vehicletypeid}")
+    public ResponseEntity<Billingserviceoptionvalues> getBillingserviceoptionvalues(@PathVariable("vehicletypeid") Integer vehicletypeid) {
+        LOG.debug("REST request to get Billingserviceoptionvalues : {}", vehicletypeid);
+        Optional<Billingserviceoptionvalues> billingserviceoptionvalues = billingserviceoptionvaluesService.findOne(vehicletypeid);
         return ResponseUtil.wrapOrNotFound(billingserviceoptionvalues);
     }
-
     /**
      * {@code DELETE  /billingserviceoptionvalues/:id} : delete the "id" billingserviceoptionvalues.
      *
      * @param id the id of the billingserviceoptionvalues to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBillingserviceoptionvalues(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Billingserviceoptionvalues : {}", id);
@@ -203,5 +246,5 @@ public class BillingserviceoptionvaluesResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
-    }
+    } */
 }

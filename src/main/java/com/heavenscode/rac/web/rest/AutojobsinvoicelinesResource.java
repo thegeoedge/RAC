@@ -8,6 +8,7 @@ import com.heavenscode.rac.service.criteria.AutojobsinvoicelinesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,20 +60,55 @@ public class AutojobsinvoicelinesResource {
      *
      * @param autojobsinvoicelines the autojobsinvoicelines to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new autojobsinvoicelines, or with status {@code 400 (Bad Request)} if the autojobsinvoicelines has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
+     * @throws URISyntaxException if the Location URI syntax is incorrect.*/
+
     @PostMapping("")
-    public ResponseEntity<Autojobsinvoicelines> createAutojobsinvoicelines(@RequestBody Autojobsinvoicelines autojobsinvoicelines)
+    public ResponseEntity<String> createAutojobsinvoicelines(@RequestBody Autojobsinvoicelines autojobsinvoicelines)
         throws URISyntaxException {
-        LOG.debug("REST request to save Autojobsinvoicelines : {}", autojobsinvoicelines);
-        if (autojobsinvoicelines.getId() != null) {
-            throw new BadRequestAlertException("A new autojobsinvoicelines cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        autojobsinvoicelines = autojobsinvoicelinesService.save(autojobsinvoicelines);
-        return ResponseEntity.created(new URI("/api/autojobsinvoicelines/" + autojobsinvoicelines.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString()))
-            .body(autojobsinvoicelines);
+        LOG.debug("REST request to insert Autojobsinvoicelines line");
+
+        // Pass the received Autojobsinvoicelines object to the service
+        int rows = autojobsinvoicelinesService.insertautojobInvoiceLine(autojobsinvoicelines);
+
+        // Return response after insertion
+        return ResponseEntity.created(new URI("/api/autojobsinvoicelines/" + autojobsinvoicelines.getInvocieid())).body(
+            "Inserted " + rows + " row(s) successfully."
+        );
     }
+
+    /**
+     * {@code POST  /autojobsinvoicelines} : Create a new autojobsinvoicelines.
+     *
+     * @param autojobsinvoicelines  the list of autojobsinvoicelines to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new autojobsinvoicelines,
+     * or with status {@code 400 (Bad Request)} if the autojobsinvoicelines has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+    
+   @PostMapping("")
+public ResponseEntity<String> createAutojobsinvoicelines(@RequestBody List<Autojobsinvoicelines> autojobsinvoicelines)
+    throws URISyntaxException {
+    
+    LOG.info("Creating {} AutojobsInvoiceLines", autojobsinvoicelines.size());
+
+    int totalRowsAffected = 0;
+ 
+
+    for (Autojobsinvoicelines line : autojobsinvoicelines ) {
+        LOG.info("Processing LineId: {}", line.getLineid());
+
+        int rowsAffected = autojobsinvoicelinesService.insertautojobInvoiceLine(line);
+        totalRowsAffected += rowsAffected;
+    }
+
+    if (totalRowsAffected > 0) {
+        return ResponseEntity.created(new URI("/api/autojobsinvoicelines")).body(
+            "Successfully created " + totalRowsAffected + " Autojobs Invoice Lines!"
+        );
+    } else {
+        return ResponseEntity.badRequest().body("Failed to create Autojobs Invoice Lines.");
+    }
+}
+ */
 
     /**
      * {@code PUT  /autojobsinvoicelines/:id} : Updates an existing autojobsinvoicelines.
@@ -84,33 +120,35 @@ public class AutojobsinvoicelinesResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsinvoicelines couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{invocieid}")
     public ResponseEntity<Autojobsinvoicelines> updateAutojobsinvoicelines(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invocieid", required = false) final Integer invocieid,
         @RequestBody Autojobsinvoicelines autojobsinvoicelines
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Autojobsinvoicelines : {}, {}", id, autojobsinvoicelines);
-        if (autojobsinvoicelines.getId() == null) {
+        LOG.debug("REST request to update Autojobsinvoicelines : {}, {}", invocieid, autojobsinvoicelines);
+        if (autojobsinvoicelines.getInvocieid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsinvoicelines.getId())) {
+        if (!Objects.equals(invocieid, autojobsinvoicelines.getInvocieid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsinvoicelinesRepository.existsById(id)) {
+        if (!autojobsinvoicelinesRepository.existsById(invocieid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         autojobsinvoicelines = autojobsinvoicelinesService.update(autojobsinvoicelines);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString()))
+            .headers(
+                HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getInvocieid().toString())
+            )
             .body(autojobsinvoicelines);
     }
 
     /**
      * {@code PATCH  /autojobsinvoicelines/:id} : Partial updates given fields of an existing autojobsinvoicelines, field will ignore if it is null
      *
-     * @param id the id of the autojobsinvoicelines to save.
+     * @param invocieid the id of the autojobsinvoicelines to save.
      * @param autojobsinvoicelines the autojobsinvoicelines to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated autojobsinvoicelines,
      * or with status {@code 400 (Bad Request)} if the autojobsinvoicelines is not valid,
@@ -118,20 +156,20 @@ public class AutojobsinvoicelinesResource {
      * or with status {@code 500 (Internal Server Error)} if the autojobsinvoicelines couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{invocieid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Autojobsinvoicelines> partialUpdateAutojobsinvoicelines(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "invocieid", required = false) final Integer invocieid,
         @RequestBody Autojobsinvoicelines autojobsinvoicelines
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Autojobsinvoicelines partially : {}, {}", id, autojobsinvoicelines);
-        if (autojobsinvoicelines.getId() == null) {
+        LOG.debug("REST request to partial update Autojobsinvoicelines partially : {}, {}", invocieid, autojobsinvoicelines);
+        if (autojobsinvoicelines.getInvocieid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, autojobsinvoicelines.getId())) {
+        if (!Objects.equals(invocieid, autojobsinvoicelines.getInvocieid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!autojobsinvoicelinesRepository.existsById(id)) {
+        if (!autojobsinvoicelinesRepository.existsById(invocieid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -139,7 +177,7 @@ public class AutojobsinvoicelinesResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getInvocieid().toString())
         );
     }
 
@@ -177,22 +215,44 @@ public class AutojobsinvoicelinesResource {
     /**
      * {@code GET  /autojobsinvoicelines/:id} : get the "id" autojobsinvoicelines.
      *
-     * @param id the id of the autojobsinvoicelines to retrieve.
+     * @param invocieid the id of the autojobsinvoicelines to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the autojobsinvoicelines, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Autojobsinvoicelines> getAutojobsinvoicelines(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Autojobsinvoicelines : {}", id);
-        Optional<Autojobsinvoicelines> autojobsinvoicelines = autojobsinvoicelinesService.findOne(id);
+    @GetMapping("/{invocieid}")
+    public ResponseEntity<Autojobsinvoicelines> getAutojobsinvoicelines(@PathVariable("invocieid") Integer invocieid) {
+        LOG.debug("REST request to get Autojobsinvoicelines : {}", invocieid);
+        Optional<Autojobsinvoicelines> autojobsinvoicelines = autojobsinvoicelinesService.findOne(invocieid);
         return ResponseUtil.wrapOrNotFound(autojobsinvoicelines);
     }
 
+    /**
+     * {@code GET  /autojobsinvoicelines/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param invocieID the invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-invoice-id")
+    public ResponseEntity<List<Autojobsinvoicelines>> getAutojobsinvoicelinesByInvoiceId(
+        @RequestParam(required = false) Integer invocieID
+    ) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", invocieID);
+
+        List<Autojobsinvoicelines> result;
+
+        if (invocieID != null) {
+            result = autojobsinvoicelinesService.fetchJobInvoiceLines(invocieID);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
+    }
     /**
      * {@code DELETE  /autojobsinvoicelines/:id} : delete the "id" autojobsinvoicelines.
      *
      * @param id the id of the autojobsinvoicelines to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAutojobsinvoicelines(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Autojobsinvoicelines : {}", id);
@@ -200,5 +260,5 @@ public class AutojobsinvoicelinesResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
-    }
+    } */
 }

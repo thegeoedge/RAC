@@ -15,11 +15,7 @@ public class WorkshopVehicleWorkList implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
-    private Long id;
-
-    @Column(name = "vehicleworkid")
+    @Column(name = "vehicleworkid", nullable = false)
     private Integer vehicleworkid;
 
     @Column(name = "lineid")
@@ -47,19 +43,6 @@ public class WorkshopVehicleWorkList implements Serializable {
     private Float estimatevalue;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public WorkshopVehicleWorkList id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getVehicleworkid() {
         return this.vehicleworkid;
@@ -188,7 +171,7 @@ public class WorkshopVehicleWorkList implements Serializable {
         if (!(o instanceof WorkshopVehicleWorkList)) {
             return false;
         }
-        return getId() != null && getId().equals(((WorkshopVehicleWorkList) o).getId());
+        return getVehicleworkid() != null && getVehicleworkid().equals(((WorkshopVehicleWorkList) o).getVehicleworkid());
     }
 
     @Override
@@ -201,8 +184,8 @@ public class WorkshopVehicleWorkList implements Serializable {
     @Override
     public String toString() {
         return "WorkshopVehicleWorkList{" +
-            "id=" + getId() +
-            ", vehicleworkid=" + getVehicleworkid() +
+            
+            "vehicleworkid=" + getVehicleworkid() +
             ", lineid=" + getLineid() +
             ", workid=" + getWorkid() +
             ", workshopwork='" + getWorkshopwork() + "'" +

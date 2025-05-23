@@ -102,8 +102,6 @@
                 <!-- <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading"> Autocarejob Instruction</h2> -->
 
                 <div>
-                  <jhi-alert-error></jhi-alert-error>
-
                   @if (editForm.controls.id.value !== null) {
                     <div class="row align-items-center mt-3 mb-3" *ngIf="false">
                       <label class="col-auto form-label" for="field_id">ID</label>
@@ -626,7 +624,7 @@
                             min="1"
                             [max]="item.availablequantity ?? null"
                             [ngModelOptions]="{ standalone: true }"
-                            (input)="updateItemTotal()"
+                            (input)="updateItemTotal(); updateItemsArrayFromSelected()"
                           />
                         </td>
 
@@ -638,13 +636,13 @@
                             min="0"
                             max="100"
                             [ngModelOptions]="{ standalone: true }"
-                            (input)="updateItemTotal()"
+                            (input)="updateItemTotal(); updateItemsArrayFromSelected()"
                           />
                           <input
                             type="checkbox"
                             [(ngModel)]="item.activeitem"
                             [ngModelOptions]="{ standalone: true }"
-                            (change)="updateItemTotal()"
+                            (change)="updateItemTotal(); updateItemsArrayFromSelected()"
                             title="Check to apply fixed discount, uncheck for %"
                           />value
                         </td>

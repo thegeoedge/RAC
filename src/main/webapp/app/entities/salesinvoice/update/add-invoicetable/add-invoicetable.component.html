@@ -33,9 +33,9 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Description</th>
-          <th>Price</th>
-          <th>Actions</th>
+          <th style="text-align: right">Description</th>
+          <th style="text-align: right">Price</th>
+          <th *ngIf="false">Actions</th>
         </tr>
       </thead>
       <tbody formArrayName="salesInvoiceLines">
@@ -53,7 +53,7 @@
               readonly
             />
           </td>
-          <td>
+          <td *ngIf="false">
             <button type="button" class="btn btn-danger" (click)="removeLine(i)">Delete</button>
           </td>
         </tr>

@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.SalesInvoiceLines;
 import com.heavenscode.rac.repository.SalesInvoiceLinesRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,11 @@ public class SalesInvoiceLinesService {
     private static final Logger LOG = LoggerFactory.getLogger(SalesInvoiceLinesService.class);
 
     private final SalesInvoiceLinesRepository salesInvoiceLinesRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public SalesInvoiceLinesService(SalesInvoiceLinesRepository salesInvoiceLinesRepository) {
+    public SalesInvoiceLinesService(SalesInvoiceLinesRepository salesInvoiceLinesRepository, JdbcTemplate jdbcTemplate) {
         this.salesInvoiceLinesRepository = salesInvoiceLinesRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -32,6 +36,32 @@ public class SalesInvoiceLinesService {
     public SalesInvoiceLines save(SalesInvoiceLines salesInvoiceLines) {
         LOG.debug("Request to save SalesInvoiceLines : {}", salesInvoiceLines);
         return salesInvoiceLinesRepository.save(salesInvoiceLines);
+    }
+
+    public List<SalesInvoiceLines> fetchSalesInvoiceLines(int invocieID) {
+        String sql = "SELECT * FROM SalesInvoiceLines WHERE InvocieID = ?";
+        return jdbcTemplate.query(sql, new Object[] { invocieID }, (rs, rowNum) -> {
+            SalesInvoiceLines line = new SalesInvoiceLines();
+            line.setInvoiceid(rs.getInt("InvocieID"));
+            line.setLineid(rs.getInt("LineID"));
+            line.setItemid(rs.getInt("ItemID"));
+            line.setItemcode(rs.getString("ItemCode"));
+            line.setItemname(rs.getString("ItemName"));
+            line.setDescription(rs.getString("Description"));
+            line.setUnitofmeasurement(rs.getString("UnitOfMeasurement"));
+            line.setQuantity(rs.getFloat("Quantity"));
+            line.setItemcost(rs.getFloat("ItemCost"));
+            line.setItemprice(rs.getFloat("ItemPrice"));
+            line.setDiscount(rs.getFloat("Discount"));
+            line.setTax(rs.getFloat("Tax"));
+            line.setSellingprice(rs.getFloat("SellingPrice"));
+            line.setLinetotal(rs.getFloat("LineTotal"));
+            line.setLmu(rs.getInt("LMU"));
+
+            line.setNbt(rs.getBoolean("NBT"));
+            line.setVat(rs.getBoolean("VAT"));
+            return line;
+        });
     }
 
     /**
@@ -55,11 +85,8 @@ public class SalesInvoiceLinesService {
         LOG.debug("Request to partially update SalesInvoiceLines : {}", salesInvoiceLines);
 
         return salesInvoiceLinesRepository
-            .findById(salesInvoiceLines.getId())
+            .findById(salesInvoiceLines.getInvoiceid())
             .map(existingSalesInvoiceLines -> {
-                if (salesInvoiceLines.getInvoiceid() != null) {
-                    existingSalesInvoiceLines.setInvoiceid(salesInvoiceLines.getInvoiceid());
-                }
                 if (salesInvoiceLines.getLineid() != null) {
                     existingSalesInvoiceLines.setLineid(salesInvoiceLines.getLineid());
                 }
@@ -124,7 +151,7 @@ public class SalesInvoiceLinesService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<SalesInvoiceLines> findOne(Long id) {
+    public Optional<SalesInvoiceLines> findOne(Integer id) {
         LOG.debug("Request to get SalesInvoiceLines : {}", id);
         return salesInvoiceLinesRepository.findById(id);
     }
@@ -134,7 +161,7 @@ public class SalesInvoiceLinesService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete SalesInvoiceLines : {}", id);
         salesInvoiceLinesRepository.deleteById(id);
     }

@@ -28,6 +28,7 @@ import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
 import { AccountsService } from '../accounts/service/accounts.service';
 import { SalesinvoiceService } from '../salesinvoice/service/salesinvoice.service';
+import { PartialUpdateSystemSettings, SystemSettingsService } from '../system-settings/service/system-settings.service';
 @Component({
   selector: 'app-receipt-modal',
   standalone: true,
@@ -71,6 +72,8 @@ export class ReceiptModalComponent implements OnChanges {
   salesInvoiceService = inject(SalesinvoiceService);
   salesinvoiceupdate = inject(SalesinvoiceUpdateComponent);
   invoicelines = inject(SalesInvoiceLinesService);
+
+  systemsettings = inject(SystemSettingsService);
   protected receiptpaymentsdetailsService = inject(ReceiptpaymentsdetailsService);
   protected receiptpaymentsdetailsFormService = inject(ReceiptpaymentsdetailsFormService);
   protected banksService = inject(BanksService);
@@ -81,10 +84,45 @@ export class ReceiptModalComponent implements OnChanges {
   customeraccid = inject(CustomerService);
   transtactions = inject(TransactionsService);
   acc = inject(AccountsService);
+  nextvalue: string = ''; // Correct declaration
+  newnextvalue: string = '';
+  newlastvalue: string = '';
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ReceiptpaymentsdetailsFormGroup = this.receiptpaymentsdetailsFormService.createReceiptpaymentsdetailsFormGroup();
   paymentmethods = inject(PaymentMethodService);
   ngOnChanges(changes: SimpleChanges): void {
+    this.systemsettings.find(6).subscribe(response => {
+      console.log('Full System Settings Responseee:', response);
+
+      if (response.body) {
+        console.log('System Settings Next Value:', response.body.nextValue);
+        console.log('System Settings Last Value:', response.body.lastValue);
+
+        this.nextvalue = response.body.nextValue ?? '';
+        this.newlastvalue = response.body.lastValue ?? ''; // Ensure lastValue is assigned
+
+        console.log('Current Next Value:', this.nextvalue);
+        console.log('Current Last Value:', this.newlastvalue);
+
+        // Increment both values
+        const newId = this.incrementId(this.nextvalue);
+        const newLastId = this.incrementId(this.newlastvalue.toString());
+
+        console.log('New Next Value:', newId);
+        console.log('New Last Value:', newLastId);
+
+        // Store new values
+        this.newnextvalue = newId;
+        this.newlastvalue = newLastId;
+        console.log('New Next Valuwwwwwwwwwwwwwwwwwwwwe:', this.newnextvalue);
+        console.log('New Last Valwwwwwue:', this.newlastvalue);
+        //  this.editForm.patchValue({ code: this.nextvalue });
+        //const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
+        // console.log('salessssssssssssswwwsssss', salesinvoice);
+      } else {
+        console.log('No body found in response');
+      }
+    });
     if (changes['receiptpaymentsdetails'] && changes['receiptpaymentsdetails'].currentValue) {
       console.log('Updated receiptpaymentsdetails:', changes['receiptpaymentsdetails'].currentValue); // Logs the new value
       this.updateForm(this.receiptpaymentsdetails);
@@ -121,6 +159,7 @@ export class ReceiptModalComponent implements OnChanges {
   // Log for debugging
   ngOnInit() {
     console.log('selectedOption:', this.selectedOption);
+
     // Call the method to fetch account ID
     // Call the method to fetch payment methods
   }
@@ -241,25 +280,25 @@ export class ReceiptModalComponent implements OnChanges {
           },
         });
         // Do something with the accounts
+        this.transaction.subId = this.invoicelines.getSubId();
+
+        this.transaction.refDoc = this.invoicecode ? this.invoicecode.toString() : '';
+        this.transaction.debit = this.totalamount;
+
+        console.log('Updated transaction:', this.transaction);
+        console.log('Transaction ID:', this.invoicecode);
+
+        this.transtactions.create(this.transaction).subscribe({
+          next: response => {
+            console.log('Transaction created successfully:', response.body);
+          },
+          error: error => {
+            console.error('Error creating transaction:', error);
+          },
+        });
       },
       error: err => {
         console.error('Failed to fetch accounts:', err);
-      },
-    });
-
-    this.transaction.subId = this.invoicelines.getSubId();
-    this.transaction.refDoc = this.invoicecode ? this.invoicecode.toString() : '';
-    this.transaction.debit = this.totalamount;
-
-    console.log('Updated transaction:', this.transaction);
-    console.log('Transaction ID:', this.invoicecode);
-
-    this.transtactions.create(this.transaction).subscribe({
-      next: response => {
-        console.log('Transaction created successfully:', response.body);
-      },
-      error: error => {
-        console.error('Error creating transaction:', error);
       },
     });
   }
@@ -348,19 +387,19 @@ export class ReceiptModalComponent implements OnChanges {
   }
   receipt = {
     code: 'string',
-    receiptdate: dayjs('2025-02-27T16:44:59.467Z'),
+    receiptdate: dayjs(),
     customername: 'string',
     customeraddress: 'string',
     totalamount: 0,
     totalamountinword: 'string',
     comments: 'string',
     lmu: 0,
-    lmd: dayjs('2025-02-27T16:44:59.467Z'),
+    lmd: dayjs(),
     termid: 0,
     term: 'string',
-    date: dayjs('2025-02-27T16:44:59.467Z'),
+    date: dayjs(),
     amount: 0,
-    checkdate: dayjs('2025-02-27T16:44:59.467Z'),
+    checkdate: dayjs(),
     checkno: 'string',
     bank: 'string',
     customerid: 0,
@@ -381,7 +420,7 @@ export class ReceiptModalComponent implements OnChanges {
     discounttaken: 0, // Discount taken (Numeric)
     amountreceived: 0, // Amount received (Numeric)
     lmu: 0, // Last Modified User (Numeric)
-    lmd: dayjs('2025-02-27T16:44:59.467Z'), // Last Modified Date (Date)
+    lmd: dayjs(), // Last Modified Date (Date)
     accountid: 0, // Account ID (Numeric)
   };
   receiptPaymentDetail = {
@@ -391,8 +430,8 @@ export class ReceiptModalComponent implements OnChanges {
     totalreceiptamount: 0,
     checkqueamount: 0,
     checkqueno: '',
-    checkquedate: dayjs('2025-02-27T16:44:59.467Z'),
-    checkqueexpiredate: dayjs('2025-02-27T16:44:59.467Z'),
+    checkquedate: dayjs(),
+    checkqueexpiredate: dayjs(),
     bankname: '',
     bankid: 0,
     bankbranchname: '',
@@ -402,7 +441,7 @@ export class ReceiptModalComponent implements OnChanges {
     reference: '',
     otherdetails: '',
     lmu: 0,
-    lmd: dayjs('2025-02-27T16:44:59.467Z'),
+    lmd: dayjs(),
     termid: 0,
     termname: '',
     accountno: '',
@@ -432,41 +471,70 @@ export class ReceiptModalComponent implements OnChanges {
     this.isSaving = true;
     const receiptpaymentsdetails = this.receiptpaymentsdetailsFormService.getReceiptpaymentsdetails(this.editForm);
 
-    if (receiptpaymentsdetails.id !== null) {
-      // this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
-    } else {
-      // First, save receipt and wait for the response
-      this.subscribeToSaveResponse(this.reciptService.create(this.receipt), receiptId => {
-        // After getting the receipt ID, assign it to receiptlines
-        this.receiptlines.accountid = this.accountId;
-        this.receiptlines.amountreceived = this.cash;
-        this.receiptlines.id = receiptId; // Use the received ID
+    // this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
 
-        console.log('Assigned receipt ID to receipt lines:', this.receiptlines.id);
-        console.log('chqqqq', this.checkno);
-        // Now, save receiptlines
-        this.subscribeToSaveResponse(this.reciptlines.create(this.receiptlines));
-        this.receiptPaymentDetail.id = receiptId;
-        this.receiptPaymentDetail.lineid = 1;
-        this.receiptPaymentDetail.termid = this.termid;
-        this.receiptPaymentDetail.termname = this.method.toString();
-        this.receiptPaymentDetail.checkqueamount = this.cheqam;
-        this.receiptPaymentDetail.checkqueno = this.cheque ? this.cheque.toString() : '';
-        this.receiptPaymentDetail.checkqueexpiredate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
-        this.receiptPaymentDetail.checkquedate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
-        this.receiptPaymentDetail.bankname = this.bankname;
-        this.receiptPaymentDetail.bankid = this.bankid;
-        this.receiptPaymentDetail.bankbranchname = this.Branch;
-        this.receiptPaymentDetail.accountid = this.accountId;
-        this.receiptPaymentDetail.chequestatusid = 1;
-        this.receiptPaymentDetail.paymentamount = this.cheqam;
-        console.log('hhhhhhh', this.receiptPaymentDetail);
-        this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
-        this.salesinvoiceupdate.save();
-        this.fetchacc();
-        this.addtrasction();
+    // First, save receipt and wait for the response
+    this.subscribeToSaveResponse(this.reciptService.create(this.receipt), receiptId => {
+      // After getting the receipt ID, assign it to receiptlines
+      this.receiptlines.accountid = this.accountId;
+      this.receiptlines.amountreceived = this.cash;
+      this.receiptlines.id = receiptId; // Use the received ID
+      this.receiptlines.invoicecode = this.invoicecode ? this.invoicecode.toString() : '';
+      this.receiptlines.originalamount = this.totalamount;
+      //this.receiptlines.amountreceived = this.cheqam;
+      console.log('this.cheqamcccccccccccccc', this.cheqam);
+      if (this.cheqam != 0) {
+        this.receiptlines.amountreceived = this.cheqam;
+        this.receiptlines.amountowing = this.totalamount - this.cheqam;
+      }
+      if (this.cheqam == 0) {
+        this.receiptlines.amountreceived = this.cash;
+        this.receiptlines.amountowing = this.totalamount - this.cash;
+      }
+      if (this.method == 'Card/Other') {
+        this.receiptlines.amountreceived = this.totalamount;
+      }
+
+      console.log('Assigned receipt ID to receipt linesmmmmmmmmmmmmmmmmmmmmmmmmm:', this.receiptlines);
+      console.log('chqqqq', this.checkno);
+      // Now, save receiptlines
+      this.subscribeToSaveResponse(this.reciptlines.create(this.receiptlines));
+      this.receiptPaymentDetail.id = receiptId;
+      this.receiptPaymentDetail.lineid = 1;
+      this.receiptPaymentDetail.termid = this.termid;
+      this.receiptPaymentDetail.termname = this.method.toString();
+      this.receiptPaymentDetail.checkqueamount = this.cheqam;
+      this.receiptPaymentDetail.checkqueno = this.cheque ? this.cheque.toString() : '';
+      this.receiptPaymentDetail.checkqueexpiredate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+      this.receiptPaymentDetail.checkquedate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+      this.receiptPaymentDetail.bankname = this.bankname;
+      this.receiptPaymentDetail.bankid = this.bankid;
+      this.receiptPaymentDetail.bankbranchname = this.Branch;
+      this.receiptPaymentDetail.accountid = this.accountId;
+      this.receiptPaymentDetail.chequestatusid = 1;
+      this.receiptPaymentDetail.paymentamount = this.cheqam;
+      console.log('hhhhhhh', this.receiptPaymentDetail);
+      const systemSettingsUpdatee: PartialUpdateSystemSettings = {
+        id: 6,
+        lastValue: this.newnextvalue,
+        nextValue: this.incrementId(this.newnextvalue.toString()),
+      };
+
+      console.log('System Settings Update:', systemSettingsUpdatee);
+
+      this.salesInvoiceService.partialUpdatee(systemSettingsUpdatee).subscribe({
+        next: response => {
+          console.log('System Settings Updatedddddddddddddddddddddd:', response);
+        },
+        error: err => {
+          console.error('Error updating system settings:', err);
+        },
       });
-    }
+      this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
+      this.salesinvoiceupdate.save();
+      //  this.fetchacc();
+      // this.addtrasction();
+    });
   }
 
   // Modified subscribeToSaveResponse to accept a callback
@@ -488,13 +556,31 @@ export class ReceiptModalComponent implements OnChanges {
       },
     });
   }
+  dcrementId(id: string): string {
+    const match = id.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) return id; // Return as is if it doesn't match the pattern
 
+    const prefix = match[1]; // Extract letters (e.g., "SI")
+    const number = parseInt(match[2], 10) - 1; // Increment the number part
+
+    return `${prefix}${number}`;
+  }
+  incrementId(id: string): string {
+    const match = id.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) return id; // Return as is if it doesn't match the pattern
+
+    const prefix = match[1]; // Extract letters (e.g., "SI")
+    const number = parseInt(match[2], 10) + 1; // Increment the number part
+
+    return `${prefix}${number}`;
+  }
   @Output() methodChanged: EventEmitter<string> = new EventEmitter<string>(); // Define the EventEmitter
 
   method: String = '';
   onOptionChange(option: number): void {
     this.selectedOption = option;
     console.log('aaaa', this.accountId);
+
     // Updating receipt object with the required properties
     this.receipt.totalamount = this.totalamount;
     this.receipt.customername = this.customername ?? '';
@@ -512,7 +598,8 @@ export class ReceiptModalComponent implements OnChanges {
     this.receipt.deposited = this.deposited ?? true;
     this.receipt.createdby = this.createdby ?? 0;
     this.receipt.totalamountinword = this.totalamountinword ?? '';
-    this.receipt.code = this.newcode ?? '';
+
+    this.receipt.code = this.newnextvalue ?? '';
     this.receipt.receiptdate = this.receiptdate ? dayjs(this.receiptdate.toISOString()) : dayjs();
     this.receipt.vehicleno = this.vehicleno ?? '';
 

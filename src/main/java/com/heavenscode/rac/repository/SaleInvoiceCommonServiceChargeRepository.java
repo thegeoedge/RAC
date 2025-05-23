@@ -10,4 +10,4 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface SaleInvoiceCommonServiceChargeRepository
-    extends JpaRepository<SaleInvoiceCommonServiceCharge, Long>, JpaSpecificationExecutor<SaleInvoiceCommonServiceCharge> {}
+    extends JpaRepository<SaleInvoiceCommonServiceCharge, Integer>, JpaSpecificationExecutor<SaleInvoiceCommonServiceCharge> {}

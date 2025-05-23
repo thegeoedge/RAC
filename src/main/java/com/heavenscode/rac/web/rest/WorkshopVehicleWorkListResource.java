@@ -55,12 +55,17 @@ public class WorkshopVehicleWorkListResource {
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
         LOG.debug("REST request to save WorkshopVehicleWorkList : {}", workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() != null) {
-            throw new BadRequestAlertException("A new workshopVehicleWorkList cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+
         workshopVehicleWorkList = workshopVehicleWorkListRepository.save(workshopVehicleWorkList);
-        return ResponseEntity.created(new URI("/api/workshop-vehicle-work-lists/" + workshopVehicleWorkList.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString()))
+        return ResponseEntity.created(new URI("/api/workshop-vehicle-work-lists/" + workshopVehicleWorkList.getVehicleworkid()))
+            .headers(
+                HeaderUtil.createEntityCreationAlert(
+                    applicationName,
+                    false,
+                    ENTITY_NAME,
+                    workshopVehicleWorkList.getVehicleworkid().toString()
+                )
+            )
             .body(workshopVehicleWorkList);
     }
 
@@ -74,26 +79,33 @@ public class WorkshopVehicleWorkListResource {
      * or with status {@code 500 (Internal Server Error)} if the workshopVehicleWorkList couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{vehicleworkid}")
     public ResponseEntity<WorkshopVehicleWorkList> updateWorkshopVehicleWorkList(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "vehicleworkid", required = false) final Integer vehicleworkid,
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
-        LOG.debug("REST request to update WorkshopVehicleWorkList : {}, {}", id, workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() == null) {
+        LOG.debug("REST request to update WorkshopVehicleWorkList : {}, {}", vehicleworkid, workshopVehicleWorkList);
+        if (workshopVehicleWorkList.getVehicleworkid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, workshopVehicleWorkList.getId())) {
+        if (!Objects.equals(vehicleworkid, workshopVehicleWorkList.getVehicleworkid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!workshopVehicleWorkListRepository.existsById(id)) {
+        if (!workshopVehicleWorkListRepository.existsById(vehicleworkid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         workshopVehicleWorkList = workshopVehicleWorkListRepository.save(workshopVehicleWorkList);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString()))
+            .headers(
+                HeaderUtil.createEntityUpdateAlert(
+                    applicationName,
+                    false,
+                    ENTITY_NAME,
+                    workshopVehicleWorkList.getVehicleworkid().toString()
+                )
+            )
             .body(workshopVehicleWorkList);
     }
 
@@ -108,29 +120,26 @@ public class WorkshopVehicleWorkListResource {
      * or with status {@code 500 (Internal Server Error)} if the workshopVehicleWorkList couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{vehicleworkid}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<WorkshopVehicleWorkList> partialUpdateWorkshopVehicleWorkList(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "vehicleworkid", required = false) final Integer vehicleworkid,
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update WorkshopVehicleWorkList partially : {}, {}", id, workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() == null) {
+        LOG.debug("REST request to partial update WorkshopVehicleWorkList partially : {}, {}", vehicleworkid, workshopVehicleWorkList);
+        if (workshopVehicleWorkList.getVehicleworkid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, workshopVehicleWorkList.getId())) {
+        if (!Objects.equals(vehicleworkid, workshopVehicleWorkList.getVehicleworkid())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!workshopVehicleWorkListRepository.existsById(id)) {
+        if (!workshopVehicleWorkListRepository.existsById(vehicleworkid)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         Optional<WorkshopVehicleWorkList> result = workshopVehicleWorkListRepository
-            .findById(workshopVehicleWorkList.getId())
+            .findById(workshopVehicleWorkList.getVehicleworkid())
             .map(existingWorkshopVehicleWorkList -> {
-                if (workshopVehicleWorkList.getVehicleworkid() != null) {
-                    existingWorkshopVehicleWorkList.setVehicleworkid(workshopVehicleWorkList.getVehicleworkid());
-                }
                 if (workshopVehicleWorkList.getLineid() != null) {
                     existingWorkshopVehicleWorkList.setLineid(workshopVehicleWorkList.getLineid());
                 }
@@ -162,7 +171,7 @@ public class WorkshopVehicleWorkListResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getVehicleworkid().toString())
         );
     }
 
@@ -188,25 +197,24 @@ public class WorkshopVehicleWorkListResource {
      * @param id the id of the workshopVehicleWorkList to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the workshopVehicleWorkList, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<WorkshopVehicleWorkList> getWorkshopVehicleWorkList(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get WorkshopVehicleWorkList : {}", id);
-        Optional<WorkshopVehicleWorkList> workshopVehicleWorkList = workshopVehicleWorkListRepository.findById(id);
+    @GetMapping("/{vehicleworkid}")
+    public ResponseEntity<WorkshopVehicleWorkList> getWorkshopVehicleWorkList(@PathVariable("vehicleworkid") Integer vehicleworkid) {
+        LOG.debug("REST request to get WorkshopVehicleWorkList : {}", vehicleworkid);
+        Optional<WorkshopVehicleWorkList> workshopVehicleWorkList = workshopVehicleWorkListRepository.findById(vehicleworkid);
         return ResponseUtil.wrapOrNotFound(workshopVehicleWorkList);
     }
-
     /**
      * {@code DELETE  /workshop-vehicle-work-lists/:id} : delete the "id" workshopVehicleWorkList.
      *
      * @param id the id of the workshopVehicleWorkList to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkshopVehicleWorkList(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete WorkshopVehicleWorkList : {}", id);
         workshopVehicleWorkListRepository.deleteById(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
-            .build();
-    }
+          .build();
+    } */
 }

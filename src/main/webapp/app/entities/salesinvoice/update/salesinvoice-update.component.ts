@@ -7,7 +7,7 @@ import { debounceTime } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-
+import { SaleInvoiceCommonServiceChargeService } from 'app/entities/sale-invoice-common-service-charge/service/sale-invoice-common-service-charge.service';
 import { ISalesInvoiceLines } from 'app/entities/sales-invoice-lines/sales-invoice-lines.model';
 import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-common-service-charge/sale-invoice-common-service-charge.model';
 import { ISalesInvoiceServiceChargeLine } from 'app/entities/sales-invoice-service-charge-line/sales-invoice-service-charge-line/sales-invoice-service-charge-line.model';
@@ -22,6 +22,7 @@ import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { IInventory } from 'app/entities/inventory/inventory.model';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
+import { SalesInvoiceServiceChargeLineService } from 'app/entities/sales-invoice-service-charge-line/service/sales-invoice-service-charge-line.service';
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
@@ -62,6 +63,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   selectedReceipt: String = 'hello world';
   salesinvoice: ISalesinvoice | null = null;
   showCodeField: boolean = false;
+  protected saleInvoiceCommonServiceChargeService = inject(SaleInvoiceCommonServiceChargeService);
   @ViewChild(SalesInvoiceLinesUpdateComponent) salesInvoiceLinesUpdateComponent!: SalesInvoiceLinesUpdateComponent;
   vehicle = inject(CustomervehicleService);
   customer = inject(CustomerService);
@@ -81,7 +83,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
   protected activatedRoute = inject(ActivatedRoute);
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
-
+  protected servicecharge = inject(SalesInvoiceServiceChargeLineService);
   filteredItems: IInventory[][] = [];
   ISalesInvoiceLines: ISalesInvoiceLines[] = [];
   ISalesInvoiceServiceChargeLine: ISalesInvoiceServiceChargeLine[] = [];
@@ -222,6 +224,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.get('subtotal')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.patchValue({ vehicleno: this.vehicleno });
+
+    // console.log('Total1:', this.total1, 'Total2:', this.total2, 'total3',this.total3,'SubTotal:', this.subTotal);
+
+    //  this.editForm.patchValue({
+    //  subtotal: this.subTotal,
+    //  });
   }
   get subtotalControl(): AbstractControl {
     return this.editForm.get('subtotal')!;
@@ -304,7 +312,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     console.log('Selected Vehicle Number:', selectedVehicleNumber);
     this.editForm.patchValue({ vehicleno: selectedVehicleNumber, code: this.nextvalue });
     this.invoicecode = this.nextvalue;
-    console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.invoicecode);
+    console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.editForm.get('vehicleno')?.value);
+    this.salesInvoiceService.setVehicleNo(selectedVehicleNumber);
   }
 
   incrementId(id: string): string {
@@ -437,7 +446,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   calculateDiscount(): void {
     console.log('Form Values:', this.editForm.value); // Debug the entire form
 
-    const subTotal = Number(this.editForm.get('subTotal')?.value) || 0;
+    const subTotal = this.totalamount || 0;
     const valueDiscount = this.discountValue;
 
     console.log('Selected Discount Option:', this.discountOption); // Log the selected option
@@ -484,13 +493,17 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.total3 = total; // Update total from second child
     }
 
+    const total11: number = this.salesInvoiceLinesService.gettotalinvoicelines();
+    const total33: number = this.saleInvoiceCommonServiceChargeService.gettotalservicecommonlines();
+    const total22: number = this.servicecharge.gettotalservicelines();
     this.subTotal = this.total1 + this.total2 + this.total3; // Combine the totals
     this.totalamount = this.subTotal;
-    console.log('Total1:', this.total1, 'Total2:', this.total2, 'SubTotal:', this.subTotal);
+    console.log('Total1:', this.total1, 'Total2:', this.total2, 'total3', this.total3, 'SubTotal:', this.subTotal);
 
     this.editForm.patchValue({
       subtotal: this.subTotal,
     });
+    this.salesinvoiceService.setTotal(this.subTotal);
   }
 
   fetchedServicesCommon: { itemname: string; sellingprice: number }[] = [];
@@ -614,7 +627,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.fetchaccountid(salesInvoiceDummy.customername);
       this.customername = salesInvoiceDummy.customername;
       this.customeraddress = salesInvoiceDummy.customeraddress;
-      //  this.vehicleno = salesInvoiceDummy.vehicleno;
+      // this.vehicleno = this.editForm.get('vehicleno')?.value ?? '';
       this.receiptdate = salesInvoiceDummy.receiptdate;
       this.term = salesInvoiceDummy.term;
       this.date = salesInvoiceDummy.date;
@@ -636,7 +649,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       const transformedData = {
         id: null as unknown as number,
         customername: (salesInvoiceDummy as any).customername,
-        // vehicleno: (salesInvoiceDummy as any).vehicleno,
+        vehicleno: this.editForm.get('vehicleno')?.value,
         customeraddress: (salesInvoiceDummy as any).customeraddress,
         autocarejobid: this.jobid || 0,
         subtotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
@@ -646,6 +659,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         code: this.nextvalue,
       };
       this.salesInvoiceService.setcustomer(this.customername);
+      this.salesInvoiceService.setCustomerId(this.customerid);
       this.invoicecode = this.nextvalue;
       console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.invoicecode);
       this.updateForm(transformedData);
@@ -818,7 +832,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.isSaving = true;
     this.editForm.patchValue({ amountowing: this.balance });
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
-    console.log('salesssssssssssssssssssssssss', salesinvoice);
+    if (salesinvoice.vehicleno == '') {
+      salesinvoice.vehicleno = this.salesInvoiceService.getVehicleNo();
+      console.log('vehicleno', salesinvoice);
+    }
+    console.log('salesssssssssssssssssssssssss', this.salesInvoiceService.getVehicleNo());
     const systemSettingsUpdate: PartialUpdateAutocarejob = { id: this.jobid, isjobclose: true }; // ✅ Fix applied
 
     this.autojob.partialUpdate(systemSettingsUpdate).subscribe({
@@ -875,6 +893,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
               this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id); // Call save from the child component
             }
+
+            this.salesInvoiceLinesUpdateComponent.transactionmodule(response.body.id);
             // alert("sucess?")
           }
         } else if (response.status === 200) {

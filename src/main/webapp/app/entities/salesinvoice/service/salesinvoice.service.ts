@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { map, catchError, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
@@ -45,19 +45,40 @@ export class SalesinvoiceService {
   protected resourceInvoiceLinesUrl = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines');
   protected resourceInvoiceLinesUrli = this.applicationConfigService.getEndpointFor('api/autojobsalesinvoiceservicechargelines');
 
-  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/autojobsaleinvoicecommonservicecharges');
-  resourceJobInvoiceUrl = this.applicationConfigService.getEndpointFor('api/autojobsinvoices');
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor(
+    'api/autojobsaleinvoicecommonservicecharges/by-invoice-idss',
+  );
+  protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines/by-invoice-id');
+  resourceJobInvoiceLinesUrly = this.applicationConfigService.getEndpointFor('api/autojobsalesinvoiceservicechargelines/by-invoice-ids');
   fetchService(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrly}`, { params, observe: 'response' });
   }
+
+  resourceJobInvoiceUrl = this.applicationConfigService.getEndpointFor('api/autojobsinvoices');
+
   fetchJobInvoice(id: number): Observable<HttpResponse<any>> {
     return this.http.get<any>(`/api/autojobsinvoices?id.equals=${id}`, { observe: 'response' });
   }
 
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params, observe: 'response' });
+  }
+  vehicleno: string = '';
+  setVehicleNo(vehicleno: string): void {
+    this.vehicleno = vehicleno;
+  }
+  getVehicleNo(): string {
+    return this.vehicleno;
+  }
+
+  total: number = 0;
+  setTotal(total: number): void {
+    this.total = total;
+  }
+  getTotal(): number {
+    return this.total;
   }
   private customername: string = '';
   setcustomer(name: string): void {
@@ -66,6 +87,14 @@ export class SalesinvoiceService {
 
   getCustomerName(): string {
     return this.customername;
+  }
+
+  private customerid: number = 0;
+  setCustomerId(id: number): void {
+    this.customerid = id;
+  }
+  getCustomerId(): number {
+    return this.customerid;
   }
 
   fetchReceiptCode(): Observable<HttpResponse<any>> {
@@ -88,8 +117,8 @@ export class SalesinvoiceService {
   }
 
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invocieid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+    const params = new HttpParams().set('invocieID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlz}`, { params, observe: 'response' });
   }
 
   create(salesinvoice: NewSalesinvoice): Observable<EntityResponseType> {

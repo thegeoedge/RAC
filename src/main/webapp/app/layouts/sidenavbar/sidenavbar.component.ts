@@ -47,6 +47,12 @@ export default class SidenavbarComponent implements OnInit {
   ngOnInit(): void {
     this.entitiesNavbarItems = EntityNavbarItems;
     this.router.events.subscribe(() => {
+      if (this.checkURL('/printsalesinvoice')) {
+        const sidenav = document.querySelector('.sidenav') as HTMLElement;
+        if (sidenav) {
+          sidenav.style.display = 'none'; // Hide the sidenav
+        }
+      }
       if (this.checkURL('/login')) {
         const sidenav = document.querySelector('.sidenav') as HTMLElement;
         if (sidenav) {

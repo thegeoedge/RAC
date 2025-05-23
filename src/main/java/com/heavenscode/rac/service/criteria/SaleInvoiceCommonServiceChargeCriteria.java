@@ -49,7 +49,6 @@ public class SaleInvoiceCommonServiceChargeCriteria implements Serializable, Cri
     public SaleInvoiceCommonServiceChargeCriteria() {}
 
     public SaleInvoiceCommonServiceChargeCriteria(SaleInvoiceCommonServiceChargeCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.invoiceId = other.optionalInvoiceId().map(IntegerFilter::copy).orElse(null);
         this.lineId = other.optionalLineId().map(IntegerFilter::copy).orElse(null);
         this.optionId = other.optionalOptionId().map(IntegerFilter::copy).orElse(null);

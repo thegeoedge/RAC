@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.SalesInvoiceServiceChargeLine;
 import com.heavenscode.rac.repository.SalesInvoiceServiceChargeLineRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,14 @@ public class SalesInvoiceServiceChargeLineService {
     private static final Logger LOG = LoggerFactory.getLogger(SalesInvoiceServiceChargeLineService.class);
 
     private final SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public SalesInvoiceServiceChargeLineService(SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository) {
+    public SalesInvoiceServiceChargeLineService(
+        SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository,
+        JdbcTemplate jdbcTemplate
+    ) {
         this.salesInvoiceServiceChargeLineRepository = salesInvoiceServiceChargeLineRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -32,6 +39,24 @@ public class SalesInvoiceServiceChargeLineService {
     public SalesInvoiceServiceChargeLine save(SalesInvoiceServiceChargeLine salesInvoiceServiceChargeLine) {
         LOG.debug("Request to save SalesInvoiceServiceChargeLine : {}", salesInvoiceServiceChargeLine);
         return salesInvoiceServiceChargeLineRepository.save(salesInvoiceServiceChargeLine);
+    }
+
+    public List<SalesInvoiceServiceChargeLine> fetchServiceChargeLines(int invoiceId) {
+        String sql = "SELECT * FROM SalesInvoiceServiceChargeLine WHERE InvoiceId  = ?";
+        return jdbcTemplate.query(sql, new Object[] { invoiceId }, (rs, rowNum) -> {
+            SalesInvoiceServiceChargeLine line = new SalesInvoiceServiceChargeLine();
+            line.setInvoiceId(rs.getInt("invoiceid"));
+            line.setLineId(rs.getInt("lineid"));
+            line.setOptionId(rs.getInt("optionid"));
+            line.setServiceName(rs.getString("servicename"));
+            line.setServiceDescription(rs.getString("servicediscription"));
+            line.setValue(rs.getFloat("value"));
+
+            line.setIsCustomerService(rs.getBoolean("iscustomersrvice"));
+            line.setDiscount(rs.getFloat("discount"));
+            line.setServicePrice(rs.getFloat("serviceprice"));
+            return line;
+        });
     }
 
     /**
@@ -55,11 +80,8 @@ public class SalesInvoiceServiceChargeLineService {
         LOG.debug("Request to partially update SalesInvoiceServiceChargeLine : {}", salesInvoiceServiceChargeLine);
 
         return salesInvoiceServiceChargeLineRepository
-            .findById(salesInvoiceServiceChargeLine.getId())
+            .findById(salesInvoiceServiceChargeLine.getInvoiceId())
             .map(existingSalesInvoiceServiceChargeLine -> {
-                if (salesInvoiceServiceChargeLine.getInvoiceId() != null) {
-                    existingSalesInvoiceServiceChargeLine.setInvoiceId(salesInvoiceServiceChargeLine.getInvoiceId());
-                }
                 if (salesInvoiceServiceChargeLine.getLineId() != null) {
                     existingSalesInvoiceServiceChargeLine.setLineId(salesInvoiceServiceChargeLine.getLineId());
                 }
@@ -97,7 +119,7 @@ public class SalesInvoiceServiceChargeLineService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<SalesInvoiceServiceChargeLine> findOne(Long id) {
+    public Optional<SalesInvoiceServiceChargeLine> findOne(Integer id) {
         LOG.debug("Request to get SalesInvoiceServiceChargeLine : {}", id);
         return salesInvoiceServiceChargeLineRepository.findById(id);
     }
@@ -107,7 +129,7 @@ public class SalesInvoiceServiceChargeLineService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete SalesInvoiceServiceChargeLine : {}", id);
         salesInvoiceServiceChargeLineRepository.deleteById(id);
     }

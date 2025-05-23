@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.Billingserviceoptionvalues;
 import com.heavenscode.rac.repository.BillingserviceoptionvaluesRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,14 @@ public class BillingserviceoptionvaluesService {
     private static final Logger LOG = LoggerFactory.getLogger(BillingserviceoptionvaluesService.class);
 
     private final BillingserviceoptionvaluesRepository billingserviceoptionvaluesRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public BillingserviceoptionvaluesService(BillingserviceoptionvaluesRepository billingserviceoptionvaluesRepository) {
+    public BillingserviceoptionvaluesService(
+        BillingserviceoptionvaluesRepository billingserviceoptionvaluesRepository,
+        JdbcTemplate jdbcTemplate
+    ) {
         this.billingserviceoptionvaluesRepository = billingserviceoptionvaluesRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -32,6 +39,19 @@ public class BillingserviceoptionvaluesService {
     public Billingserviceoptionvalues save(Billingserviceoptionvalues billingserviceoptionvalues) {
         LOG.debug("Request to save Billingserviceoptionvalues : {}", billingserviceoptionvalues);
         return billingserviceoptionvaluesRepository.save(billingserviceoptionvalues);
+    }
+
+    public List<Billingserviceoptionvalues> fetchoptionvalues(int vehicletypeid) {
+        String sql = "SELECT * FROM billingserviceoptionvalues WHERE vehicletypeid = ?";
+        return jdbcTemplate.query(sql, new Object[] { vehicletypeid }, (rs, rowNum) -> {
+            Billingserviceoptionvalues item = new Billingserviceoptionvalues();
+            item.setVehicletypeid(rs.getInt("vehicletypeid"));
+            item.setBillingserviceoptionid(rs.getInt("billingserviceoptionid"));
+            item.setValue(rs.getFloat("value"));
+            item.setLmd(rs.getTimestamp("lmd").toInstant());
+            item.setLmu(rs.getInt("lmu"));
+            return item;
+        });
     }
 
     /**
@@ -55,11 +75,8 @@ public class BillingserviceoptionvaluesService {
         LOG.debug("Request to partially update Billingserviceoptionvalues : {}", billingserviceoptionvalues);
 
         return billingserviceoptionvaluesRepository
-            .findById(billingserviceoptionvalues.getId())
+            .findById(billingserviceoptionvalues.getVehicletypeid())
             .map(existingBillingserviceoptionvalues -> {
-                if (billingserviceoptionvalues.getVehicletypeid() != null) {
-                    existingBillingserviceoptionvalues.setVehicletypeid(billingserviceoptionvalues.getVehicletypeid());
-                }
                 if (billingserviceoptionvalues.getBillingserviceoptionid() != null) {
                     existingBillingserviceoptionvalues.setBillingserviceoptionid(billingserviceoptionvalues.getBillingserviceoptionid());
                 }
@@ -85,7 +102,7 @@ public class BillingserviceoptionvaluesService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<Billingserviceoptionvalues> findOne(Long id) {
+    public Optional<Billingserviceoptionvalues> findOne(Integer id) {
         LOG.debug("Request to get Billingserviceoptionvalues : {}", id);
         return billingserviceoptionvaluesRepository.findById(id);
     }
@@ -95,7 +112,7 @@ public class BillingserviceoptionvaluesService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    public void delete(Integer id) {
         LOG.debug("Request to delete Billingserviceoptionvalues : {}", id);
         billingserviceoptionvaluesRepository.deleteById(id);
     }

@@ -152,7 +152,8 @@ export class AutocareclosejobComponent implements OnInit {
         jobDate = today;
       }
 
-      queryObject['jobdate.greaterThan'] = `${jobDate}T00:00:00.000Z`;
+      queryObject['jobdate.greaterThanOrEqual'] = `${jobDate}T00:00:00.000Z`;
+      queryObject['jobdate.lessThanOrEqual'] = `${jobDate}T23:59:59.999Z`;
     } else if (this.selectedSearchType === 'vehicle') {
       if (this.searchValue) {
         queryObject['vehiclenumber.contains'] = this.searchValue;

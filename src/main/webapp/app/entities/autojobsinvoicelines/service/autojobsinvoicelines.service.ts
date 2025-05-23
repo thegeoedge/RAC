@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
@@ -30,12 +30,29 @@ export class AutojobsinvoicelinesService {
   protected applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines');
+  protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor(
+    'api/autojobsaleinvoicecommonservicecharges/by-invoice-idss',
+  );
+  protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines/by-invoice-id');
+  resourceJobInvoiceLinesUrly = this.applicationConfigService.getEndpointFor('api/autojobsalesinvoiceservicechargelines/by-invoice-ids');
 
   create(autojobsinvoicelines: NewAutojobsinvoicelines): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(autojobsinvoicelines);
     return this.http
       .post<RestAutojobsinvoicelines>(this.resourceUrl, copy, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+  fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invocieID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlz}`, { params, observe: 'response' });
+  }
+  fetchService(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceJobInvoiceLinesUrly}`, { params, observe: 'response' });
+  }
+  fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('invoiceID', id.toString());
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params, observe: 'response' });
   }
 
   update(autojobsinvoicelines: IAutojobsinvoicelines): Observable<EntityResponseType> {

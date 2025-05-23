@@ -142,6 +142,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   newnextvalue: String = '';
   newlastvalue: String = '';
   ngOnInit(): void {
+    console.log('sssssssssssssssssssssssssssss', this.itemsArray);
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
       console.log('Selected Vehicle Typeeeeeeeee:', this.vehicletypes.find(v => v.id === this.selectedVehicleTypeId)?.vehicletype);
 
@@ -186,7 +187,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
       this.loadDataFromBillingServiceOptionValuesEntities();
       this.loadVehicleTypes();
-      this.loadBillingServiceOptions();
+      //  this.loadBillingServiceOptions();
       this.loadBillingServiceOptionValues();
       this.loadDataFromWorkshopWorklistEntities();
       this.setAutoNextServiceDate();
@@ -234,7 +235,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   previousState(): void {
     window.history.back();
   }
-  vehicletypeId: number = 0;
+  vehicletypeId: number = 1;
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
@@ -251,7 +252,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.billingserviceoptionService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
       (res: HttpResponse<IBillingserviceoption[]>) => {
         this.billingserviceoption = [...this.billingserviceoption, ...(res.body || [])];
-
+        console.log('Responsezzzzzzzzzzzzzzzzzzzzzz:', this.billingserviceoption); // Log the full response
         const totalItems = res.headers.get('X-Total-Count');
         const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
         if (call) {
@@ -268,8 +269,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     let page = 0;
     const pageSize = 2000;
     this.billingserviceoptionvalues = [];
+    console.log('tttttttttttttttttttttt', this.vehicletypeId);
     this.loadBillingServiceOptions(() => {
-      this.billingserviceoptionvaluesService.query({ page, size: pageSize, 'vehicletypeid.equals': this.vehicletypeId }).subscribe(
+      this.billingserviceoptionvaluesService.fetchInvoiceLines(this.vehicletypeId).subscribe(
         (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
           console.log('Response:', res); // Log the full response
           console.log('Response Body:', res.body); // Log the response body
@@ -278,7 +280,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
           const totalItems = res.headers.get('X-Total-Count');
           console.log('Total Items:', totalItems); // Log total item count
-
+          console.log('Billing Service Option Valuexxxxxxxxxxxxxxxxxxxxxxs:', this.billingserviceoptionvalues); // Log the billing service option values
           const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
 
           console.log('Final Billing Service Option Values:', this.billingserviceoptionvalues);
@@ -348,7 +350,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   isServiceSelected(item: IBillingserviceoptionvalues): boolean {
-    return this.selectedServices.some(service => service.id === item.id);
+    return this.selectedServices.some(service => service.billingserviceoptionid === item.billingserviceoptionid);
   }
 
   // Define the serviceArray to hold the selected service details
@@ -676,9 +678,10 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   loadDataFromBillingServiceOptionValuesEntities() {
-    this.billingserviceoptionvaluesService.query().subscribe((res: any) => {
-      this.billingserviceoptionvalues = res.body;
-    });
+    //  this.billingserviceoptionvaluesService.query().subscribe((res: any) => {
+    //this.billingserviceoptionvalues = res.body;
+    // console.log('Billing Service Option Valueszzzz:', this.billingserviceoptionvalues);
+    // });
   }
 
   filteredVehicles: ICustomervehicle[] = [];
@@ -698,8 +701,8 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
   }
 
-  filtereditems: IInventory[] = [];
-  selectedItems: Array<IInventory & { discountPercentage: number; requestedQuantity: number }> = [];
+  filtereditems: any[] = [];
+  selectedItems: Array<any & { discountPercentage: number; requestedQuantity: number }> = [];
 
   onItemSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -717,6 +720,29 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.filtereditems = [];
     }
   }
+  updateItemsArrayFromSelected(): void {
+    for (const selectedItem of this.selectedItems) {
+      const targetItem = this.itemsArray.find(item => item.itemid === selectedItem.id);
+      if (targetItem) {
+        targetItem.quantity = selectedItem.requestedQuantity ?? 1;
+
+        // Apply discount logic if needed
+        let price = selectedItem.lastsellingprice ?? 0;
+        const discount = selectedItem.discountPercentage ?? 0;
+
+        if (selectedItem.activeitem) {
+          // Fixed discount value
+          price = price - discount;
+        } else {
+          // Percentage discount
+          price = price - (price * discount) / 100;
+        }
+
+        targetItem.linetotal = price * targetItem.quantity;
+      }
+    }
+  }
+
   itemsArray: Array<{
     id: number;
     invocieid: number;
@@ -754,7 +780,8 @@ export class AutocarejobInstructionComponent implements OnInit {
         itemname: selectedItem.name ?? '',
         description: selectedItem.description ?? '',
         unitofmeasurement: selectedItem.unitofmeasurement ?? '',
-        quantity: 1,
+        quantity: selectedItem.requestedQuantity ?? 1,
+
         itemcost: selectedItem.lastcost ?? 0,
         itemprice: selectedItem.lastsellingprice ?? 0,
         discount: 0,
@@ -775,14 +802,26 @@ export class AutocarejobInstructionComponent implements OnInit {
       (document.getElementById('field_item') as HTMLInputElement).value = '';
       this.filtereditems = [];
     }
-
+    console.log('Selected Itemxxxxxxxxxxxxxxxxs:', this.selectedItems);
     console.log('Selected Items Arrayyyyuuu:', this.itemsArray);
   }
 
   onDeleteItem(index: number): void {
-    // Remove the item from the list
-    this.selectedItems.splice(index, 1);
-    this.updateItemTotal(); // Update totals after deletion
+    if (index >= 0 && index < this.selectedItems.length) {
+      const deletedItem = this.selectedItems[index];
+
+      // Remove from selectedItems
+      this.selectedItems.splice(index, 1);
+
+      // Also remove from itemsArray using itemid match
+      const itemArrayIndex = this.itemsArray.findIndex(item => item.itemid === deletedItem.id);
+      if (itemArrayIndex !== -1) {
+        this.itemsArray.splice(itemArrayIndex, 1);
+      }
+
+      // Update totals
+      this.updateItemTotal();
+    }
   }
 
   calculateItemTotal(item: any): number {
@@ -1045,7 +1084,7 @@ export class AutocarejobInstructionComponent implements OnInit {
               };
 
               this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
-                next: createResponse => console.log(`Item ${index + 1} created:`, createResponse),
+                next: createResponse => console.log(`Item ${index + 1} createdsssssssssssssss:`, createResponse),
                 error: createError => console.error(`Error for item ${index + 1}:`, createError),
               });
             }, index * 500); // 500ms delay per request

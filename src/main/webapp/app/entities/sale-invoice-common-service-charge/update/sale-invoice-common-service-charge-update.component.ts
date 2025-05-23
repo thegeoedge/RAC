@@ -62,6 +62,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       this.salesInvoiceLinesService.updateSalesInvoiceLines(this.serviceChargesArray);
       console.log('Fetched Items on Change:', this.fetchedServicesCommon); // Log fetched items
     }
+    const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, value) => acc + value, 0);
+    this.saleInvoiceCommonServiceChargeService.settotalservicecommonlines(total);
   }
   addItemToFormArray(item: any): void {
     // Create a new form group for the item
@@ -286,6 +288,16 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   }
   removeServiceChargeDummy(index: number): void {
     this.serviceChargesArray.removeAt(index);
+    this.updateTotalInvoiceLines();
+  }
+  updateTotalInvoiceLines(): void {
+    const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, value) => acc + value, 0);
+
+    console.log('Updated Totallll:', total);
+    this.salesInvoiceLinesService.settotalinvoicelines(total);
+    setTimeout(() => {
+      this.totalUpdated.emit(total);
+    });
   }
   protected onSaveSuccess(): void {
     this.previousState();

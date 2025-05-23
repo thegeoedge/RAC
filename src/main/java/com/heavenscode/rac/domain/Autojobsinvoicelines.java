@@ -15,11 +15,7 @@ public class Autojobsinvoicelines implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
-    @Column(name = "id", nullable = false)
-    private Long id;
-
-    @Column(name = "invocieid")
+    @Column(name = "invocieid", nullable = false)
     private Integer invocieid;
 
     @Column(name = "lineid")
@@ -74,19 +70,6 @@ public class Autojobsinvoicelines implements Serializable {
     private Boolean vat;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public Autojobsinvoicelines id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getInvocieid() {
         return this.invocieid;
@@ -332,7 +315,7 @@ public class Autojobsinvoicelines implements Serializable {
         if (!(o instanceof Autojobsinvoicelines)) {
             return false;
         }
-        return getId() != null && getId().equals(((Autojobsinvoicelines) o).getId());
+        return getInvocieid() != null && getInvocieid().equals(((Autojobsinvoicelines) o).getInvocieid());
     }
 
     @Override
@@ -345,8 +328,8 @@ public class Autojobsinvoicelines implements Serializable {
     @Override
     public String toString() {
         return "Autojobsinvoicelines{" +
-            "id=" + getId() +
-            ", invocieid=" + getInvocieid() +
+          
+            "invocieid=" + getInvocieid() +
             ", lineid=" + getLineid() +
             ", itemid=" + getItemid() +
             ", itemcode='" + getItemcode() + "'" +

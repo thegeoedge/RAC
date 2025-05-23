@@ -3,44 +3,114 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <style>
+      @page {
+        margin: 0mm;
+      }
+
+      @media print {
+        .page-break {
+          display: block;
+          page-break-before: always;
+        }
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
         font-size: 12px;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        padding-top: 65px;
+        padding-right: 12px;
       }
-      .invoice-container {
-        width: 80%;
-        margin: auto;
-        border: 1px solid #ffffff;
-        padding: 20px;
+
+      #div_print {
+        width: 217mm;
+        height: auto;
+        font-size: 10px;
+        position: relative;
+        /* Optional: border for debug */
+        /* border: 1px solid #ccc; */
       }
+
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
+        border-spacing: 0;
       }
-      th,
+
       td {
-        border: 1px solid rgb(255, 255, 255);
-        padding: 8px;
-        text-align: left;
+        padding: 2px;
+        vertical-align: top;
+        /* optional: add borders to cells if needed */
+        /* border: 1px solid #ddd; */
       }
-      .header-table td {
-        border: none;
+
+      .invoice-header td {
+        height: 8mm;
       }
-      .total-section {
-        margin-top: 20px;
+
+      .invoice-details td {
+        height: 7mm;
+      }
+
+      .item-row td {
+        height: 5mm;
+      }
+
+      .print-button {
         text-align: right;
+        padding: 10px 0;
+      }
+
+      /* Optional: style the total section */
+      .total-section {
+        margin-top: 10px;
+        font-weight: bold;
+        font-size: 10px;
+        padding-left: 640px;
+      }
+      .total-section p {
+        display: flex;
+        justify-content: flex-start;
+        gap: 54px; /* space between label and value */
+        margin: 4px 0;
+      }
+
+      .total-section .label {
+        font-weight: bold;
+        min-width: 80px; /* fixed width for labels to align */
       }
     </style>
   </head>
-  <body>
-    <div class="invoice-container">
+  <body *ngIf="salesInvoice">
+    <div id="div_print">
+      <!-- Header Section -->
+      <table class="header-table invoice-header">
+        <tr>
+          <td style="width: 73mm; text-align: left">
+            <strong>{{ salesInvoice.customername }}</strong>
+          </td>
+          <td style="width: 35mm; text-align: left">
+            <strong>{{ salesInvoice.vehicleno }}</strong>
+          </td>
+          <td style="width: 35mm; text-align: left"><strong>5234</strong></td>
+          <td style="width: 30mm; text-align: left">
+            <strong>{{ salesInvoice.invoicedate | date: 'dd/MM/yyyy' }}</strong>
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 73mm; text-align: left"><strong>Invoice No:</strong> {{ salesInvoice.code }}</td>
+          <td style="width: 35mm; text-align: left">{{ salesInvoice.code }}</td>
+          <td style="width: 35mm; text-align: left">1234</td>
+          <td style="width: 30mm; text-align: left">{{ salesInvoice.paymenttype }}</td>
+        </tr>
+      </table>
+
+      <!-- Invoice Items Table -->
       <table>
         <thead>
-          <tr>
+          <tr *ngIf="false">
+            <th>Type</th>
             <th>Description</th>
             <th>Discount</th>
             <th>Qty</th>
@@ -48,42 +118,64 @@
             <th>Total Amount</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let item of invoiceItems">
-            <td>{{ item.itemname }}</td>
-            <td>{{ item.discount }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.sellingprice }}</td>
-            <td>{{ item.linetotal }}</td>
-          </tr>
-        </tbody>
+
+        <!-- Invoice Items -->
+        <tr *ngFor="let item of invoiceItems" class="item-row">
+          <td style="width: 30mm; text-align: left">{{ item.itemcode }}</td>
+          <td style="width: 73mm; text-align: left">{{ item.itemname }}</td>
+          <td style="width: 17mm; text-align: center">{{ item.discount }}</td>
+          <td style="width: 17mm; text-align: center">{{ item.quantity }}</td>
+          <td style="width: 27mm; text-align: right">{{ item.sellingprice }}</td>
+          <td style="width: 30mm; text-align: right">{{ item.linetotal }}</td>
+        </tr>
+
+        <!-- Service Charges -->
+        <tr *ngFor="let item of invoiceChargeItems" class="item-row">
+          <td style="width: 30mm; text-align: left">{{ item.optionId }}</td>
+          <td style="width: 73mm; text-align: left">{{ item.serviceName }}</td>
+          <td style="width: 17mm; text-align: center">0</td>
+          <td style="width: 17mm; text-align: center">1</td>
+          <td style="width: 27mm; text-align: right">{{ item.value }}</td>
+          <td style="width: 30mm; text-align: right">{{ item.value }}</td>
+        </tr>
+
+        <!-- Common Charges -->
+        <tr *ngFor="let item of invoicecommonChargeItems" class="item-row">
+          <td style="width: 30mm; text-align: left">{{ item.code }}</td>
+          <td style="width: 73mm; text-align: left">{{ item.name }}</td>
+          <td style="width: 17mm; text-align: center">0</td>
+          <td style="width: 17mm; text-align: center">1</td>
+          <td style="width: 27mm; text-align: right">{{ item.value }}</td>
+          <td style="width: 30mm; text-align: right">{{ item.value }}</td>
+        </tr>
+
+        <!-- Blank Rows to fill space -->
+        <tr *ngFor="let blank of [].constructor(blankRowsCount)" class="item-row blank-row">
+          <td style="width: 30mm">&nbsp;</td>
+          <td style="width: 73mm"></td>
+          <td style="width: 17mm"></td>
+          <td style="width: 17mm"></td>
+          <td style="width: 27mm"></td>
+          <td style="width: 30mm"></td>
+        </tr>
       </table>
 
-      <table>
-        <thead></thead>
-        <tbody>
-          <tr *ngFor="let item of invoiceChargeItems">
-            <td>{{ item.serviceDescription }}</td>
-            <!-- Fixed casing -->
-            <td>{{ item.servicePrice }}</td>
-            <!-- Fixed casing -->
-          </tr>
-        </tbody>
-        <tbody>
-          <tr *ngFor="let item of invoicecommonChargeItems">
-            <td>{{ item.name }}</td>
-            <!-- Fixed casing -->
-            <td>{{ item.value }}</td>
-            <!-- Fixed casing -->
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="total-section">
-        <p><strong>Sub Total:</strong> {{ getTotalAmount() | number: '1.2-2' }}</p>
-        <p><strong>Discount:</strong> 0.00</p>
-        <p><strong>Net Total:</strong> {{ getTotalAmount() | number: '1.2-2' }}</p>
-      </div>
+      <!-- Footer Totals -->
+      <tr>
+        <td colspan="6">
+          <div class="total-section">
+            <p>
+              <span class="label">Sub Total:</span> <span class="value">{{ salesInvoice.subtotal }}</span>
+            </p>
+            <p>
+              <span class="label">Discount:</span> <span class="value">{{ salesInvoice.totaldiscount }}</span>
+            </p>
+            <p>
+              <span class="label">Net Total:</span> <span class="value">{{ salesInvoice.nettotal }}</span>
+            </p>
+          </div>
+        </td>
+      </tr>
     </div>
   </body>
 </html>

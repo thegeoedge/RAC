@@ -75,9 +75,7 @@ public class AutojobsaleinvoicecommonservicechargeQueryService extends QueryServ
             if (criteria.getDistinct() != null) {
                 specification = specification.and(distinct(criteria.getDistinct()));
             }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), Autojobsaleinvoicecommonservicecharge_.id));
-            }
+
             if (criteria.getInvoiceid() != null) {
                 specification = specification.and(
                     buildRangeSpecification(criteria.getInvoiceid(), Autojobsaleinvoicecommonservicecharge_.invoiceid)

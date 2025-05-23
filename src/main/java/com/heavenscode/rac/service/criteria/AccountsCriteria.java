@@ -54,11 +54,11 @@ public class AccountsCriteria implements Serializable, Criteria {
 
     private BooleanFilter canedit;
 
-    private FloatFilter amount;
+    private DoubleFilter amount;
 
     private FloatFilter creditamount;
 
-    private FloatFilter debitamount;
+    private DoubleFilter debitamount;
 
     private StringFilter debitorcredit;
 
@@ -85,9 +85,9 @@ public class AccountsCriteria implements Serializable, Criteria {
         this.accountsnumberingsystem = other.optionalAccountsnumberingsystem().map(LongFilter::copy).orElse(null);
         this.subparentid = other.optionalSubparentid().map(IntegerFilter::copy).orElse(null);
         this.canedit = other.optionalCanedit().map(BooleanFilter::copy).orElse(null);
-        this.amount = other.optionalAmount().map(FloatFilter::copy).orElse(null);
+        this.amount = other.optionalAmount().map(DoubleFilter::copy).orElse(null);
         this.creditamount = other.optionalCreditamount().map(FloatFilter::copy).orElse(null);
-        this.debitamount = other.optionalDebitamount().map(FloatFilter::copy).orElse(null);
+        this.debitamount = other.optionalDebitamount().map(DoubleFilter::copy).orElse(null);
         this.debitorcredit = other.optionalDebitorcredit().map(StringFilter::copy).orElse(null);
         this.reporttype = other.optionalReporttype().map(IntegerFilter::copy).orElse(null);
         this.distinct = other.distinct;
@@ -402,22 +402,22 @@ public class AccountsCriteria implements Serializable, Criteria {
         this.canedit = canedit;
     }
 
-    public FloatFilter getAmount() {
+    public DoubleFilter getAmount() {
         return amount;
     }
 
-    public Optional<FloatFilter> optionalAmount() {
+    public Optional<DoubleFilter> optionalAmount() {
         return Optional.ofNullable(amount);
     }
 
-    public FloatFilter amount() {
+    public DoubleFilter amount() {
         if (amount == null) {
-            setAmount(new FloatFilter());
+            setAmount(new DoubleFilter());
         }
         return amount;
     }
 
-    public void setAmount(FloatFilter amount) {
+    public void setAmount(DoubleFilter amount) {
         this.amount = amount;
     }
 
@@ -440,22 +440,22 @@ public class AccountsCriteria implements Serializable, Criteria {
         this.creditamount = creditamount;
     }
 
-    public FloatFilter getDebitamount() {
+    public DoubleFilter getDebitamount() {
         return debitamount;
     }
 
-    public Optional<FloatFilter> optionalDebitamount() {
+    public Optional<DoubleFilter> optionalDebitamount() {
         return Optional.ofNullable(debitamount);
     }
 
-    public FloatFilter debitamount() {
+    public DoubleFilter debitamount() {
         if (debitamount == null) {
-            setDebitamount(new FloatFilter());
+            setDebitamount(new DoubleFilter());
         }
         return debitamount;
     }
 
-    public void setDebitamount(FloatFilter debitamount) {
+    public void setDebitamount(DoubleFilter debitamount) {
         this.debitamount = debitamount;
     }
 

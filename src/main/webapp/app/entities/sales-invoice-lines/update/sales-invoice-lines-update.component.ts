@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AccountsService } from 'app/entities/accounts/service/accounts.service';
 import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvoice.service';
 import { TransactionsService } from 'app/entities/transactions/service/transactions.service';
+import { CustomerService } from 'app/entities/customer/service/customer.service';
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-update',
@@ -57,7 +58,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   acc = inject(AccountsService);
   @ViewChild(AddInvoicetableComponent)
   AddInvoicetableComponent!: AddInvoicetableComponent;
-
+  customeraccid = inject(CustomerService);
   @ViewChild(ReceiptModalComponent)
   ReceiptModalComponent!: ReceiptModalComponent;
   // Use FormArray to handle multiple lines
@@ -88,9 +89,17 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     console.log('check hereeeeee', this.salesInvoiceLinesDummyArray.value);
     this.setvaluesbincar();
     this.salesInvoiceLinesService.updateSalesInvoiceLines(this.salesInvoiceLinesDummyArray);
-
+    //this.salesaccfetch();
     //this.updatecustomermain();
     // this.editinventory();
+    const total = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
+      const val = Number(control.get('linetotal')?.value || 0);
+      return isFinite(val) && val < 1e100 ? sum + val : sum;
+    }, 0);
+    console.log('Total from controlsxxxxxxxxxxxxxxxxxxxxxx:', total);
+    setTimeout(() => {
+      this.totalUpdated.emit(total);
+    });
   }
 
   transaction = [
@@ -114,7 +123,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   fetchaccdet(): void {
     console.log('Selected Items >>>>>>>>:', this.salesInvoiceLinesDummyArray.value);
-    this.sharedSubId = uuidv4();
+
     this.salesInvoiceLinesService.setSubId(this.sharedSubId);
 
     const fetchObservables = this.salesInvoiceLinesDummyArray.value.map((item: any, index: number) => {
@@ -276,7 +285,39 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       }
     });
   }
-
+  transactionsalesacc = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 41,
+    accountCode: '513',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: '',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  };
+  salestransaction(): void {
+    const total = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
+      const val = Number(control.get('linetotal')?.value || 0);
+      return isFinite(val) && val < 1e100 ? sum + val : sum;
+    }, 0);
+    this.transactionsalesacc.subId = this.salesInvoiceLinesService.getSubId();
+    this.transactionsalesacc.refDoc = this.invoicecode ? this.invoicecode.toString() : '';
+    this.transactionsalesacc.credit = total;
+    this.transactionsave.create(this.transactionsalesacc).subscribe({
+      next: response => {
+        console.log('Transaction created successfully888888888888888888888888888888:', response.body);
+      },
+      error: error => {
+        console.error('Error creating transaction:', error);
+      },
+    });
+  }
   salesaccfetch(): void {
     const total = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
       const val = Number(control.get('linetotal')?.value || 0);
@@ -445,10 +486,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   }
 
   updatecustomermain(amountOwing: number, inid: number): void {
-    const total = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
-      const val = Number(control.get('linetotal')?.value || 0);
-      return isFinite(val) && val < 1e100 ? sum + val : sum;
-    }, 0);
+    const total = this.salesinvoice.getTotal();
 
     console.log('Total from controls:', total);
 
@@ -498,10 +536,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   updatesalesincome(inid: number): void {
     console.log('logggggggggggggggggggg', this.account[0]);
-    const total = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
-      const val = Number(control.get('linetotal')?.value || 0);
-      return isFinite(val) && val < 1e100 ? sum + val : sum;
-    }, 0);
+    const total = this.salesinvoice.getTotal();
+    this.salesInvoiceLinesService.settotalinvoicelines(total);
     const itemcost = this.salesInvoiceLinesDummyArray.controls.reduce((sum: number, control: any) => {
       const val = Number(control.get('itemcost')?.value || 0);
       return isFinite(val) && val < 1e100 ? sum + val : sum;
@@ -703,6 +739,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       error: err => console.error('Error fetching inventory:', err),
       complete: () => console.log('Inventory lookup process completed.'),
     });
+
+    //this.transactionmodule(inid);
   }
   precentage: string = '';
   discountvalue: string = '';
@@ -785,7 +823,104 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       .reduce((acc, value) => acc + value, 0);
 
     console.log('Totallll:', total);
-    this.totalUpdated.emit(total);
+    this.salesInvoiceLinesService.settotalinvoicelines(total);
+    setTimeout(() => {
+      this.totalUpdated.emit(total);
+    });
+  }
+  transactions = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 0,
+    accountCode: '',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: 'invoice',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  }; // Non-null assertion operator indicates it will be assigned later
+
+  addtrasction(): void {
+    console.log('Adding transaction...');
+    const totalamount = this.salesinvoice.getTotal();
+    const customername = this.salesinvoice.getCustomerName();
+    console.log('Account ID:>>>>>>>>>>>>', customername);
+    this.acc.query({ 'name.contains': customername }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts: any[] = res.body || [];
+        console.log('Fetched accountsssss:', accounts[0].amount + totalamount);
+        console.log('Fetched accountsssss:', accounts[0].debitamount + totalamount);
+
+        console.log('Fetched accountsssss:', accounts[0].id);
+        const account = accounts[0];
+        const updatedAccount = {
+          id: account.id,
+          debitamount: account.debitamount + totalamount,
+          amount: account.amount + totalamount,
+        };
+
+        // Call partial update (PATCH)
+        this.acc.partialUpdate(updatedAccount).subscribe({
+          next: () => {
+            console.log('Account updated successfully.');
+          },
+          error: err => {
+            console.error('Failed to update account:', err);
+          },
+        });
+        // Do something with the accounts
+        this.transactions.subId = this.salesInvoiceLinesService.getSubId();
+
+        this.transactions.refDoc = this.invoicecode ? this.invoicecode.toString() : '';
+        this.transactions.debit = totalamount;
+
+        console.log('Updated transaction:', this.transactions);
+        console.log('Transaction ID:', this.invoicecode);
+
+        this.transactionsave.create(this.transactions).subscribe({
+          next: response => {
+            console.log('Transaction created successfully:', response.body);
+          },
+          error: error => {
+            console.error('Error creating transaction:', error);
+          },
+        });
+      },
+      error: err => {
+        console.error('Failed to fetch accounts:', err);
+      },
+    });
+  }
+  accountsId: number = 0;
+  accountcode: string = '';
+
+  fetchaccq(): void {
+    this.salesinvoice.getCustomerId();
+    console.log('Fetching account ID... >>>>>>>>>>>>>>>>>>>', this.salesinvoice.getCustomerId());
+    this.salesInvoiceLinesService.getSubId();
+    // Make sure you pass the correct query params for filtering by customerid
+    this.customeraccid.query({ 'id.equals': this.salesinvoice.getCustomerId() }).subscribe((res: HttpResponse<any[]>) => {
+      const accounts = res.body || [];
+      console.log('Fetched accounts:', accounts);
+
+      // You may not even need to filter again if the query already filters by customerId
+      const selectedAccount = accounts.length > 0 ? accounts[0] : null;
+
+      if (selectedAccount) {
+        this.accountcode = selectedAccount.accountcode;
+        this.transactions.accountCode = selectedAccount.accountcode;
+        this.transactions.accountId = selectedAccount.accountid;
+        this.accountsId = selectedAccount.id;
+        console.log('Selected Account ID:', this.accountsId);
+      } else {
+        console.log('No account found for customer ID:', this.salesinvoice.getCustomerId());
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -972,8 +1107,41 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   removeSalesInvoiceLine(index: number): void {
     this.messagenotify.pushNotification('DELETE_ITEM', this.salesInvoiceLinesArray.at(index).get('itemid')?.value);
     this.salesInvoiceLinesArray.removeAt(index);
+    this.updateTotalInvoiceLines();
   }
+  transactionmodule(inid: number): void {
+    console.log('this is valuessss xxxxxxxxxxxxxxxxxxxxxxxxxxx:', this.salesInvoiceLinesDummyArray.value);
+    console.log('readddddddddddddddddddddddddddddddddddddddddddd', this.salesinvoice.getTotal());
+    this.salesinvoice.query({ 'id.equals': inid }).subscribe({
+      next: res => {
+        console.log('Full responsevvvvvvvvvvvvvvvvvvvvvvvvv:', res);
+        if (res.body && res.body[0]) {
+          console.log('SalesInvoice datavvvvvvvvvvvvv:', res.body[0].amountowing);
+          this.sharedSubId = uuidv4();
+          if (this.salesInvoiceLinesDummyArray.value.length === 0) {
+            this.fetchaccdet();
+            this.fetchacc();
+          }
 
+          this.salesaccfetch();
+          this.salestransaction();
+          this.closestockupdate();
+          this.updatecustomermain(Number(res.body[0].amountowing), inid);
+          this.customermaintransactions(Number(res.body[0].amountowing), inid);
+          this.updatesalesincome(inid);
+          this.fetchaccq();
+          this.addtrasction();
+
+          window.history.back();
+        } else {
+          console.warn('SalesInvoice data is null or empty.');
+        }
+      },
+      error: err => {
+        console.error('Error fetching sales invoice:', err);
+      },
+    });
+  }
   previousState(): void {
     window.history.back();
   }
@@ -1152,27 +1320,6 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
               console.log('No Invoice ID found in response.');
             }
             // Replace with the appropriate method call from BinCardService
-            this.salesinvoice.query({ 'id.equals': inid }).subscribe({
-              next: res => {
-                console.log('Full responsevvvvvvvvvvvvvvvvvvvvvvvvv:', res);
-                if (res.body && res.body[0]) {
-                  console.log('SalesInvoice datavvvvvvvvvvvvv:', res.body[0].amountowing);
-                  this.fetchaccdet();
-                  this.fetchacc();
-
-                  this.salesaccfetch();
-                  this.closestockupdate();
-                  this.updatecustomermain(Number(res.body[0].amountowing), inid);
-                  this.customermaintransactions(Number(res.body[0].amountowing), inid);
-                  this.updatesalesincome(inid);
-                } else {
-                  console.warn('SalesInvoice data is null or empty.');
-                }
-              },
-              error: err => {
-                console.error('Error fetching sales invoice:', err);
-              },
-            });
 
             //this.onSaveSuccess();
           },
@@ -1233,6 +1380,18 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   removeInvoiceLine(index: number): void {
     this.salesInvoiceLinesDummyArray.removeAt(index);
   }
+  updateTotalInvoiceLines(): void {
+    const total = this.salesInvoiceLinesArray.controls
+      .map(control => control.get('linetotal')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
+    console.log('Updated Totallll:', total);
+    this.salesInvoiceLinesService.settotalinvoicelines(total);
+    setTimeout(() => {
+      this.totalUpdated.emit(total);
+    });
+  }
+
   removeInvoiceLinecode(code: any): void {
     // Find index of the form group in the array matching the lineId
     const index = this.salesInvoiceLinesArray.controls.findIndex(control => {
@@ -1244,6 +1403,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     if (index !== -1) {
       this.salesInvoiceLinesArray.removeAt(index);
       this.messagenotify.pushNotification('DELETE_ITEM', code);
+      this.updateTotalInvoiceLines();
     }
   }
 }

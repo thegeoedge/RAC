@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface AutojobsaleinvoicecommonservicechargeRepository
-    extends JpaRepository<Autojobsaleinvoicecommonservicecharge, Long>, JpaSpecificationExecutor<Autojobsaleinvoicecommonservicecharge> {}
+    extends
+        JpaRepository<Autojobsaleinvoicecommonservicecharge, Integer>, JpaSpecificationExecutor<Autojobsaleinvoicecommonservicecharge> {}

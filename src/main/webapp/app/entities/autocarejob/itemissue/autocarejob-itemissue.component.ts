@@ -94,8 +94,9 @@ export class AutocarejobitemissueComponent implements OnInit {
   get allInvoiceLines(): any[] {
     return Object.values(this.autojobsInvoicesMap)
       .flatMap(invoice => invoice.invoiceLines)
-      .filter(line => !this.issuedItems.some(issued => issued.id === line.id));
+      .filter(line => !this.issuedItems.some(issued => issued.lineid === line.lineid));
   }
+
   id: number = 0;
 
   fetchhistory(): void {
@@ -112,7 +113,7 @@ export class AutocarejobitemissueComponent implements OnInit {
             this.id = res.body[0].id;
           }
           // Fetch Invoice Lines
-          this.autojobsinvoicelinesService.query({ 'invocieid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
+          this.autojobsinvoicelinesService.fetchInvoiceLines(invoiceId).subscribe((linesRes: HttpResponse<any[]>) => {
             this.autojobsInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
           });
         });
@@ -168,22 +169,22 @@ export class AutocarejobitemissueComponent implements OnInit {
       code: issuedItem.code ?? '',
       batchid: 0,
       batchcode: '',
-      txdate: dayjs('2025-02-27T16:44:59.467Z').format(),
-      manufacturedate: dayjs('2025-02-27T16:44:59.467Z').format(),
-      expireddate: dayjs('2025-02-27T16:44:59.467Z').format(),
+      txdate: dayjs().format(),
+      manufacturedate: dayjs().format(),
+      expireddate: dayjs().format(),
       qty: 1,
       cost: 0,
       price: 0,
       notes: issuedItem.description ?? '',
       lmu: 0,
-      lmd: dayjs('2025-02-27T16:44:59.467Z').format(),
+      lmd: dayjs().format(),
       nbt: false,
       vat: false,
       discount: 0,
       total: issuedItem.lastsellingprice ?? 0,
       issued: false,
       issuedby: 0,
-      issueddatetime: dayjs('2025-02-27T16:44:59.467Z').format(),
+      issueddatetime: dayjs().format(),
       addedbyid: 0,
       canceloptid: 0,
       cancelopt: '',
@@ -232,7 +233,7 @@ export class AutocarejobitemissueComponent implements OnInit {
         .subscribe({
           next: createResponse => {
             console.log('item created successfully:', createResponse);
-            this.router.navigate(['autocarejob/autocareopenjob']);
+            this.router.navigate(['/']);
           },
           error: createError => {
             console.error('Error creating service:', createError.body);
