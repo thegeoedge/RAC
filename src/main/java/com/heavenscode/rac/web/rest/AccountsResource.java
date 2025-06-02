@@ -8,6 +8,7 @@ import com.heavenscode.rac.service.criteria.AccountsCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,6 +72,27 @@ public class AccountsResource {
         return ResponseEntity.created(new URI("/api/accounts/" + accounts.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, accounts.getId().toString()))
             .body(accounts);
+    }
+
+    /**
+     * {@code GET  /Accounts/by-invoice-id} : get all the autojobsinvoicelines by invoice ID.
+     *
+     * @param namethe invoice ID to filter lines.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of autojobsinvoicelines in body.
+     */
+    @GetMapping("/by-name")
+    public ResponseEntity<List<Accounts>> getAutojobsinvoicelinesByInvoiceId(@RequestParam(required = false) String name) {
+        LOG.debug("REST request to get Autojobsinvoicelines for InvocieID: {}", name);
+
+        List<Accounts> result;
+
+        if (name != null) {
+            result = accountsService.fetchAccountsByName(name);
+        } else {
+            result = new ArrayList<>(); // Or optionally fetch all or return error
+        }
+
+        return ResponseEntity.ok().body(result);
     }
 
     /**

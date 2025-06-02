@@ -4,3 +4,4 @@ entity Bankbranch {
     branchname String // BranchName
 }
 paginate * with pagination
+filter * 

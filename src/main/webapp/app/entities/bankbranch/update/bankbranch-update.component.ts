@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,12 +9,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IBankbranch } from '../bankbranch.model';
 import { BankbranchService } from '../service/bankbranch.service';
-import { BankbranchFormService, BankbranchFormGroup } from './bankbranch-form.service';
+import { BankbranchFormGroup, BankbranchFormService } from './bankbranch-form.service';
 
 @Component({
-  standalone: true,
   selector: 'jhi-bankbranch-update',
   templateUrl: './bankbranch-update.component.html',
+  standalone: true,
   imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class BankbranchUpdateComponent implements OnInit {

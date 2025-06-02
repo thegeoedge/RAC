@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { BankbranchComponent } from './list/bankbranch.component';
-import { BankbranchDetailComponent } from './detail/bankbranch-detail.component';
-import { BankbranchUpdateComponent } from './update/bankbranch-update.component';
 import BankbranchResolve from './route/bankbranch-routing-resolve.service';
 
 const bankbranchRoute: Routes = [
   {
     path: '',
-    component: BankbranchComponent,
+    loadComponent: () => import('./list/bankbranch.component').then(m => m.BankbranchComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: BankbranchDetailComponent,
+    loadComponent: () => import('./detail/bankbranch-detail.component').then(m => m.BankbranchDetailComponent),
     resolve: {
       bankbranch: BankbranchResolve,
     },
@@ -26,7 +23,7 @@ const bankbranchRoute: Routes = [
   },
   {
     path: 'new',
-    component: BankbranchUpdateComponent,
+    loadComponent: () => import('./update/bankbranch-update.component').then(m => m.BankbranchUpdateComponent),
     resolve: {
       bankbranch: BankbranchResolve,
     },
@@ -34,7 +31,7 @@ const bankbranchRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: BankbranchUpdateComponent,
+    loadComponent: () => import('./update/bankbranch-update.component').then(m => m.BankbranchUpdateComponent),
     resolve: {
       bankbranch: BankbranchResolve,
     },

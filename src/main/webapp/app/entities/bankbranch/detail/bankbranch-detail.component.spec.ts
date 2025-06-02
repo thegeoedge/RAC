@@ -17,8 +17,8 @@ describe('Bankbranch Management Detail Component', () => {
           [
             {
               path: '**',
-              component: BankbranchDetailComponent,
-              resolve: { bankbranch: () => of({ id: 123 }) },
+              loadComponent: () => import('./bankbranch-detail.component').then(m => m.BankbranchDetailComponent),
+              resolve: { bankbranch: () => of({ id: 5446 }) },
             },
           ],
           withComponentInputBinding(),
@@ -40,7 +40,7 @@ describe('Bankbranch Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', BankbranchDetailComponent);
 
       // THEN
-      expect(instance.bankbranch()).toEqual(expect.objectContaining({ id: 123 }));
+      expect(instance.bankbranch()).toEqual(expect.objectContaining({ id: 5446 }));
     });
   });
 

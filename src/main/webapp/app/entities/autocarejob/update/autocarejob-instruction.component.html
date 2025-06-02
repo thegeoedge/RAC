@@ -4,6 +4,34 @@
     input {
       text-align: right;
     }
+    .nav-tabs .nav-link.active {
+      background-color: rgb(226, 59, 9) !important;
+      color: white !important;
+      border-color: rgb(226, 59, 9) !important;
+    }
+
+    .nav-tabs .nav-link {
+      color: rgb(226, 59, 9) !important;
+    }
+
+    .btn-orange {
+      background-color: darkorange;
+      color: white;
+      border: none;
+    }
+
+    .btn-orange:hover {
+      background-color: rgb(255, 89, 0);
+    }
+    .btn-orange {
+      background-color: rgb(255, 89, 0);
+      color: white;
+      border: none;
+    }
+
+    .btn-orange:hover {
+      background-color: rgb(255, 89, 0);
+    }
   </style>
 
   <head>
@@ -592,7 +620,7 @@
                       </datalist>
                     </div>
                     <div class="col-auto">
-                      <button type="button" class="btn btn-primary" (click)="onAddItem()">Add Item</button>
+                      <button type="button" class="btn btn-orange" (click)="onAddItem()">Add Item</button>
                     </div>
                   </div>
 
@@ -811,7 +839,7 @@
               </div>
             }
             <h5 class="text-dark">Summary</h5>
-            <div id="summaryDisplay" class="border p-2 rounded shadow-sm" style="background-color: #d8dcf3; font-size: 0.9rem">
+            <div id="summaryDisplay" class="border p-2 rounded shadow-sm" style="background-color: #efaa7d; font-size: 0.9rem">
               <div class="container">
                 <div class="row">
                   <div class="col-md-6">
@@ -867,7 +895,7 @@
           </form>
           <div class="d-flex justify-content-center mt-2">
             <button class="btn btn-sm btn-success mx-2 px-3" style="width: 120px" (click)="printSummary()">Print</button>
-            <button class="btn btn-sm btn-primary mx-2 px-3" style="width: 120px" (click)="saveAll()">Save All</button>
+            <button class="btn btn-sm btn-orange mx-2 px-3" style="width: 120px" (click)="saveAll()">Save All</button>
           </div>
         </div>
 

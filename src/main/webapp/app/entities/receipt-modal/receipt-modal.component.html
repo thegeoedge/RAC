@@ -89,8 +89,8 @@
               <!-- Input Fields for Option 2 -->
               <div *ngIf="selectedOption === 2">
                 <div class="mb-3">
-                  <label class="form-label" for="field_input3">Ref</label>
-                  <input type="text" class="form-control" name="inputC" id="field_input3" data-cy="inputC" />
+                  <label class="form-label" for="field_input3" *ngIf="false">Ref</label>
+                  <input type="text" class="form-control" name="inputC" id="field_input3" data-cy="inputC" *ngIf="false" />
                 </div>
               </div>
 
@@ -133,18 +133,22 @@
 
                 <div class="mb-3">
                   <label class="form-label" for="{{ field_input5 }}">Branch</label>
-                  <input
-                    type="text"
+                  <select
                     class="form-control"
+                    [id]="field_input5"
                     name="inputD"
                     data-cy="inputD"
-                    [id]="field_input5"
-                    (input)="onItemChequebranchInput($event)"
-                  />
+                    (change)="onItemChequebranchInput($event)"
+                  >
+                    <option value="">--select branch--</option>
+                    <option *ngFor="let branch of bankbranch" [value]="branch.branchname">
+                      {{ branch.branchname }}
+                    </option>
+                  </select>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label" for="{{ field_input6 }}">Cheque Date <span class="text-danger">*</span></label>
+                  <label class="form-label" for="{{ field_input6 }}">Cheque ExpDate <span class="text-danger">*</span></label>
                   <input
                     type="date"
                     class="form-control"
@@ -160,7 +164,7 @@
               <div *ngIf="selectedOption === 4">
                 <div class="mb-3">
                   <label class="form-label" for="field_input8">Ref</label>
-                  <input type="text" class="form-control" name="inputH" id="field_input8" data-cy="inputH" />
+                  <input type="text" class="form-control" name="inputH" id="field_input8" data-cy="inputH" (input)="onRef($event)" />
                 </div>
 
                 <!-- New Radio Buttons Section -->
@@ -212,13 +216,38 @@
 
               <!-- Input Fields for Option 5 -->
               <div *ngIf="selectedOption === 5">
-                <div class="mb-3">
+                <div class="mb-3" *ngIf="false">
                   <label class="form-label" for="field_input9">Ref </label>
                   <input type="text" class="form-control" name="inputI" id="field_input9" data-cy="inputI" />
                 </div>
-                <div class="mb-3">
+                <!--  <div class="mb-3">
                   <label class="form-label" for="field_input10">Bank</label>
                   <input type="text" class="form-control" name="inputJ" id="field_input10" data-cy="inputJ" />
+                </div>
+-->
+
+                <div class="mb-3">
+                  <label class="form-label" for="bank">Bank</label>
+                  <select class="form-control" [id]="field_input4" name="inputD" data-cy="inputD" (change)="onItemBankInput($event)">
+                    <option value="">--select--</option>
+                    <option *ngFor="let bank of banks" [ngValue]="bank">{{ bank.name }}</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label" for="{{ field_input5 }}">Branch</label>
+                  <select
+                    class="form-control"
+                    [id]="field_input5"
+                    name="inputD"
+                    data-cy="inputD"
+                    (change)="onItemChequebranchInput($event)"
+                  >
+                    <option value="">--select branch--</option>
+                    <option *ngFor="let branch of bankbranch" [value]="branch.branchname">
+                      {{ branch.branchname }}
+                    </option>
+                  </select>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -9,13 +9,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IBanks } from '../banks.model';
 import { BanksService } from '../service/banks.service';
-import { BanksFormService, BanksFormGroup } from './banks-form.service';
+import { BanksFormGroup, BanksFormService } from './banks-form.service';
 
 @Component({
-  standalone: true,
   selector: 'jhi-banks-update',
   templateUrl: './banks-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class BanksUpdateComponent implements OnInit {
   isSaving = false;

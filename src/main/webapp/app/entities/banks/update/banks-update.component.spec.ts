@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject, from } from 'rxjs';
+import { Subject, from, of } from 'rxjs';
 
 import { BanksService } from '../service/banks.service';
 import { IBanks } from '../banks.model';
@@ -20,8 +19,9 @@ describe('Banks Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, BanksUpdateComponent],
+      imports: [BanksUpdateComponent],
       providers: [
+        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -44,7 +44,7 @@ describe('Banks Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const banks: IBanks = { id: 456 };
+      const banks: IBanks = { id: 20367 };
 
       activatedRoute.data = of({ banks });
       comp.ngOnInit();
@@ -57,7 +57,7 @@ describe('Banks Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBanks>>();
-      const banks = { id: 123 };
+      const banks = { id: 28746 };
       jest.spyOn(banksFormService, 'getBanks').mockReturnValue(banks);
       jest.spyOn(banksService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +80,7 @@ describe('Banks Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBanks>>();
-      const banks = { id: 123 };
+      const banks = { id: 28746 };
       jest.spyOn(banksFormService, 'getBanks').mockReturnValue({ id: null });
       jest.spyOn(banksService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +103,7 @@ describe('Banks Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBanks>>();
-      const banks = { id: 123 };
+      const banks = { id: 28746 };
       jest.spyOn(banksService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ banks });

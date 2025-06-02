@@ -59,6 +59,7 @@ export class ReceiptModalComponent implements OnChanges {
   @Input() accountId: number = 0;
   @Input() invoicecode: string | null = null;
   @Input() sharedSubId: string | null = null;
+  subid: string = '';
   isSaving = false;
   field_input1: string = 'field_input1'; // Define this property here00
   field_input2: string = 'field_input2';
@@ -127,7 +128,7 @@ export class ReceiptModalComponent implements OnChanges {
       console.log('Updated receiptpaymentsdetails:', changes['receiptpaymentsdetails'].currentValue); // Logs the new value
       this.updateForm(this.receiptpaymentsdetails);
       this.loadBanks();
-      this.loadBankBranch();
+      // this.loadBankBranch();
     }
   }
   accountsId: number = 0;
@@ -252,6 +253,230 @@ export class ReceiptModalComponent implements OnChanges {
     lmd: dayjs(),
   }; // Non-null assertion operator indicates it will be assigned later
 
+  reciptnocustransaction = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 0,
+    accountCode: '',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: 'Recipt',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  };
+
+  receiptnocustransactions(recid: number, reccode: String, subid: string, termid: number, termname: string): void {
+    this.reciptnocustransaction.refId = recid;
+    this.reciptnocustransaction.subId = subid;
+    this.reciptnocustransaction.refDoc = reccode ? reccode.toString() : '';
+    this.reciptnocustransaction.credit = this.totalamount;
+    this.reciptnocustransaction.paymentTermId = termid;
+    this.reciptnocustransaction.paymentTermName = termname;
+    this.reciptnocustransaction.accountId = this.accountId;
+    this.reciptnocustransaction.accountCode = this.accountcode;
+    //console.log('Sales Income Transaction:', this.salesInvoiceLinesService.getprofit());
+    this.transtactions.create(this.reciptnocustransaction).subscribe({
+      next: response => {
+        console.log('Transaction created successfully sales incomingggggggggsttttttttttttttttttt:', response.body);
+      },
+      error: error => {
+        console.error('Error creating transaction:', error);
+      },
+    });
+  }
+
+  reciptnocustomerupdate(accountid: number): void {
+    console.log('Total from controls:', this.totalamount);
+    this.acc.query({ 'id.equals': accountid }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts: any[] = res.body || [];
+        const account = accounts[0];
+
+        if (account) {
+          console.log('Fetched Sales Account:', account);
+          //const profit = total - itemcost;
+          //  this.salesInvoiceLinesService.setprofit(profit);
+          //this.salesincometransactions(inid);
+          const originalAmount = Number(account.amount || 0);
+          const originalCredit = Number(account.debitamount || 0);
+
+          const updatedAmount = originalAmount - this.totalamount;
+          const updatedCredit = originalCredit + this.totalamount;
+
+          const updatePayload = {
+            id: this.accountId,
+            debitamount: updatedCredit,
+            amount: updatedAmount,
+          };
+
+          this.acc.partialUpdate(updatePayload).subscribe({
+            next: response => {
+              console.log(`Successfully updated account ID in noooooooooooooooooo come in come  ${account.id}`, response);
+            },
+            error: error => {
+              console.error(`Failed to update account ID ${account.id}`, error);
+            },
+          });
+        } else {
+          console.warn('No account found with ID 7.');
+        }
+      },
+      error: err => {
+        console.error('Error fetching account with ID 7:', err);
+      },
+    });
+  }
+
+  receiptmainacctransaction = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 33,
+    accountCode: '42',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: 'Receipt-Trade Receivables',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  };
+
+  receiptmainacctransactions(recid: number, reccode: String, subid: string, totalrecived: number): void {
+    this.receipttransaction.refId = recid;
+    this.receipttransaction.subId = subid;
+    this.receipttransaction.refDoc = reccode ? reccode.toString() : '';
+    this.receipttransaction.debit = totalrecived;
+    //  this.receipttransaction.paymentTermId= termid;
+    //this.receipttransaction.paymentTermName = null;
+    this.receipttransaction.accountId = this.accountId;
+    this.receipttransaction.accountCode = this.accountcode;
+    //console.log('Sales Income Transaction:', this.salesInvoiceLinesService.getprofit());
+    this.transtactions.create(this.receipttransaction).subscribe({
+      next: response => {
+        console.log('Transaction created successfully sales incomingggggggggsttttttttttttttttttt:', response.body);
+      },
+      error: error => {
+        console.error('Error creating transaction:', error);
+      },
+    });
+  }
+
+  receipttransaction = {
+    id: null, // Set id to null as required by NewTransactions type
+    accountId: 33,
+    accountCode: '42',
+    debit: 0,
+    credit: 0,
+    date: dayjs(),
+    refDoc: '',
+    refId: 0,
+    subId: '',
+    source: 'Recipt',
+    paymentTermId: 0,
+    paymentTermName: '',
+    lmu: 0,
+    lmd: dayjs(),
+  };
+  receipttransactions(recid: number, reccode: String, subid: string, termid: number, termname: string): void {
+    this.receipttransaction.refId = recid;
+    this.receipttransaction.subId = subid;
+    this.receipttransaction.refDoc = reccode ? reccode.toString() : '';
+    this.receipttransaction.credit = this.totalamount;
+    //  this.receipttransaction.paymentTermId= termid;
+    //this.receipttransaction.paymentTermName = null;
+    this.receipttransaction.accountId = this.accountId;
+    this.receipttransaction.accountCode = this.accountcode;
+    //console.log('Sales Income Transaction:', this.salesInvoiceLinesService.getprofit());
+    this.transtactions.create(this.receipttransaction).subscribe({
+      next: response => {
+        console.log('Transaction created successfully sales incomingggggggggsttttttttttttttttttt:', response.body);
+      },
+      error: error => {
+        console.error('Error creating transaction:', error);
+      },
+    });
+  }
+
+  updaterecipttransactionwithcustomer(): void {
+    // <-- Should log the actual total
+
+    //console.log('Total from controlsdddddddddddddddddddddddddddddddddddd:', itemcost);
+
+    console.log('Total from controls:', this.totalamount);
+    this.acc.query({ 'id.equals': this.accountId }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts: any[] = res.body || [];
+        const account = accounts[0];
+
+        if (account) {
+          console.log('Fetched Sales Account:', account);
+          //const profit = total - itemcost;
+          //  this.salesInvoiceLinesService.setprofit(profit);
+          //this.salesincometransactions(inid);
+          const originalAmount = Number(account.amount || 0);
+          const originalCredit = Number(account.creditamount || 0);
+
+          const updatedAmount = originalAmount - this.totalamount;
+          const updatedCredit = originalCredit + this.totalamount;
+
+          const updatePayload = {
+            id: this.accountId,
+            creditamount: updatedCredit,
+            amount: updatedAmount,
+          };
+
+          this.acc.partialUpdate(updatePayload).subscribe({
+            next: response => {
+              console.log(`Successfully updated account ID in rrrrrrrrrrrrrrrrrrrrrrr come in come  ${account.id}`, response);
+            },
+            error: error => {
+              console.error(`Failed to update account ID ${account.id}`, error);
+            },
+          });
+        } else {
+          console.warn('No account found with ID 7.');
+        }
+      },
+      error: err => {
+        console.error('Error fetching account with ID 7:', err);
+      },
+    });
+  }
+
+  accountmethod(name: string): void {
+    console.log('Account ID:>>>>>>>>>>>>', name);
+    if (name == 'bankdeposit') {
+      name = 'Current Assets';
+    }
+    this.acc.query({ 'name.contains': name }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts: any[] = res.body || [];
+        console.log('Fetched accounts:', accounts);
+
+        if (accounts.length > 0) {
+          console.log('First account:', accounts[0]);
+          // You can assign values if needed:
+          this.accountId = accounts[0].id;
+          this.accountcode = accounts[0].code;
+          // this.accountName = accounts[0].name;
+        } else {
+          console.log('No matching accounts found');
+        }
+      },
+      error: err => {
+        console.error('Error fetching accounts:', err);
+      },
+    });
+  }
+
   addtrasction(): void {
     console.log('Adding transaction...');
     this.customername = this.salesInvoiceService.getCustomerName();
@@ -321,6 +546,62 @@ export class ReceiptModalComponent implements OnChanges {
     console.log('Balance:', this.balance);
     this.methodpending.emit({ cash: this.cash, balance: this.balance }); // Emit the value as an object
   }
+
+  @Output() methods: EventEmitter<{ method: string; totalAmount: number }> = new EventEmitter();
+
+  onMethodChange(event: Event): void {
+    this.methods.emit({ method: (event.target as HTMLSelectElement).value, totalAmount: this.totalamount }); // Emit the selected method and totalAmount
+  }
+
+  updatecustomermain(amountrec: number): void {
+    // const total = this.salesinvoice.getTotal();
+
+    // console.log('Total from controls:', total);
+
+    this.acc.query({ 'id.equals': 7 }).subscribe({
+      next: (res: HttpResponse<any[]>) => {
+        const accounts = res.body || [];
+        const account = accounts[0];
+
+        if (account) {
+          console.log('Fetched Sales Account:', account);
+
+          const originalAmount = Number(account.amount || 0);
+          const originalCredit = Number(account.debitamount || 0);
+
+          console.log('Original Amount:', originalAmount);
+          console.log('Original Credit:', originalCredit);
+
+          const updatedAmount = originalAmount - amountrec;
+          const updatedCredit = originalCredit + amountrec;
+
+          console.log('Updated Amount:', updatedAmount);
+          console.log('Updated Credit:', updatedCredit);
+
+          const updatePayload = {
+            id: 7,
+            debitamount: updatedCredit,
+            amount: updatedAmount,
+          };
+
+          this.acc.partialUpdate(updatePayload).subscribe({
+            next: response => {
+              console.log('Successfully updated account partialiiiiiiiiiiiiiiiiiii:', response);
+            },
+            error: error => {
+              console.error('Failed to update account ID:', error);
+            },
+          });
+        } else {
+          console.warn('No account found with ID 7.');
+        }
+      },
+      error: err => {
+        console.error('Error fetching account with ID 7:', err);
+      },
+    });
+  }
+
   cheque: number = 0;
   onItemChequeInput(event: Event): void {
     const inputElement = <HTMLInputElement>event.target;
@@ -337,16 +618,24 @@ export class ReceiptModalComponent implements OnChanges {
     this.cheqdate = new Date(cheqdate);
     console.log('Cheque Date:', this.cheqdate);
   }
-
+  ref: string = '';
+  onRef(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    const cheqdate = inputElement.value;
+    console.log(`Input value: ${cheqdate}`);
+    this.ref = cheqdate;
+    console.log('Reference:', this.ref);
+  }
   cheqam: number = 0;
   onItemChequeAmInput(event: Event): void {
     const inputElement = <HTMLInputElement>event.target;
     const cheqvalue = inputElement.value;
+    this.cheqam = this.totalamount;
     console.log(`Input value: ${cheqvalue}`);
     this.cheqam = parseFloat(cheqvalue);
+
     console.log('Chequeamount:', this.cheqam);
   }
-
   bankid: number = 0;
   bankname: string = '';
   onItemBankInput($event: Event): void {
@@ -354,29 +643,37 @@ export class ReceiptModalComponent implements OnChanges {
 
     if (!selectedBank) {
       console.log('No bank selected');
+      this.bankbranch = []; // Clear previous branches if nothing is selected
       return;
     }
 
-    // Get selected object
     const selectedObject = this.banks.find(bank => bank.name === selectedBank);
 
     if (selectedObject) {
-      console.log(`Bank ID: ${selectedObject.id}, Bank Name: ${selectedObject.name}`);
       this.bankid = Number(selectedObject.id);
       this.bankname = selectedObject.name ? selectedObject.name.toString() : '';
-      console.log('Bank ID:', this.bankid);
-      console.log('Bank Name:', this.bankname);
+
+      // Clear previous branches immediately
+      this.bankbranch = [];
+
+      this.bankbranchService.query({ 'bankcode.equals': selectedObject.code }).subscribe((res: HttpResponse<IBankbranch[]>) => {
+        this.bankbranch = res.body || [];
+
+        // Log here, inside the subscribe block
+        console.log('Bank Branches:', this.bankbranch);
+      });
     } else {
       console.log('Selected bank not found in the list');
+      this.bankbranch = [];
     }
   }
+
   Branch: string = '';
+
   onItemChequebranchInput(event: Event): void {
-    const inputElement = <HTMLInputElement>event.target;
-    const branchvalue = inputElement.value;
-    console.log(`Input value: ${branchvalue}`);
-    this.Branch = branchvalue;
-    console.log('Branchesss:', this.Branch);
+    const selectedBranch = (event.target as HTMLSelectElement).value;
+    this.Branch = selectedBranch;
+    console.log('Selected Branch:', this.Branch);
   }
 
   termid: number = 0;
@@ -427,11 +724,11 @@ export class ReceiptModalComponent implements OnChanges {
     id: 0,
     lineid: 0,
     paymentamount: 0,
-    totalreceiptamount: 0,
+    totalreceiptamount: null,
     checkqueamount: 0,
     checkqueno: '',
-    checkquedate: dayjs(),
-    checkqueexpiredate: dayjs(),
+    checkquedate: null as dayjs.Dayjs | null,
+    checkqueexpiredate: null as dayjs.Dayjs | null,
     bankname: '',
     bankid: 0,
     bankbranchname: '',
@@ -446,14 +743,14 @@ export class ReceiptModalComponent implements OnChanges {
     termname: '',
     accountno: '',
     accountnumber: '',
-    chequereturndate: dayjs(), // FIX: Use dayjs() instead of an empty string
+    chequereturndate: null, // FIX: Use dayjs() instead of an empty string
     isdeposit: false,
-    depositeddate: dayjs(), // FIX: Use dayjs() instead of an empty string
-    chequestatuschangeddate: dayjs(),
-    returnchequesttledate: dayjs(),
+    depositeddate: null, // FIX: Use dayjs() instead of an empty string
+    chequestatuschangeddate: null,
+    returnchequesttledate: null,
     chequestatusid: 0,
     ispdcheque: false,
-    depositdate: dayjs(),
+    depositdate: null,
     accountid: 0,
     accountcode: '',
     bankdepositbankname: '',
@@ -468,73 +765,122 @@ export class ReceiptModalComponent implements OnChanges {
   id: number = 0;
   paymentmethod: String = '';
   save(): void {
-    this.isSaving = true;
-    const receiptpaymentsdetails = this.receiptpaymentsdetailsFormService.getReceiptpaymentsdetails(this.editForm);
+    const storedUserId = localStorage.getItem('empId');
+    const userIdNumber = parseInt(storedUserId!, 10);
+    console.log('User ID from localStoragerrrrrrrrrrr:', userIdNumber);
 
-    // this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
+    if (this.method != 'credit') {
+      this.isSaving = true;
+      const receiptpaymentsdetails = this.receiptpaymentsdetailsFormService.getReceiptpaymentsdetails(this.editForm);
 
-    // First, save receipt and wait for the response
-    this.subscribeToSaveResponse(this.reciptService.create(this.receipt), receiptId => {
-      // After getting the receipt ID, assign it to receiptlines
-      this.receiptlines.accountid = this.accountId;
-      this.receiptlines.amountreceived = this.cash;
-      this.receiptlines.id = receiptId; // Use the received ID
-      this.receiptlines.invoicecode = this.invoicecode ? this.invoicecode.toString() : '';
-      this.receiptlines.originalamount = this.totalamount;
-      //this.receiptlines.amountreceived = this.cheqam;
-      console.log('this.cheqamcccccccccccccc', this.cheqam);
-      if (this.cheqam != 0) {
-        this.receiptlines.amountreceived = this.cheqam;
-        this.receiptlines.amountowing = this.totalamount - this.cheqam;
-      }
-      if (this.cheqam == 0) {
+      // this.subscribeToSaveResponse(this.receiptpaymentsdetailsService.update(receiptpaymentsdetails));
+      this.receipt.totalamount = Math.floor(this.receipt.totalamount ?? 0);
+      this.receipt.amount = Math.floor(this.receipt.totalamount ?? 0);
+      this.receipt.createdby = userIdNumber;
+      // First, save receipt and wait for the response
+      this.subscribeToSaveResponse(this.reciptService.create(this.receipt), receiptId => {
+        // After getting the receipt ID, assign it to receiptlines
+        this.receiptlines.accountid = this.accountId;
+        // this.receiptlines.accountcode=this.accountcode;
         this.receiptlines.amountreceived = this.cash;
-        this.receiptlines.amountowing = this.totalamount - this.cash;
-      }
-      if (this.method == 'Card/Other') {
-        this.receiptlines.amountreceived = this.totalamount;
-      }
+        this.receiptlines.id = receiptId; // Use the received ID
+        this.receiptlines.invoicecode = this.invoicecode ? this.invoicecode.toString() : '';
+        this.receiptlines.originalamount = this.totalamount;
+        this.receiptlines.lmu = userIdNumber;
+        //this.receiptlines.amountreceived = this.cheqam;
+        console.log('this.cheqamcccccccccccccc', this.cheqam);
+        if (this.cheqam != 0) {
+          this.receiptlines.amountreceived = this.cheqam;
+          this.receiptlines.amountowing = this.totalamount - this.cheqam;
+        }
+        if (this.cheqam == 0) {
+          this.receiptlines.amountreceived = this.cash;
+          this.receiptlines.amountowing = this.totalamount - this.cash;
+        }
+        if (this.method == 'bankdeposit' || this.method == 'card') {
+          this.receiptlines.amountreceived = 0;
+          this.receiptlines.amountowing = 0;
+        }
+        if (this.method == 'card') {
+          this.receiptlines.amountreceived = this.totalamount;
+        }
 
-      console.log('Assigned receipt ID to receipt linesmmmmmmmmmmmmmmmmmmmmmmmmm:', this.receiptlines);
-      console.log('chqqqq', this.checkno);
-      // Now, save receiptlines
-      this.subscribeToSaveResponse(this.reciptlines.create(this.receiptlines));
-      this.receiptPaymentDetail.id = receiptId;
-      this.receiptPaymentDetail.lineid = 1;
-      this.receiptPaymentDetail.termid = this.termid;
-      this.receiptPaymentDetail.termname = this.method.toString();
-      this.receiptPaymentDetail.checkqueamount = this.cheqam;
-      this.receiptPaymentDetail.checkqueno = this.cheque ? this.cheque.toString() : '';
-      this.receiptPaymentDetail.checkqueexpiredate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
-      this.receiptPaymentDetail.checkquedate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
-      this.receiptPaymentDetail.bankname = this.bankname;
-      this.receiptPaymentDetail.bankid = this.bankid;
-      this.receiptPaymentDetail.bankbranchname = this.Branch;
-      this.receiptPaymentDetail.accountid = this.accountId;
-      this.receiptPaymentDetail.chequestatusid = 1;
-      this.receiptPaymentDetail.paymentamount = this.cheqam;
-      console.log('hhhhhhh', this.receiptPaymentDetail);
-      const systemSettingsUpdatee: PartialUpdateSystemSettings = {
-        id: 6,
-        lastValue: this.newnextvalue,
-        nextValue: this.incrementId(this.newnextvalue.toString()),
-      };
+        console.log('Assigned receipt ID to receipt linesmmmmmmmmmmmmmmmmmmmmmmmmm:', this.receiptlines);
+        console.log('chqqqq', this.checkno);
+        // Now, save receiptlines
+        if (this.cheqam === 0) {
+          this.cheqam = this.totalamount;
+        }
+        this.subscribeToSaveResponse(this.reciptlines.create(this.receiptlines));
+        this.receiptPaymentDetail.id = receiptId;
+        this.receiptPaymentDetail.lineid = 1;
+        this.receiptPaymentDetail.termid = this.termid;
+        this.receiptPaymentDetail.termname = this.method.toString();
+        this.receiptPaymentDetail.reference = this.ref;
+        this.receiptPaymentDetail.lmu = userIdNumber;
+        if (this.method == 'cheque') {
+          this.receiptPaymentDetail.checkqueamount = this.cheqam;
+          this.receiptPaymentDetail.checkqueexpiredate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+          this.receiptPaymentDetail.checkquedate = this.cheqdate ? dayjs(this.cheqdate.toISOString()) : dayjs();
+        }
+        this.receiptPaymentDetail.checkqueno = this.cheque ? this.cheque.toString() : '';
 
-      console.log('System Settings Update:', systemSettingsUpdatee);
+        this.receiptPaymentDetail.bankname = this.bankname;
+        this.receiptPaymentDetail.bankid = this.bankid;
+        this.receiptPaymentDetail.bankbranchname = this.Branch;
+        this.receiptPaymentDetail.accountid = this.accountId;
+        this.receiptPaymentDetail.chequestatusid = 1;
+        this.receiptPaymentDetail.accountcode = this.accountcode;
+        if (this.method == 'cash') {
+          this.cheqam = this.cash;
+        }
+        this.receiptPaymentDetail.paymentamount = this.cheqam;
+        console.log('hhhhhhh', this.receiptPaymentDetail);
+        const systemSettingsUpdatee: PartialUpdateSystemSettings = {
+          id: 6,
+          lastValue: this.newnextvalue,
+          nextValue: this.incrementId(this.newnextvalue.toString()),
+        };
 
-      this.salesInvoiceService.partialUpdatee(systemSettingsUpdatee).subscribe({
-        next: response => {
-          console.log('System Settings Updatedddddddddddddddddddddd:', response);
-        },
-        error: err => {
-          console.error('Error updating system settings:', err);
-        },
+        console.log('System Settings Update:', systemSettingsUpdatee);
+
+        this.salesInvoiceService.partialUpdatee(systemSettingsUpdatee).subscribe({
+          next: response => {
+            console.log('System Settings Updatedddddddddddddddddddddd:', response);
+          },
+          error: err => {
+            console.error('Error updating system settings:', err);
+          },
+        });
+        this.receiptPaymentDetail.paymentamount = Math.floor(this.receiptPaymentDetail.paymentamount ?? 0);
+        this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
+
+        this.salesinvoiceupdate.save();
+
+        this.subid = uuidv4();
+
+        if (this.salesInvoiceService.getCustomerName() != 'CASH') {
+          // alert('Customer name is not CASH, updating customer transaction.'+this.customername);
+          this.updaterecipttransactionwithcustomer();
+          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.termid, this.method.toString());
+        }
+        if (this.salesInvoiceService.getCustomerName() == 'CASH') {
+          //alert('Customer name is CASH, skipping customer transaction update.');
+          this.reciptnocustomerupdate(this.accountId);
+          this.receiptnocustransactions(receiptId, this.receipt.code, this.subid, this.termid, this.method.toString());
+        }
+
+        this.updatecustomermain(this.cheqam);
+
+        this.receiptmainacctransactions(receiptId, this.receipt.code, this.subid, this.cheqam);
+
+        //  this.fetchacc();
+        // this.addtrasction();
       });
-      this.subscribeToSaveResponse(this.paymentdetails.create(this.receiptPaymentDetail));
+    } else if (this.method == 'credit') {
+      this.isSaving = true;
       this.salesinvoiceupdate.save();
-      //  this.fetchacc();
-      // this.addtrasction();
-    });
+    }
   }
 
   // Modified subscribeToSaveResponse to accept a callback
@@ -609,24 +955,25 @@ export class ReceiptModalComponent implements OnChanges {
     let termid = 0;
     switch (option) {
       case 1:
-        paymentMethod = 'Cash';
+        paymentMethod = 'cash';
         termid = 1;
         break;
       case 2:
-        paymentMethod = 'Credit';
+        paymentMethod = 'credit';
         termid = 2;
+        this.methods.emit({ method: paymentMethod, totalAmount: this.totalamount }); // Emit the method string directly
         break;
       case 3:
-        paymentMethod = 'Cheque';
+        paymentMethod = 'cheque';
         termid = 3;
         break;
       case 4:
-        paymentMethod = 'Card/Other';
+        paymentMethod = 'card';
         termid = 4;
         this.fetchpaymentmethod();
         break;
       case 5:
-        paymentMethod = 'Bank';
+        paymentMethod = 'bankdeposit';
         termid = 5;
         break;
       default:
@@ -634,6 +981,8 @@ export class ReceiptModalComponent implements OnChanges {
     }
 
     console.log('Selected Payment Method:', paymentMethod);
+    this.accountmethod(paymentMethod);
+
     this.method = paymentMethod;
     console.log(this.method);
     this.methodChanged.emit(this.method.toString());

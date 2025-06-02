@@ -44,8 +44,8 @@
             [disabled]="true"
           />
         </div> -->
- 
-             <div class="mb-3" *ngIf="false">
+
+            <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_jobtypeid">jobtypeid</label>
               <input
                 type="number"
@@ -134,7 +134,7 @@
                 placeholder="Enter description"
               />
             </div>
-              <div class="mb-3" *ngIf="false">
+            <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_jobopenby">Jobopenby</label>
               <input
                 type="number"
@@ -146,7 +146,6 @@
                 [ngModel]="jobopenby"
               />
             </div>
-
 
             <!-- <div class="mb-3">
           <label class="form-label" for="field_jobopentime">Jobopentime</label>
@@ -195,7 +194,7 @@
                 [class.is-invalid]="editForm.controls.customertel.invalid && editForm.controls.customertel.touched"
                 required
               />
-                </div>
+            </div>
 
             <div class="mb-3" *ngIf="false">
               <label class="form-label" for="field_customerid">Customerid</label>
@@ -208,13 +207,12 @@
                 data-cy="customerid"
                 [ngModel]="customerid"
               />
-                 <div *ngIf="editForm.controls.customertel.errors?.required && editForm.controls.customertel.touched" class="invalid-feedback">
+              <div *ngIf="editForm.controls.customertel.errors?.required && editForm.controls.customertel.touched" class="invalid-feedback">
                 Customer Telephone Number is required.
               </div>
               <div *ngIf="editForm.controls.customertel.errors?.pattern && editForm.controls.customertel.touched" class="invalid-feedback">
                 Enter a valid 10-digit phone number.
               </div>
-
             </div>
 
             <!-- <div class="mb-3">
@@ -334,12 +332,8 @@
           />
         </div> -->
 
-             <div class="mb-3" *ngIf="false">
-              <label
-                class="form-label"
-                for="field_vehicletypeid"
-                >typeid</label
-              >
+            <div class="mb-3" *ngIf="false">
+              <label class="form-label" for="field_vehicletypeid">typeid</label>
               <input
                 type="text"
                 class="form-check"

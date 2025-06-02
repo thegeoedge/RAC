@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { IBankbranch } from '../bankbranch.model';
-import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../bankbranch.test-samples';
+import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../bankbranch.test-samples';
 
 import { BankbranchService } from './bankbranch.service';
 
@@ -17,7 +18,7 @@ describe('Bankbranch Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     expectedResult = null;
     service = TestBed.inject(BankbranchService);
@@ -164,7 +165,7 @@ describe('Bankbranch Service', () => {
       });
 
       it('Should return false if one entity is null', () => {
-        const entity1 = { id: 123 };
+        const entity1 = { id: 5446 };
         const entity2 = null;
 
         const compareResult1 = service.compareBankbranch(entity1, entity2);
@@ -175,8 +176,8 @@ describe('Bankbranch Service', () => {
       });
 
       it('Should return false if primaryKey differs', () => {
-        const entity1 = { id: 123 };
-        const entity2 = { id: 456 };
+        const entity1 = { id: 5446 };
+        const entity2 = { id: 31095 };
 
         const compareResult1 = service.compareBankbranch(entity1, entity2);
         const compareResult2 = service.compareBankbranch(entity2, entity1);
@@ -186,8 +187,8 @@ describe('Bankbranch Service', () => {
       });
 
       it('Should return false if primaryKey matches', () => {
-        const entity1 = { id: 123 };
-        const entity2 = { id: 123 };
+        const entity1 = { id: 5446 };
+        const entity2 = { id: 5446 };
 
         const compareResult1 = service.compareBankbranch(entity1, entity2);
         const compareResult2 = service.compareBankbranch(entity2, entity1);

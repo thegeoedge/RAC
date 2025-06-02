@@ -19,6 +19,7 @@ import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype
 import { MessageCommunicationService } from 'app/core/util/message.communication.service';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 import { IBillingserviceoptionvalues } from 'app/entities/billingserviceoptionvalues/billingserviceoptionvalues.model';
+import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvoice.service';
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-service-charge-line-update',
@@ -33,6 +34,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   protected salesInvoiceServiceChargeLineService = inject(SalesInvoiceServiceChargeLineService);
   protected salesInvoiceServiceChargeLineFormService = inject(SalesInvoiceServiceChargeLineFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  salesInvoiceService = inject(SalesinvoiceService);
   protected fb = inject(FormBuilder);
   messagenotify = inject(MessageCommunicationService);
   @Output() totalUpdated = new EventEmitter<number>(); // Emit total to parent
@@ -118,7 +120,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       .map(control => control.get('value')?.value || 0)
       .reduce((acc, value) => acc + value, 0);
     this.salesInvoiceServiceChargeLineService.settotalservicelines(total);
-
+    console.log('here qqqqqqnumbeeeeeeeeeeqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeeeee', this.salesInvoiceService.getVehicleNo());
     // Create a fake event for onDropdownChange
     const fakeEvent = {
       target: {
@@ -163,6 +165,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     if (selectedValue === '0') {
       typeid = 1;
     }
+    console.log('here qqqqqqnumbeeeeeeeeeeqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeeeee', this.salesInvoiceService.getVehicleNo());
     // Log the selected typeid to the console
     console.log('Selected Vehicle Type ID:', typeid);
     this.typeid = typeid;

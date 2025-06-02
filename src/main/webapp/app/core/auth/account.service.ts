@@ -78,11 +78,13 @@ export class AccountService {
   }
 
   fetchemp(name: String) {
-    this.employees.query({ 'fullName.equals': name }).subscribe({
+    this.employees.query({ 'username.equals': name }).subscribe({
       next: (res: any) => {
         console.log('Response:', res); // Log the full response
 
+        localStorage.setItem('empId', res.body[0].id); // Store the employee id in localStorage
         const empRoleFunctionPermission = res.body[0].id; // The actual data response
+        localStorage.setItem('username', res.body[0].username); // Store the employee role function permission in localStorage
         console.log('First itemzzzzzzzzzz:', empRoleFunctionPermission); // Log the first item (if it's an array)
         this.fetchEmpRoleFunctionPermission(empRoleFunctionPermission); // Call the function with the first item's id
       },
@@ -98,6 +100,7 @@ export class AccountService {
     // Store the id and login in localStorage when the user logs in
     if (identity) {
       //localStorage.setItem('userId', identity.id.toString());
+      console.log('Identityxxx:', identity); // Log the identity object
       localStorage.setItem('userLogin', identity.login);
       const storedLogin = localStorage.getItem('userLogin');
 
@@ -106,7 +109,7 @@ export class AccountService {
       this.fetchemp(storedLogin!);
 
       this.http.get<{ id: string }>('/api/account').subscribe(userData => {
-        console.log('API response:', userData); // Log the full response
+        console.log('API response:', userData); // Log the full response ///
 
         if (userData && userData.id) {
           localStorage.setItem('userId', userData.id); // Store the user id

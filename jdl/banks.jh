@@ -6,3 +6,4 @@ entity Banks {
     lmd Instant // LMD
 }
 paginate * with pagination
+filter * 

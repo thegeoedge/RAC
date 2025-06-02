@@ -37,6 +37,7 @@ export class AutocareappointmentService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/autocareappointments');
+  protected resourceUrlz = this.applicationConfigService.getEndpointFor('api/customervehicles');
 
   create(autocareappointment: NewAutocareappointment): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(autocareappointment);
@@ -82,6 +83,12 @@ export class AutocareappointmentService {
     const options = createRequestOption({ 'vehiclenumber.contains': vehiclenumber });
     return this.http
       .get<RestAutocareappointment[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+  findByVehicleNumber2(vehiclenumber: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ 'vehiclenumber.contains': vehiclenumber });
+    return this.http
+      .get<any[]>(this.resourceUrlz, { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 

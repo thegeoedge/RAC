@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject, from } from 'rxjs';
+import { Subject, from, of } from 'rxjs';
 
 import { BankbranchService } from '../service/bankbranch.service';
 import { IBankbranch } from '../bankbranch.model';
@@ -20,8 +19,9 @@ describe('Bankbranch Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, BankbranchUpdateComponent],
+      imports: [BankbranchUpdateComponent],
       providers: [
+        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -44,7 +44,7 @@ describe('Bankbranch Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const bankbranch: IBankbranch = { id: 456 };
+      const bankbranch: IBankbranch = { id: 31095 };
 
       activatedRoute.data = of({ bankbranch });
       comp.ngOnInit();
@@ -57,7 +57,7 @@ describe('Bankbranch Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBankbranch>>();
-      const bankbranch = { id: 123 };
+      const bankbranch = { id: 5446 };
       jest.spyOn(bankbranchFormService, 'getBankbranch').mockReturnValue(bankbranch);
       jest.spyOn(bankbranchService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +80,7 @@ describe('Bankbranch Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBankbranch>>();
-      const bankbranch = { id: 123 };
+      const bankbranch = { id: 5446 };
       jest.spyOn(bankbranchFormService, 'getBankbranch').mockReturnValue({ id: null });
       jest.spyOn(bankbranchService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +103,7 @@ describe('Bankbranch Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IBankbranch>>();
-      const bankbranch = { id: 123 };
+      const bankbranch = { id: 5446 };
       jest.spyOn(bankbranchService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ bankbranch });

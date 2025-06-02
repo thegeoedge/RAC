@@ -1,21 +1,19 @@
 import { IBankbranch, NewBankbranch } from './bankbranch.model';
 
 export const sampleWithRequiredData: IBankbranch = {
-  id: 10548,
+  id: 20977,
 };
 
 export const sampleWithPartialData: IBankbranch = {
-  id: 995,
-  bankcode: 'quizzically where',
-  branchcode: 'towards',
-  branchname: 'respond a garbage',
+  id: 31094,
+  branchcode: 'beret pants',
 };
 
 export const sampleWithFullData: IBankbranch = {
-  id: 5608,
-  bankcode: 'beneath',
-  branchcode: 'knottily mechanize',
-  branchname: 'foolishly torn',
+  id: 20021,
+  bankcode: 'spotless',
+  branchcode: 'wrongly coliseum',
+  branchname: 'wrong and briefly',
 };
 
 export const sampleWithNewData: NewBankbranch = {

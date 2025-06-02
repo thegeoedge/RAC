@@ -1,56 +1,46 @@
-import { Component, NgZone, inject, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, inject, signal } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router, RouterModule } from '@angular/router';
-import { combineLatest, filter, Observable, Subscription, tap } from 'rxjs';
+import { Observable, Subscription, combineLatest, filter, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import SharedModule from 'app/shared/shared.module';
-import { sortStateSignal, SortDirective, SortByDirective, type SortState, SortService } from 'app/shared/sort';
-import { DurationPipe, FormatMediumDatetimePipe, FormatMediumDatePipe } from 'app/shared/date';
+import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { ItemCountComponent } from 'app/shared/pagination';
 import { FormsModule } from '@angular/forms';
-
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { FilterComponent, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import { IBanks } from '../banks.model';
-import { EntityArrayResponseType, BanksService } from '../service/banks.service';
+
+import { BanksService, EntityArrayResponseType } from '../service/banks.service';
 import { BanksDeleteDialogComponent } from '../delete/banks-delete-dialog.component';
 
 @Component({
-  standalone: true,
   selector: 'jhi-banks',
   templateUrl: './banks.component.html',
-  imports: [
-    RouterModule,
-    FormsModule,
-    SharedModule,
-    SortDirective,
-    SortByDirective,
-    DurationPipe,
-    FormatMediumDatetimePipe,
-    FormatMediumDatePipe,
-    ItemCountComponent,
-  ],
 })
 export class BanksComponent implements OnInit {
   subscription: Subscription | null = null;
-  banks?: IBanks[];
+  banks = signal<IBanks[]>([]);
   isLoading = false;
 
   sortState = sortStateSignal({});
+  filters: IFilterOptions = new FilterOptions();
 
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
 
-  public router = inject(Router);
-  protected banksService = inject(BanksService);
-  protected activatedRoute = inject(ActivatedRoute);
-  protected sortService = inject(SortService);
+  public readonly router = inject(Router);
+  protected readonly banksService = inject(BanksService);
+  protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
 
-  trackId = (_index: number, item: IBanks): number => this.banksService.getBanksIdentifier(item);
+  trackId = (item: IBanks): number => this.banksService.getBanksIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
@@ -59,6 +49,8 @@ export class BanksComponent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+
+    this.filters.filterChanges.subscribe(filterOptions => this.handleNavigation(1, this.sortState(), filterOptions));
   }
 
   delete(banks: IBanks): void {
@@ -82,23 +74,24 @@ export class BanksComponent implements OnInit {
   }
 
   navigateToWithComponentValues(event: SortState): void {
-    this.handleNavigation(this.page, event);
+    this.handleNavigation(this.page, event, this.filters.filterOptions);
   }
 
   navigateToPage(page: number): void {
-    this.handleNavigation(page, this.sortState());
+    this.handleNavigation(page, this.sortState(), this.filters.filterOptions);
   }
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
     this.page = +(page ?? 1);
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+    this.filters.initializeFromParams(params);
   }
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
-    this.banks = dataFromBody;
+    this.banks.set(dataFromBody);
   }
 
   protected fillComponentAttributesFromResponseBody(data: IBanks[] | null): IBanks[] {
@@ -110,7 +103,7 @@ export class BanksComponent implements OnInit {
   }
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
-    const { page } = this;
+    const { page, filters } = this;
 
     this.isLoading = true;
     const pageToLoad: number = page;
@@ -119,15 +112,22 @@ export class BanksComponent implements OnInit {
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+    filters.filterOptions.forEach(filterOption => {
+      queryObject[filterOption.name] = filterOption.values;
+    });
     return this.banksService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
-  protected handleNavigation(page: number, sortState: SortState): void {
-    const queryParamsObj = {
+  protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {
+    const queryParamsObj: any = {
       page,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(sortState),
     };
+
+    filterOptions?.forEach(filterOption => {
+      queryParamsObj[filterOption.nameAsQueryParam()] = filterOption.values;
+    });
 
     this.ngZone.run(() => {
       this.router.navigate(['./'], {

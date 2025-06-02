@@ -35,6 +35,11 @@ export class AutojobsinvoicelinesService {
   );
   protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/autojobsinvoicelines/by-invoice-id');
   resourceJobInvoiceLinesUrly = this.applicationConfigService.getEndpointFor('api/autojobsalesinvoiceservicechargelines/by-invoice-ids');
+  resourceacc = this.applicationConfigService.getEndpointFor('api/accounts/by-name');
+  fetchaccs(name: string): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('name', name.toString());
+    return this.http.get<any>(`${this.resourceacc}`, { params, observe: 'response' });
+  }
 
   create(autojobsinvoicelines: NewAutojobsinvoicelines): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(autojobsinvoicelines);

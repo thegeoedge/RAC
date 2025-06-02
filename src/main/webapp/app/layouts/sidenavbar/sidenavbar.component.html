@@ -51,12 +51,18 @@
               Vehicle type
             </a>
           </li>
-
           <li>
-            <a class="sidenav-link" routerLink="/autocareappointment" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <a
+              class="sidenav-link"
+              [routerLink]="['/autocareappointment']"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              [queryParams]="{ page: 1, size: 20, sort: 'isconformed,desc' }"
+            >
               Appointment
             </a>
           </li>
+
           <div *ngIf="false">
             <li>
               <a

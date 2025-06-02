@@ -2,6 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Banks;
 import com.heavenscode.rac.repository.BanksRepository;
+import com.heavenscode.rac.service.BanksQueryService;
+import com.heavenscode.rac.service.BanksService;
+import com.heavenscode.rac.service.criteria.BanksCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -27,20 +29,25 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/banks")
-@Transactional
 public class BanksResource {
 
-    private final Logger log = LoggerFactory.getLogger(BanksResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BanksResource.class);
 
     private static final String ENTITY_NAME = "banks";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final BanksService banksService;
+
     private final BanksRepository banksRepository;
 
-    public BanksResource(BanksRepository banksRepository) {
+    private final BanksQueryService banksQueryService;
+
+    public BanksResource(BanksService banksService, BanksRepository banksRepository, BanksQueryService banksQueryService) {
+        this.banksService = banksService;
         this.banksRepository = banksRepository;
+        this.banksQueryService = banksQueryService;
     }
 
     /**
@@ -52,11 +59,11 @@ public class BanksResource {
      */
     @PostMapping("")
     public ResponseEntity<Banks> createBanks(@RequestBody Banks banks) throws URISyntaxException {
-        log.debug("REST request to save Banks : {}", banks);
+        LOG.debug("REST request to save Banks : {}", banks);
         if (banks.getId() != null) {
             throw new BadRequestAlertException("A new banks cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        banks = banksRepository.save(banks);
+        banks = banksService.save(banks);
         return ResponseEntity.created(new URI("/api/banks/" + banks.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, banks.getId().toString()))
             .body(banks);
@@ -75,7 +82,7 @@ public class BanksResource {
     @PutMapping("/{id}")
     public ResponseEntity<Banks> updateBanks(@PathVariable(value = "id", required = false) final Long id, @RequestBody Banks banks)
         throws URISyntaxException {
-        log.debug("REST request to update Banks : {}, {}", id, banks);
+        LOG.debug("REST request to update Banks : {}, {}", id, banks);
         if (banks.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -87,7 +94,7 @@ public class BanksResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        banks = banksRepository.save(banks);
+        banks = banksService.update(banks);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, banks.getId().toString()))
             .body(banks);
@@ -107,7 +114,7 @@ public class BanksResource {
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Banks> partialUpdateBanks(@PathVariable(value = "id", required = false) final Long id, @RequestBody Banks banks)
         throws URISyntaxException {
-        log.debug("REST request to partial update Banks partially : {}, {}", id, banks);
+        LOG.debug("REST request to partial update Banks partially : {}, {}", id, banks);
         if (banks.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -119,28 +126,7 @@ public class BanksResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Banks> result = banksRepository
-            .findById(banks.getId())
-            .map(existingBanks -> {
-                if (banks.getCode() != null) {
-                    existingBanks.setCode(banks.getCode());
-                }
-                if (banks.getName() != null) {
-                    existingBanks.setName(banks.getName());
-                }
-                if (banks.getDescription() != null) {
-                    existingBanks.setDescription(banks.getDescription());
-                }
-                if (banks.getLmu() != null) {
-                    existingBanks.setLmu(banks.getLmu());
-                }
-                if (banks.getLmd() != null) {
-                    existingBanks.setLmd(banks.getLmd());
-                }
-
-                return existingBanks;
-            })
-            .map(banksRepository::save);
+        Optional<Banks> result = banksService.partialUpdate(banks);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -152,14 +138,31 @@ public class BanksResource {
      * {@code GET  /banks} : get all the banks.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of banks in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<Banks>> getAllBanks(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        log.debug("REST request to get a page of Banks");
-        Page<Banks> page = banksRepository.findAll(pageable);
+    public ResponseEntity<List<Banks>> getAllBanks(
+        BanksCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Banks by criteria: {}", criteria);
+
+        Page<Banks> page = banksQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /banks/count} : count all the banks.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countBanks(BanksCriteria criteria) {
+        LOG.debug("REST request to count Banks by criteria: {}", criteria);
+        return ResponseEntity.ok().body(banksQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -170,8 +173,8 @@ public class BanksResource {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Banks> getBanks(@PathVariable("id") Long id) {
-        log.debug("REST request to get Banks : {}", id);
-        Optional<Banks> banks = banksRepository.findById(id);
+        LOG.debug("REST request to get Banks : {}", id);
+        Optional<Banks> banks = banksService.findOne(id);
         return ResponseUtil.wrapOrNotFound(banks);
     }
 
@@ -183,8 +186,8 @@ public class BanksResource {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBanks(@PathVariable("id") Long id) {
-        log.debug("REST request to delete Banks : {}", id);
-        banksRepository.deleteById(id);
+        LOG.debug("REST request to delete Banks : {}", id);
+        banksService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

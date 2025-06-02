@@ -16,6 +16,8 @@ import { IAutocareappointment } from '../autocareappointment.model';
 import { EntityArrayResponseType, AutocareappointmentService } from '../service/autocareappointment.service';
 import { AutocareappointmentDeleteDialogComponent } from '../delete/autocareappointment-delete-dialog.component';
 import { AutocareappointmentUpdateDialogComponent } from '../delete/autocareappointment-update-dialog.component';
+import dayjs, { Dayjs } from 'dayjs';
+
 @Component({
   standalone: true,
   selector: 'jhi-autocareappointment',
@@ -108,6 +110,10 @@ export class AutocareappointmentComponent implements OnInit {
 
     // Pass the autocareappointment object (it can have the 'isconformed' value set to true in the modal)
     autocareappointment.isconformed = true;
+    // autocareappointment.conformdate= Dayjs(); // Set the current date as the conform date
+    const storedUserId = localStorage.getItem('userId');
+    const userIdNumber = parseInt(storedUserId!, 10);
+    autocareappointment.conformedby = userIdNumber; // Set the conformed by user ID
     modalRef.componentInstance.autocareappointment = autocareappointment;
 
     // Handle modal close and reload the data if updated (event for the 'tick' action)
@@ -157,34 +163,34 @@ export class AutocareappointmentComponent implements OnInit {
   }
 
   load(): void {
-    const currentUrl = window.location.href;
-    console.log('Current URLll:', currentUrl); // ✅ Logs the current URL
+    this.isLoading = true;
 
-    this.isLoading = true; // Start loading before the API call
+    const params = this.activatedRoute.snapshot.queryParamMap;
+    const sort = params.get('sort');
+    const pageParam = params.get('page');
+    const sizeParam = params.get('size');
 
-    let queryParams: any;
+    const page = pageParam ? +pageParam - 1 : 0;
+    const size = sizeParam ? +sizeParam : this.itemsPerPage;
 
-    if (currentUrl.includes('sort=isconformed,asc')) {
-      console.log('Detectedddd isconformed,desc in URL. Fetching filtered data...');
-      queryParams = {
-        'isconformed.equals': 'false',
-        page: 0,
-        size: 20,
-        sort: ['id,desc'],
-      };
+    let queryParams: any = {
+      page,
+      size,
+      sort: ['id,desc'], // Default sort if nothing else
+    };
 
-      this.fetchData(queryParams);
-    } else {
-      this.queryBackend()
-        .pipe(
-          finalize(() => (this.isLoading = false)), // Ensure loading stops
-        )
-        .subscribe({
-          next: (res: EntityArrayResponseType) => {
-            this.onResponseSuccess(res);
-          },
-        });
+    if (sort === 'isconformed,asc') {
+      console.log('Detected isconformed=false for filtering.');
+      queryParams['isconformed.equals'] = 'false';
+    } else if (sort === 'isconformed,desc') {
+      console.log('Detected isconformed=true for filtering.');
+      queryParams['isconformed.equals'] = 'true';
+    } else if (sort === 'missedappointmentcall,desc') {
+      console.log('Detected missedappointmentcall filter.');
+      queryParams['missedappointmentcall.contains'] = ' ';
     }
+
+    this.fetchData(queryParams); // ✅ Reuse fetchData function
   }
 
   private fetchData(params: any): void {

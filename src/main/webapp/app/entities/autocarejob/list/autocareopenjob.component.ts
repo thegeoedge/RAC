@@ -43,7 +43,7 @@ export class AutocareopenjobComponent implements OnInit {
 
   sortState = sortStateSignal({});
 
-  itemsPerPage = ITEMS_PER_PAGE;
+  itemsPerPage = 150;
   totalItems = 0;
   page = 1;
 

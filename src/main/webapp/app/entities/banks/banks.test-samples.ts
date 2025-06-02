@@ -3,23 +3,24 @@ import dayjs from 'dayjs/esm';
 import { IBanks, NewBanks } from './banks.model';
 
 export const sampleWithRequiredData: IBanks = {
-  id: 280,
+  id: 27866,
 };
 
 export const sampleWithPartialData: IBanks = {
-  id: 15191,
-  code: 'aw divide',
-  name: 'untrue',
-  lmd: dayjs('2024-10-02T16:39'),
+  id: 11681,
+  code: 'huzzah needy fooey',
+  name: 'given',
+  description: 'failing birth',
+  lmd: dayjs('2024-10-02T11:34'),
 };
 
 export const sampleWithFullData: IBanks = {
-  id: 29803,
-  code: 'beside',
-  name: 'scream after',
-  description: 'lobotomise yuck',
-  lmu: 14922,
-  lmd: dayjs('2024-10-02T08:29'),
+  id: 4563,
+  code: 'upwardly',
+  name: 'overconfidently blah down',
+  description: 'in silently',
+  lmu: 7035,
+  lmd: dayjs('2024-10-03T06:52'),
 };
 
 export const sampleWithNewData: NewBanks = {

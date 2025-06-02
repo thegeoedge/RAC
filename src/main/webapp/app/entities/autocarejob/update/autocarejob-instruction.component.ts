@@ -87,6 +87,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   jobservice = inject(AutojobsalesinvoiceservicechargelineService);
   vehiclework = inject(WorkshopvehicleworkService);
   vehicleworklist = inject(WorkshopVehicleWorkListService);
+  customervehicle = inject(CustomervehicleService);
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
@@ -193,10 +194,26 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.setAutoNextServiceDate();
     });
   }
-  fetchjob() {
+  vehicletypeId: number = 1;
+  fetchjob(): void {
     const vehicleNumber = this.editForm.get('vehiclenumber')?.value;
     console.log('Selected Vehicle Number:', vehicleNumber);
 
+    // First query - customervehicleService
+    this.customervehicleService.query({ 'vehiclenumber.equals': vehicleNumber }).subscribe({
+      next: response => {
+        console.log('Customer Vehicle Responsexxxxxxxxxxxx:', response.body);
+        if (response.body && response.body.length > 0) {
+          this.vehicletypeId = response.body[0].typeid ?? 0;
+          console.log('Vehicle Type IDxxxxxxxxx:', this.vehicletypeId);
+        }
+      },
+      error: err => {
+        console.error('Error fetching customer vehicle:', err);
+      },
+    });
+
+    // Second query - autocarejobService
     this.autocarejobService
       .query({
         'vehiclenumber.contains': vehicleNumber,
@@ -204,16 +221,18 @@ export class AutocarejobInstructionComponent implements OnInit {
       })
       .subscribe({
         next: (res: HttpResponse<IAutocarejob[]>) => {
-          if (res.body) {
+          if (res.body && res.body.length > 1) {
             console.log('Sorted Job Response (desc):', res.body[1].nextserviceinstructions);
             this.editForm.patchValue({ lastserviceinstructions: res.body[1].nextserviceinstructions });
+          } else if (res.body && res.body.length > 0) {
+            console.log('Only one job found, using first entry:', res.body[0].nextserviceinstructions);
+            this.editForm.patchValue({ lastserviceinstructions: res.body[0].nextserviceinstructions });
           } else {
             console.log('No jobs found in the response.');
           }
-          console.log(vehicleNumber);
         },
         error: err => {
-          console.error('Error:', err);
+          console.error('Error fetching job details:', err);
         },
       });
   }
@@ -235,7 +254,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   previousState(): void {
     window.history.back();
   }
-  vehicletypeId: number = 1;
+
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
@@ -694,6 +713,8 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Use the new service method to fetch matching results
       this.customervehicleService.findByVehicleNumber(searchTerm).subscribe(response => {
         this.filteredVehicles = response.body || [];
+
+        console.log('Filtered Vehiclexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxs:', this.filteredVehicles);
       });
     } else {
       // Clear the suggestions if input is too short
@@ -1005,6 +1026,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }
+
   invoid: number = 0;
   workid: number = 0;
   saveAll(): void {

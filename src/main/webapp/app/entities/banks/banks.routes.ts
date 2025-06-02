@@ -2,23 +2,20 @@ import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { ASC } from 'app/config/navigation.constants';
-import { BanksComponent } from './list/banks.component';
-import { BanksDetailComponent } from './detail/banks-detail.component';
-import { BanksUpdateComponent } from './update/banks-update.component';
 import BanksResolve from './route/banks-routing-resolve.service';
 
 const banksRoute: Routes = [
   {
     path: '',
-    component: BanksComponent,
+    loadComponent: () => import('./list/banks.component').then(m => m.BanksComponent),
     data: {
-      defaultSort: 'id,' + ASC,
+      defaultSort: `id,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    component: BanksDetailComponent,
+    loadComponent: () => import('./detail/banks-detail.component').then(m => m.BanksDetailComponent),
     resolve: {
       banks: BanksResolve,
     },
@@ -26,7 +23,7 @@ const banksRoute: Routes = [
   },
   {
     path: 'new',
-    component: BanksUpdateComponent,
+    loadComponent: () => import('./update/banks-update.component').then(m => m.BanksUpdateComponent),
     resolve: {
       banks: BanksResolve,
     },
@@ -34,7 +31,7 @@ const banksRoute: Routes = [
   },
   {
     path: ':id/edit',
-    component: BanksUpdateComponent,
+    loadComponent: () => import('./update/banks-update.component').then(m => m.BanksUpdateComponent),
     resolve: {
       banks: BanksResolve,
     },

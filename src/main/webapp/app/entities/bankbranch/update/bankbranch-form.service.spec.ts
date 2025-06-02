@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithRequiredData, sampleWithNewData } from '../bankbranch.test-samples';
+import { sampleWithNewData, sampleWithRequiredData } from '../bankbranch.test-samples';
 
 import { BankbranchFormService } from './bankbranch-form.service';
 

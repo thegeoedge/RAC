@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.Accounts;
 import com.heavenscode.rac.repository.AccountsRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,11 @@ public class AccountsService {
     private static final Logger LOG = LoggerFactory.getLogger(AccountsService.class);
 
     private final AccountsRepository accountsRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public AccountsService(AccountsRepository accountsRepository) {
+    public AccountsService(AccountsRepository accountsRepository, JdbcTemplate jdbcTemplate) {
         this.accountsRepository = accountsRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -32,6 +36,35 @@ public class AccountsService {
     public Accounts save(Accounts accounts) {
         LOG.debug("Request to save Accounts : {}", accounts);
         return accountsRepository.save(accounts);
+    }
+
+    public List<Accounts> fetchAccountsByName(String name) {
+        String sql = "SELECT * FROM Accounts WHERE Name = ?";
+        return jdbcTemplate.query(sql, new Object[] { name }, (rs, rowNum) -> {
+            Accounts account = new Accounts();
+            account.setId(rs.getLong("ID"));
+            account.setCode(rs.getString("Code"));
+            account.setDate(rs.getTimestamp("Date") != null ? rs.getTimestamp("Date").toInstant() : null);
+            account.setName(rs.getString("Name"));
+            account.setDescription(rs.getString("Description"));
+            account.setType(rs.getInt("Type"));
+            account.setParent(rs.getInt("Parent"));
+            account.setBalance(rs.getFloat("Balance"));
+            account.setLmu(rs.getInt("LMU"));
+            account.setLmd(rs.getTimestamp("LMD") != null ? rs.getTimestamp("LMD").toInstant() : null);
+            account.setHasbatches(rs.getBoolean("HasBatches"));
+            account.setAccountvalue(rs.getFloat("AccountValue"));
+            account.setAccountlevel(rs.getInt("AccountLevel"));
+            account.setAccountsnumberingsystem(rs.getLong("AccountsNumberingSystem"));
+            account.setSubparentid(rs.getInt("SubParentID"));
+            account.setCanedit(rs.getBoolean("CanEdit"));
+            account.setAmount(rs.getDouble("Amount"));
+            account.setCreditamount(rs.getFloat("CreditAmount"));
+            account.setDebitamount(rs.getDouble("DebitAmount"));
+            account.setDebitorcredit(rs.getString("DebitOrCredit"));
+            account.setReporttype(rs.getInt("ReportType"));
+            return account;
+        });
     }
 
     /**

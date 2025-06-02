@@ -33,6 +33,13 @@ export class SalesInvoiceLinesService {
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines');
   protected resourceJobInvoiceLinesUrlz = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines/by-invoice-id');
+
+  resourceacc = this.applicationConfigService.getEndpointFor('api/accounts/by-name');
+  fetchaccs(name: string): Observable<HttpResponse<any>> {
+    const params = new HttpParams().set('name', name.toString());
+    return this.http.get<any>(`${this.resourceacc}`, { params, observe: 'response' });
+  }
+
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
     const params = new HttpParams().set('invocieID', id.toString());
     return this.http.get<any>(`${this.resourceJobInvoiceLinesUrlz}`, { params, observe: 'response' });

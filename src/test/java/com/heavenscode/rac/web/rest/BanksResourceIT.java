@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ class BanksResourceIT {
 
     private static final Integer DEFAULT_LMU = 1;
     private static final Integer UPDATED_LMU = 2;
+    private static final Integer SMALLER_LMU = 1 - 1;
 
     private static final Instant DEFAULT_LMD = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_LMD = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -68,15 +70,16 @@ class BanksResourceIT {
 
     private Banks banks;
 
+    private Banks insertedBanks;
+
     /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Banks createEntity(EntityManager em) {
-        Banks banks = new Banks().code(DEFAULT_CODE).name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION).lmu(DEFAULT_LMU).lmd(DEFAULT_LMD);
-        return banks;
+    public static Banks createEntity() {
+        return new Banks().code(DEFAULT_CODE).name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION).lmu(DEFAULT_LMU).lmd(DEFAULT_LMD);
     }
 
     /**
@@ -85,14 +88,21 @@ class BanksResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Banks createUpdatedEntity(EntityManager em) {
-        Banks banks = new Banks().code(UPDATED_CODE).name(UPDATED_NAME).description(UPDATED_DESCRIPTION).lmu(UPDATED_LMU).lmd(UPDATED_LMD);
-        return banks;
+    public static Banks createUpdatedEntity() {
+        return new Banks().code(UPDATED_CODE).name(UPDATED_NAME).description(UPDATED_DESCRIPTION).lmu(UPDATED_LMU).lmd(UPDATED_LMD);
     }
 
     @BeforeEach
     public void initTest() {
-        banks = createEntity(em);
+        banks = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedBanks != null) {
+            banksRepository.delete(insertedBanks);
+            insertedBanks = null;
+        }
     }
 
     @Test
@@ -113,6 +123,8 @@ class BanksResourceIT {
         // Validate the Banks in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertBanksUpdatableFieldsEquals(returnedBanks, getPersistedBanks(returnedBanks));
+
+        insertedBanks = returnedBanks;
     }
 
     @Test
@@ -136,7 +148,7 @@ class BanksResourceIT {
     @Transactional
     void getAllBanks() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         // Get all the banksList
         restBanksMockMvc
@@ -155,7 +167,7 @@ class BanksResourceIT {
     @Transactional
     void getBanks() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         // Get the banks
         restBanksMockMvc
@@ -172,6 +184,318 @@ class BanksResourceIT {
 
     @Test
     @Transactional
+    void getBanksByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        Long id = banks.getId();
+
+        defaultBanksFiltering("id.equals=" + id, "id.notEquals=" + id);
+
+        defaultBanksFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
+
+        defaultBanksFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where code equals to
+        defaultBanksFiltering("code.equals=" + DEFAULT_CODE, "code.equals=" + UPDATED_CODE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where code in
+        defaultBanksFiltering("code.in=" + DEFAULT_CODE + "," + UPDATED_CODE, "code.in=" + UPDATED_CODE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where code is not null
+        defaultBanksFiltering("code.specified=true", "code.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByCodeContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where code contains
+        defaultBanksFiltering("code.contains=" + DEFAULT_CODE, "code.contains=" + UPDATED_CODE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where code does not contain
+        defaultBanksFiltering("code.doesNotContain=" + UPDATED_CODE, "code.doesNotContain=" + DEFAULT_CODE);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where name equals to
+        defaultBanksFiltering("name.equals=" + DEFAULT_NAME, "name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where name in
+        defaultBanksFiltering("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME, "name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where name is not null
+        defaultBanksFiltering("name.specified=true", "name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByNameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where name contains
+        defaultBanksFiltering("name.contains=" + DEFAULT_NAME, "name.contains=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where name does not contain
+        defaultBanksFiltering("name.doesNotContain=" + UPDATED_NAME, "name.doesNotContain=" + DEFAULT_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByDescriptionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where description equals to
+        defaultBanksFiltering("description.equals=" + DEFAULT_DESCRIPTION, "description.equals=" + UPDATED_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByDescriptionIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where description in
+        defaultBanksFiltering("description.in=" + DEFAULT_DESCRIPTION + "," + UPDATED_DESCRIPTION, "description.in=" + UPDATED_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByDescriptionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where description is not null
+        defaultBanksFiltering("description.specified=true", "description.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByDescriptionContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where description contains
+        defaultBanksFiltering("description.contains=" + DEFAULT_DESCRIPTION, "description.contains=" + UPDATED_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByDescriptionNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where description does not contain
+        defaultBanksFiltering("description.doesNotContain=" + UPDATED_DESCRIPTION, "description.doesNotContain=" + DEFAULT_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu equals to
+        defaultBanksFiltering("lmu.equals=" + DEFAULT_LMU, "lmu.equals=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu in
+        defaultBanksFiltering("lmu.in=" + DEFAULT_LMU + "," + UPDATED_LMU, "lmu.in=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu is not null
+        defaultBanksFiltering("lmu.specified=true", "lmu.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu is greater than or equal to
+        defaultBanksFiltering("lmu.greaterThanOrEqual=" + DEFAULT_LMU, "lmu.greaterThanOrEqual=" + UPDATED_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu is less than or equal to
+        defaultBanksFiltering("lmu.lessThanOrEqual=" + DEFAULT_LMU, "lmu.lessThanOrEqual=" + SMALLER_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu is less than
+        defaultBanksFiltering("lmu.lessThan=" + UPDATED_LMU, "lmu.lessThan=" + DEFAULT_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmuIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmu is greater than
+        defaultBanksFiltering("lmu.greaterThan=" + SMALLER_LMU, "lmu.greaterThan=" + DEFAULT_LMU);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmd equals to
+        defaultBanksFiltering("lmd.equals=" + DEFAULT_LMD, "lmd.equals=" + UPDATED_LMD);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmd in
+        defaultBanksFiltering("lmd.in=" + DEFAULT_LMD + "," + UPDATED_LMD, "lmd.in=" + UPDATED_LMD);
+    }
+
+    @Test
+    @Transactional
+    void getAllBanksByLmdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBanks = banksRepository.saveAndFlush(banks);
+
+        // Get all the banksList where lmd is not null
+        defaultBanksFiltering("lmd.specified=true", "lmd.specified=false");
+    }
+
+    private void defaultBanksFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultBanksShouldBeFound(shouldBeFound);
+        defaultBanksShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultBanksShouldBeFound(String filter) throws Exception {
+        restBanksMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(banks.getId().intValue())))
+            .andExpect(jsonPath("$.[*].code").value(hasItem(DEFAULT_CODE)))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].lmu").value(hasItem(DEFAULT_LMU)))
+            .andExpect(jsonPath("$.[*].lmd").value(hasItem(DEFAULT_LMD.toString())));
+
+        // Check, that the count call also returns 1
+        restBanksMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultBanksShouldNotBeFound(String filter) throws Exception {
+        restBanksMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restBanksMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+    @Test
+    @Transactional
     void getNonExistingBanks() throws Exception {
         // Get the banks
         restBanksMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
@@ -181,7 +505,7 @@ class BanksResourceIT {
     @Transactional
     void putExistingBanks() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -257,7 +581,7 @@ class BanksResourceIT {
     @Transactional
     void partialUpdateBanksWithPatch() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -265,7 +589,7 @@ class BanksResourceIT {
         Banks partialUpdatedBanks = new Banks();
         partialUpdatedBanks.setId(banks.getId());
 
-        partialUpdatedBanks.description(UPDATED_DESCRIPTION).lmu(UPDATED_LMU).lmd(UPDATED_LMD);
+        partialUpdatedBanks.description(UPDATED_DESCRIPTION).lmu(UPDATED_LMU);
 
         restBanksMockMvc
             .perform(
@@ -285,7 +609,7 @@ class BanksResourceIT {
     @Transactional
     void fullUpdateBanksWithPatch() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -364,7 +688,7 @@ class BanksResourceIT {
     @Transactional
     void deleteBanks() throws Exception {
         // Initialize the database
-        banksRepository.saveAndFlush(banks);
+        insertedBanks = banksRepository.saveAndFlush(banks);
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 

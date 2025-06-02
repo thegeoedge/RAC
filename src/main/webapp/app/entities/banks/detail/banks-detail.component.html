@@ -1,49 +1,39 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    @if (banks()) {
+    @if (banks(); as banksRef) {
       <div>
         <h2 data-cy="banksDetailsHeading"><span>Banks</span></h2>
 
         <hr />
 
-        <jhi-alert-error></jhi-alert-error>
-
-        <jhi-alert></jhi-alert>
-
         <dl class="row-md jh-entity-details">
           <dt><span>ID</span></dt>
           <dd>
-            <span>{{ banks()!.id }}</span>
+            <span>{{ banksRef.id }}</span>
           </dd>
           <dt><span>Code</span></dt>
           <dd>
-            <span>{{ banks()!.code }}</span>
+            <span>{{ banksRef.code }}</span>
           </dd>
           <dt><span>Name</span></dt>
           <dd>
-            <span>{{ banks()!.name }}</span>
+            <span>{{ banksRef.name }}</span>
           </dd>
           <dt><span>Description</span></dt>
           <dd>
-            <span>{{ banks()!.description }}</span>
+            <span>{{ banksRef.description }}</span>
           </dd>
           <dt><span>Lmu</span></dt>
           <dd>
-            <span>{{ banks()!.lmu }}</span>
+            <span>{{ banksRef.lmu }}</span>
           </dd>
           <dt><span>Lmd</span></dt>
           <dd>
-            <span>{{ banks()!.lmd | formatMediumDatetime }}</span>
+            <span>{{ banksRef.lmd }}</span>
           </dd>
         </dl>
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
-        </button>
-
-        <button type="button" [routerLink]="['/banks', banks()!.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
-        </button>
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton"></button>
       </div>
     }
   </div>

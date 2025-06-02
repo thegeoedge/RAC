@@ -54,7 +54,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
   @Input() nextvalue: any;
-  sharedSubId: string = '';
+
   acc = inject(AccountsService);
   @ViewChild(AddInvoicetableComponent)
   AddInvoicetableComponent!: AddInvoicetableComponent;
@@ -124,8 +124,6 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   fetchaccdet(): void {
     console.log('Selected Items >>>>>>>>:', this.salesInvoiceLinesDummyArray.value);
 
-    this.salesInvoiceLinesService.setSubId(this.sharedSubId);
-
     const fetchObservables = this.salesInvoiceLinesDummyArray.value.map((item: any, index: number) => {
       if (item.itemcode) {
         return this.inventoryedit.query({ 'code.equals': item.itemcode }).pipe(
@@ -152,7 +150,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
               }
               this.transaction[index].accountId = inventoryData.accountid;
               this.transaction[index].accountCode = inventoryData.accountcode;
-              this.transaction[index].subId = this.sharedSubId;
+              this.transaction[index].subId = this.salesInvoiceLinesService.getSubId();
 
               const matchingFormControl = this.salesInvoiceLinesDummyArray.controls.find((ctrl: any) => {
                 return ctrl.get('itemcode')?.value?.toString() === inventoryData.code;
@@ -565,7 +563,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
           const updatePayload = {
             id: 33,
-            deitamount: updatedCredit,
+            debitamount: updatedCredit,
             amount: updatedAmount,
           };
 
@@ -625,11 +623,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     this.bincard = this.salesInvoiceLinesDummyArray.value.map((item: any) => ({
       itemID: item.itemid,
       itemCode: item.itemcode,
+      qtyIn: 0,
       qtyOut: item.quantity,
       reference: 'SalesInvoice',
       price: item.sellingprice,
       locationID: 1,
-      lmd: dayjs().toISOString(),
+      lMD: dayjs().toDate(),
       recordDate: dayjs().toDate(),
       batchId: item.itemid,
       referenceCode: this.nextvalue,
@@ -849,7 +848,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     console.log('Adding transaction...');
     const totalamount = this.salesinvoice.getTotal();
     const customername = this.salesinvoice.getCustomerName();
-    console.log('Account ID:>>>>>>>>>>>>', customername);
+    console.log('Account ID:>>>>>>>>>>>eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee>', customername);
     this.acc.query({ 'name.contains': customername }).subscribe({
       next: (res: HttpResponse<any[]>) => {
         const accounts: any[] = res.body || [];
@@ -1117,7 +1116,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         console.log('Full responsevvvvvvvvvvvvvvvvvvvvvvvvv:', res);
         if (res.body && res.body[0]) {
           console.log('SalesInvoice datavvvvvvvvvvvvv:', res.body[0].amountowing);
-          this.sharedSubId = uuidv4();
+          // this.sharedSubId = uuidv4();
           if (this.salesInvoiceLinesDummyArray.value.length === 0) {
             this.fetchaccdet();
             this.fetchacc();
@@ -1278,7 +1277,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
                   })
                   .subscribe((res: HttpResponse<any[]>) => {
                     if (res.body) {
-                      console.log(`Full Response for itemid ${currentItemCode}:`, res.body[0]);
+                      console.log(`Full Response for itemidttttttttttttttttttttttttttttttt ${currentItemCode}:`, res.body[0]);
                       const firstItem = res.body[0];
 
                       const matchingLine = salesInvoiceLines.find(line => line.itemid === currentItemCode);
@@ -1291,8 +1290,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
                         lineId: matchingLine?.lineid ?? 0,
                         batchLineId: matchingLine?.lineid ?? 0,
                         itemId: firstItem.itemid,
-                        txDate: dayjs().toISOString(),
-                        manufactureDate: dayjs().toISOString(),
+                        txDate: firstItem.txdate,
+                        manufactureDate: firstItem.manufacturedate,
                         expiredDate: dayjs().toISOString(),
                         qty: matchingLine?.quantity ?? 0,
                         cost: firstItem.cost,

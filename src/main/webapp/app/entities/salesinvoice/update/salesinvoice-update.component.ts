@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { debounceTime } from 'rxjs/operators';
-
+import { v4 as uuidv4 } from 'uuid';
 import SharedModule from 'app/shared/shared.module';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SaleInvoiceCommonServiceChargeService } from 'app/entities/sale-invoice-common-service-charge/service/sale-invoice-common-service-charge.service';
@@ -112,7 +112,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   customerid: number = 0;
   isactive: boolean = true;
   deposited: boolean = true;
-  createdby: number = 0;
+  createdbyId: number = 0;
   accountId: number = 0;
   newcode: string = '';
   jobid: number = 0;
@@ -120,9 +120,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   newnextvalue: String = '';
   newlastvalue: String = '';
   jobbid: any;
+  sharedSubId: string = '';
   ngOnInit(): void {
     console.log('starttt');
-
+    const storedUserId = localStorage.getItem('empId');
+    const userIdNumber = parseInt(storedUserId!, 10);
+    console.log('User ID from localStoragerrrrrrrrrrr:', userIdNumber);
     // this.servicelines(id);
     // this.servicecommonlines(id);
     // this.invoicelines(id);
@@ -173,7 +176,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.autojobinvoice.query({ 'jobid.equals': params['id'] }).subscribe({
         next: response => {
           if (response.body && response.body.length > 0) {
-            console.log('Response:', response.body[0].id);
+            console.log('Responsexxxxxxxxxxxxxx:', response.body[0]);
             this.jobbid = response.body[0].id;
             console.log('Jobbid:', this.jobbid);
 
@@ -197,6 +200,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
                     }
                     console.log('Vehicle Number:', this.vehicleno);
                     this.editForm.patchValue({ vehicleno: this.vehicleno });
+                    this.salesInvoiceService.setVehicleNo(this.vehicleno);
                   },
                   error: err => {
                     console.error('Error fetching job details:', err);
@@ -215,6 +219,19 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       });
       this.editForm.patchValue({ vehicleno: this.vehicleno });
       // Call other methods after fetching the job ID
+      this.editForm.get('totaltax')?.valueChanges.subscribe(checked => {
+        if (!checked) {
+          this.editForm.patchValue(
+            {
+              vatamount: 0,
+              nbtamount: 0,
+              totaltax: 0,
+            },
+            { emitEvent: false }, // Prevent infinite loop
+          );
+        }
+        this.calculateDiscount();
+      });
     });
 
     this.loadVehicleTypes();
@@ -224,12 +241,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.editForm.get('valuediscount')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.get('subtotal')?.valueChanges.subscribe(() => this.calculateDiscount());
     this.editForm.patchValue({ vehicleno: this.vehicleno });
-
+    this.salesInvoiceService.setVehicleNo(this.vehicleno);
     // console.log('Total1:', this.total1, 'Total2:', this.total2, 'total3',this.total3,'SubTotal:', this.subTotal);
 
     //  this.editForm.patchValue({
     //  subtotal: this.subTotal,
     //  });
+    console.log('calllllllllllllllllllllllll:', this.vehicleno);
   }
   get subtotalControl(): AbstractControl {
     return this.editForm.get('subtotal')!;
@@ -265,7 +283,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     }
 
     this.customer // Ensure this.customerService exists and is injected properly
-      .query({ 'nameWithInitials.contains': searchName })
+      .query({
+        'fullName.contains': searchName,
+        page: 0, // Start from the first page
+        size: 260,
+      })
       .subscribe(
         response => {
           this.customers = response.body || []; // Populate customers array
@@ -289,9 +311,20 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.customerid = selectedCustomer.id;
       this.editForm.patchValue({ customerid: selectedCustomer.id, customername: selectedCustomer.namewithinitials });
 
+      this.customername = selectedCustomer.namewithinitials ?? '';
+      this.customerid = selectedCustomer.id;
+
+      this.salesInvoiceService.setcustomer(selectedCustomer.namewithinitials ?? '');
+      console.log('Selected Customer Name:', this.salesInvoiceService.getCustomerName());
+      this.salesInvoiceService.setCustomerId(selectedCustomer.id);
+
       // Assuming `vehicle` is a service that can query vehicles by customer ID
       this.vehicle
-        .query({ 'customerid.equals': selectedCustomer.id }) // Use correct query format
+        .query({
+          'customerid.equals': selectedCustomer.id,
+          page: 0, // Start from the first page
+          size: 260,
+        }) // Use correct query format
         .subscribe(
           response => {
             console.log('Vehicle Query Response:', response.body);
@@ -364,6 +397,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         this.pendings = subtotal - this.pending; // Use 'this' to refer to the class property
         console.log('pendingssss:', this.pendings);
         this.editForm.patchValue({ pendingamount: this.pendings });
+        this.editForm.patchValue({ paidamount: this.pending });
         this.balance = balance;
         console.log('pending amount balancee:', this.balance);
       } else {
@@ -371,6 +405,19 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       }
     } else {
       console.log('subtotal control is null');
+    }
+  }
+  paymentMethodSelected = '';
+
+  onPaymentMethodChanged(event: { method: string; totalAmount: number }): void {
+    this.paymentMethodSelected = event.method;
+
+    if (event.method === 'credit') {
+      // ✅ You can do anything here when 'credit' is selected
+      console.log('Credit method selected!' + event.totalAmount);
+
+      this.editForm.patchValue({ amountowing: event.totalAmount });
+      // e.g., call a method, update a form, show/hide UI, etc.
     }
   }
 
@@ -444,12 +491,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   calculateDiscount(): void {
-    console.log('Form Values:', this.editForm.value); // Debug the entire form
+    console.log('Form Values:', this.editForm.value);
 
     const subTotal = this.totalamount || 0;
     const valueDiscount = this.discountValue;
+    const applyTax = this.editForm.get('totaltax')?.value || false; // checkbox state
 
-    console.log('Selected Discount Option:', this.discountOption); // Log the selected option
+    console.log('Selected Discount Option:', this.discountOption);
     console.log('Sub Total:', subTotal);
     console.log('Discount Value:', valueDiscount);
 
@@ -462,15 +510,48 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     }
 
     totalDiscount = Math.min(totalDiscount, subTotal);
-    const netTotal = subTotal - totalDiscount;
+    let netTotal = subTotal - totalDiscount;
+
+    let vatAmount = 0;
+    let nbtAmount = 0;
+
+    if (applyTax) {
+      const vatPercentage = this.editForm.get('vatamount')?.value || 0;
+      const nbtPercentage = this.editForm.get('nbtamount')?.value || 0;
+
+      vatAmount = (netTotal * vatPercentage) / 100;
+      nbtAmount = (netTotal * nbtPercentage) / 100;
+
+      netTotal += vatAmount + nbtAmount;
+    }
 
     console.log('Total Discount:', totalDiscount);
-    console.log('Net Total:', netTotal);
+    console.log('VAT Amount:', vatAmount);
+    console.log('NBT Amount:', nbtAmount);
+    console.log('Net Total after tax:', netTotal);
 
     this.editForm.patchValue({
       totaldiscount: Number(totalDiscount.toFixed(2)),
+      // vatamount: Number(vatAmount ), // Will be 0 if tax is not applied
+
+      // nbtamount: Number(nbtAmount ), // Will be 0 if tax is not applied
       nettotal: Number(netTotal.toFixed(2)),
-    });
+    }); ///
+    if (applyTax) {
+      const currentTax = this.editForm.get('totaltax')?.value;
+      const newTax = Number((vatAmount + nbtAmount).toFixed(2));
+      if (currentTax !== newTax) {
+        this.editForm.patchValue(
+          {
+            isvatinvoice: true,
+            totaltax: newTax,
+          },
+          { emitEvent: false },
+        );
+      }
+    }
+
+    console.log('Form Values:', this.editForm.value);
   }
 
   onDiscountOptionChange(option: string): void {
@@ -624,6 +705,9 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       console.log('Retrieved dataaaaaaaaaaaaa:', response);
       console.log('Retrieved dataaaaaaaaaaaaa:', salesInvoiceDummy);
       console.log('jobiddd', this.jobid);
+      const storedUserId = localStorage.getItem('empId');
+      const userIdNumber = parseInt(storedUserId!, 10);
+
       this.fetchaccountid(salesInvoiceDummy.customername);
       this.customername = salesInvoiceDummy.customername;
       this.customeraddress = salesInvoiceDummy.customeraddress;
@@ -641,7 +725,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       console.log('iddddddddddddddhereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed', this.customerid);
       this.isactive = salesInvoiceDummy.isactive;
       this.deposited = salesInvoiceDummy.deposited;
-      this.createdby = salesInvoiceDummy.createdby;
+      this.createdbyId = userIdNumber;
       this.totalamount = salesInvoiceDummy.totalamount;
       this.code = this.nextvalue;
       const customerNameValue = this.editForm.get('customername')?.value || '';
@@ -652,16 +736,23 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         vehicleno: this.editForm.get('vehicleno')?.value,
         customeraddress: (salesInvoiceDummy as any).customeraddress,
         autocarejobid: this.jobid || 0,
-        subtotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
-        nettotal: Number((salesInvoiceDummy as any).nettotal) || 0, // Replace "8888" with a dynamic value
-        totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,
+
+        subtotal: Math.floor((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
+        nettotal: Math.floor((salesInvoiceDummy as any).nettotal) || 0,
+        //autojobsinvoice.nettotal= Math.floor(autojobsinvoice.nettotal ?? 0);
+        totaltax: Math.floor((salesInvoiceDummy as any).totaltax) || 0,
+        advancepayment: 0,
+        paidamount: Math.floor((salesInvoiceDummy as any).nettotal) || 0,
         totaldiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
+
         code: this.nextvalue,
+        createdbyid: userIdNumber,
       };
-      this.salesInvoiceService.setcustomer(this.customername);
-      this.salesInvoiceService.setCustomerId(this.customerid);
+      this.salesInvoiceService.setcustomer(transformedData.customername);
+      this.salesInvoiceService.setCustomerId(salesInvoiceDummy.customerid);
       this.invoicecode = this.nextvalue;
       console.log('Selected Vehicle Number>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:', this.invoicecode);
+      console.log('Transformed Data:', transformedData);
       this.updateForm(transformedData);
       console.log('Transformed Data:', transformedData);
       this.fetchInvoices(); // Fetch invoices after updating the form
@@ -683,6 +774,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         console.log('Total Amount Owing:', totalAmountOwing);
         this.editForm.patchValue({
           amountowing: totalAmountOwing,
+          pendingamount: totalAmountOwing,
         });
       },
       error: err => {
@@ -830,7 +922,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
-    this.editForm.patchValue({ amountowing: this.balance });
+    if (this.selectedMethod != 'credit') {
+      this.editForm.patchValue({ amountowing: this.balance });
+      //this.editForm.patchValue({ paidamount: this.pending });
+    }
+    if (this.selectedMethod === 'credit') {
+      // this.editForm.patchValue({ amountowing: this.totalamount });
+      this.editForm.patchValue({ paidamount: 0 });
+    }
+    this.editForm.patchValue({ pendingamount: this.balance });
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
     if (salesinvoice.vehicleno == '') {
       salesinvoice.vehicleno = this.salesInvoiceService.getVehicleNo();
@@ -866,8 +966,25 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
 
     if (salesinvoice.id !== null) {
+      const storedUserId = localStorage.getItem('empId');
+      const userIdNumber = parseInt(storedUserId!, 10);
+      salesinvoice.createdbyid = userIdNumber; // Set createdbyid to the user ID
+
       this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
     } else {
+      const storedUserId = localStorage.getItem('empId');
+      const userIdNumber = parseInt(storedUserId!, 10);
+      const username = localStorage.getItem('username');
+      salesinvoice.createdbyname = username || '';
+      salesinvoice.createdbyid = userIdNumber;
+      console.log('salesinvoiceeeeeeeeeeeeeeeeeeeeeeee', salesinvoice);
+      console.log('salesinvoiceeeeeeeeeeeeeeeeeeeeeeeeexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxe', userIdNumber);
+      //autojobsinvoice.nettotal= Math.floor(autojobsinvoice.nettotal ?? 0);
+      salesinvoice.nettotal = Math.floor(salesinvoice.nettotal ?? 0);
+      salesinvoice.subtotal = Math.floor(salesinvoice.subtotal ?? 0);
+      salesinvoice.totaltax = Math.floor(salesinvoice.totaltax ?? 0);
+      salesinvoice.amountowing = Math.floor(salesinvoice.amountowing ?? 0);
+      salesinvoice.pendingamount = Math.floor(salesinvoice.pendingamount ?? 0);
       this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
     }
   }
@@ -893,7 +1010,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
               this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id); // Call save from the child component
             }
-
+            this.sharedSubId = uuidv4();
+            this.salesInvoiceLinesService.setSubId(this.sharedSubId);
             this.salesInvoiceLinesUpdateComponent.transactionmodule(response.body.id);
             // alert("sucess?")
           }

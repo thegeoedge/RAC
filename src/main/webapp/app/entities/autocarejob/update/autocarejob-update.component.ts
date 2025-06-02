@@ -17,6 +17,7 @@ import { IAutocareappointment } from 'app/entities/autocareappointment/autocarea
 import { AutocarejobService } from '../service/autocarejob.service';
 import { AutocarejobFormService, AutocarejobFormGroup } from './autocarejob-form.service';
 import { HttpClient } from '@angular/common/http';
+import { AutoCareVehicleService } from 'app/entities/auto-care-vehicle/service/auto-care-vehicle.service';
 @Component({
   standalone: true,
   selector: 'jhi-autocarejob-update',
@@ -37,7 +38,7 @@ export class AutocarejobUpdateComponent implements OnInit {
   protected customervehicleService = inject(CustomervehicleService);
   protected customerService = inject(CustomerService);
   protected autocareappointmentService = inject(AutocareappointmentService);
-
+  vehicesearch = inject(AutoCareVehicleService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
 
@@ -207,7 +208,6 @@ export class AutocarejobUpdateComponent implements OnInit {
       this.filteredVehicles = [];
     }
   }
-
   searchedCustomer: ICustomer | null = null;
 
   onVehicleSelect(event: Event): void {
@@ -217,22 +217,51 @@ export class AutocarejobUpdateComponent implements OnInit {
     const selectedVehicle = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
 
     if (selectedVehicle) {
-      console.log('Selected Vehicle:', selectedVehicle);
+      console.log('Selected Vehicle:', selectedVehicle.vehiclenumber);
 
-      const jobTypeText = this.jobTypeMap[selectedVehicle.appointmenttype ?? 0];
-      this.editForm.get('jobtypename')?.patchValue(jobTypeText);
-      // Example: Populate other fields as needed
+      // Make API call to get full vehicle details (with ID)
+      this.vehicesearch.query({ 'vehicleNumber.equals': selectedVehicle.vehiclenumber }).subscribe(
+        response => {
+          const responseVehicle = response.body?.[0]; // Assuming the API returns an array
 
-      //  this.editForm.get('  customerid')?.patchValue(selectedVehicle.customername || '');
-      this.editForm.get('customername')?.patchValue(selectedVehicle.customername || '');
-      this.editForm.get('customertel')?.patchValue(selectedVehicle.contactnumber || '');
-      this.editForm.get('jobtypeid')?.patchValue(selectedVehicle.appointmenttype ?? null);
-      this.editForm.get('vehicleid')?.patchValue(selectedVehicle.vehicleid ?? null); // Set vehicleid
+          if (responseVehicle) {
+            const jobTypeText = this.jobTypeMap[selectedVehicle.appointmenttype ?? 0];
+            this.editForm.get('customerid')?.patchValue(responseVehicle.customerId || selectedVehicle.customerid || 0);
+            this.editForm.get('jobtypename')?.patchValue(jobTypeText);
+            this.editForm.get('customername')?.patchValue(selectedVehicle.customername || '');
+            this.editForm.get('customertel')?.patchValue(selectedVehicle.contactnumber || '');
+            this.editForm.get('jobtypeid')?.patchValue(selectedVehicle.appointmenttype ?? null);
+            this.editForm.get('vehicleid')?.patchValue(responseVehicle.id || selectedVehicle.vehicleid); // ✅ Use ID from API
+            this.checkjobtypeid(jobTypeText || '');
+            console.log('Updated Form:', this.editForm.value);
+          } else {
+            console.error('No vehicle found in API response');
+          }
+        },
+        error => {
+          console.error('Error fetching vehicle data from API:', error);
+        },
+      );
     } else {
       console.error('No matching vehicle found for:', selectedVehicleNumber);
     }
   }
+  checkjobtypeid(jobtypetext: string | null | undefined): void {
+    const jobtype = [
+      { id: 1, name: 'Full Service and Other Services' },
+      { id: 2, name: 'Detailing services' },
+      { id: 3, name: 'Performance Care' },
+      { id: 4, name: 'Other' },
+    ];
 
+    const foundJobType = jobtype.find(job => job.name === jobtypetext);
+    if (foundJobType) {
+      this.editForm.get('jobtypeid')?.patchValue(foundJobType.id);
+      console.log('Job Type ID set to:', foundJobType.id);
+    } else {
+      console.error('Job type not found for:', jobtypetext);
+    }
+  }
   save(): void {
     this.isSaving = true;
     const autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
@@ -251,6 +280,7 @@ export class AutocarejobUpdateComponent implements OnInit {
       // Patch the job number into the form control
       this.editForm.get('jobnumber')?.patchValue(jobNumber);
       console.log('job hereeeeeeeeeeeeeeeee', autocarejob);
+      this.checkjobtypeid(autocarejob.jobtypename);
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }

@@ -61,6 +61,9 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     this.isSaving = true;
     const autojobsinvoice = this.autojobsinvoiceFormService.getAutojobsinvoice(this.editForm);
     console.log(autojobsinvoice);
+    autojobsinvoice.subtotal = Math.floor(autojobsinvoice.subtotal ?? 0);
+    autojobsinvoice.nettotal = Math.floor(autojobsinvoice.nettotal ?? 0);
+
     if (autojobsinvoice.id !== null) {
       return this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
     } else {
