@@ -43,6 +43,7 @@ export default class SidenavbarComponent implements OnInit {
   emproles: string[] = [];
   showJobLink: boolean = false;
   showJobLink2: boolean = false;
+  showJobLink3: boolean = false;
 
   ngOnInit(): void {
     this.entitiesNavbarItems = EntityNavbarItems;
@@ -74,8 +75,9 @@ export default class SidenavbarComponent implements OnInit {
 
     console.log('checckkkkkkkk', this.emproles);
     //Add new inventory item
-    this.showJobLink = this.emproles.includes('Add new inventory item');
-    this.showJobLink2 = this.emproles.includes('Add new inventory item');
+    this.showJobLink = this.emproles.includes('View job');
+    this.showJobLink2 = this.emproles.includes('Search sales invoice');
+    this.showJobLink3 = this.emproles.includes('View appointment');
   }
 
   login(): void {

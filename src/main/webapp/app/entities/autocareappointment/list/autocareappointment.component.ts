@@ -53,7 +53,8 @@ export class AutocareappointmentComponent implements OnInit {
   protected ngZone = inject(NgZone);
   showUpdateMissedButton = false;
   trackId = (_index: number, item: IAutocareappointment): number => this.autocareappointmentService.getAutocareappointmentIdentifier(item);
-
+  showJobLink1: boolean = false;
+  emproles: string[] = [];
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -80,6 +81,15 @@ export class AutocareappointmentComponent implements OnInit {
       // Check if the URL contains the expected parameters
       this.showUpdateMissedButton = page === '1' && size === '20' && sort === 'missedappointmentcall,desc';
     });
+    const rolesFromStorage = JSON.parse(localStorage.getItem('emproles') || '[]');
+    console.log('checckkkkkkkk45', rolesFromStorage);
+    console.log('hhhhhhrolessssssss', this.emproles);
+
+    // Add to this.emproles
+    this.emproles.push(...rolesFromStorage);
+    console.log('Updated emproles:', this.emproles);
+
+    this.showJobLink1 = this.emproles.includes('Add new appointment');
   }
   checkCurrentUrl(): void {
     // Get the current URL

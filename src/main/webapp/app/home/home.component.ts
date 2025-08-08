@@ -7,16 +7,19 @@ import SharedModule from 'app/shared/shared.module';
 import { AccountService } from 'app/core/auth/account.service';
 import { Account } from 'app/core/auth/account.model';
 import { AutocareopenjobComponent } from 'app/entities/autocarejob/list/autocareopenjob.component';
+// ✅ Correct
+import LoginComponent from 'app/login/login.component';
 
 @Component({
   standalone: true,
   selector: 'jhi-home',
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
-  imports: [SharedModule, RouterModule, AutocareopenjobComponent],
+  imports: [SharedModule, RouterModule, AutocareopenjobComponent, LoginComponent],
 })
 export default class HomeComponent implements OnInit, OnDestroy {
   @ViewChild(AutocareopenjobComponent) AutocareopenjobComponent!: AutocareopenjobComponent;
+  @ViewChild(LoginComponent) logincomponent!: LoginComponent;
   account = signal<Account | null>(null);
 
   private readonly destroy$ = new Subject<void>();

@@ -526,7 +526,7 @@
                       </thead>
                       <tbody>
                         <tr *ngFor="let service of selectedServices">
-                          <td>{{ getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
+                          <td>{{ service.servicename || getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
                           <td>{{ service.value | number: '1.2-2' }}</td>
                         </tr>
                       </tbody>
@@ -640,9 +640,9 @@
                     </thead>
                     <tbody>
                       <tr *ngFor="let item of selectedItems; let i = index">
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.availablequantity }}</td>
-                        <td>{{ item.lastsellingprice }}</td>
+                        <td>{{ item.name || item.itemname }}</td>
+                        <td>{{ item.availablequantity || item.quantity }}</td>
+                        <td>{{ item.lastsellingprice || item.linetotal }}</td>
                         <td>
                           <input
                             style="text-align: right"
@@ -939,18 +939,18 @@
                 <td colspan="5"><strong>ITEMS</strong></td>
               </tr>
               <tr *ngFor="let item of selectedItems; let i = index">
-                <td>{{ item.name }}</td>
-                <td>{{ item.lastsellingprice }}</td>
-                <td>{{ item.requestedQuantity }}</td>
+                <td>{{ item.name || item.itemname }}</td>
+                <td>{{ item.lastsellingprice || item.sellingprice }}</td>
+                <td>{{ item.requestedQuantity || item.quantity }}</td>
                 <td>{{ item.discountPercentage }}</td>
-                <td>{{ calculateItemTotal(item) | number: '1.2-2' }}</td>
+                <td>{{ calculateItemTotal(item) | number: '1.2-2' || item.linetotal }}</td>
               </tr>
 
               <tr>
                 <td colspan="5"><strong>SERVICE CHARGES</strong></td>
               </tr>
               <tr *ngFor="let service of selectedServices; let i = index">
-                <td>{{ getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
+                <td>{{ service.servicename || getBillingServiceOptionName(service.billingserviceoptionid) }}</td>
                 <td>{{ service.value }}</td>
                 <td>1</td>
                 <td>0</td>

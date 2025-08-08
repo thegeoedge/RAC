@@ -130,7 +130,7 @@ export class SalesinvoiceService {
 
   getElementsByUserInputCode(userInputCode: string): Observable<EntityArrayResponseType> {
     const url = this.applicationConfigService.getEndpointFor(
-      `api/inventories?code.contains=${userInputCode}&availablequantity.greaterThan=0&page=0&size=20`,
+      `api/inventories?code.contains=${userInputCode}&availablequantity.greaterThan=0&page=0&size=200000`,
     );
     return this.http
       .get<IInventory[]>(url, { observe: 'response' })

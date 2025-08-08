@@ -40,13 +40,13 @@ export class SalesInvoiceLinesDummyService {
   }
 
   getElementsByUserInputCode(userInputCode: string): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(`api/inventories?code.contains=${userInputCode}&page=0&size=20`);
+    const url = this.applicationConfigService.getEndpointFor(`api/inventories?code.contains=${userInputCode}&page=0&size=200000`);
     return this.http
       .get<IInventory[]>(url, { observe: 'response' })
       .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));
   }
   getElementsByUserInputName(userInputCode: string): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(`api/inventories?name.contains=${userInputCode}&page=0&size=20`);
+    const url = this.applicationConfigService.getEndpointFor(`api/inventories?name.contains=${userInputCode}&page=0&size=20000`);
     return this.http
       .get<IInventory[]>(url, { observe: 'response' })
       .pipe(map((res: HttpResponse<IInventory[]>) => this.convertResponseArrayFromServer(res as HttpResponse<RestInventory[]>)));

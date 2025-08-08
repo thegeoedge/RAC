@@ -121,6 +121,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   newlastvalue: String = '';
   jobbid: any;
   sharedSubId: string = '';
+  emproles: string[] = [];
+  showJobLink2: boolean = false;
   ngOnInit(): void {
     console.log('starttt');
     const storedUserId = localStorage.getItem('empId');
@@ -162,6 +164,19 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       } else {
         console.log('No body found in response');
       }
+    });
+    this.editForm.get('totaltax')?.valueChanges.subscribe(checked => {
+      if (!checked) {
+        this.editForm.patchValue(
+          {
+            vatamount: 0,
+            nbtamount: 0,
+            totaltax: 0,
+          },
+          { emitEvent: false }, // Prevent infinite loop
+        );
+      }
+      this.calculateDiscount();
     });
 
     if (!window.location.search.includes('?')) {
@@ -218,20 +233,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         },
       });
       this.editForm.patchValue({ vehicleno: this.vehicleno });
+      this.editForm.patchValue({ nettotal: this.subTotal });
       // Call other methods after fetching the job ID
-      this.editForm.get('totaltax')?.valueChanges.subscribe(checked => {
-        if (!checked) {
-          this.editForm.patchValue(
-            {
-              vatamount: 0,
-              nbtamount: 0,
-              totaltax: 0,
-            },
-            { emitEvent: false }, // Prevent infinite loop
-          );
-        }
-        this.calculateDiscount();
-      });
     });
 
     this.loadVehicleTypes();
@@ -583,6 +586,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
     this.editForm.patchValue({
       subtotal: this.subTotal,
+      nettotal: this.subTotal,
     });
     this.salesinvoiceService.setTotal(this.subTotal);
   }
@@ -857,6 +861,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   onAddItem(): void {
+    if (this.buyquantity == null || isNaN(this.buyquantity) || this.buyquantity <= 0) {
+      alert('Please enter a valid buy quantity greater than 0.');
+      return;
+    }
+    if (this.buyquantity > this.availablequantity) {
+      alert('Buy quantity cannot be more than available quantity.');
+      return;
+    }
+
     // Store the selected item as an object
     this.selectedItem = {
       itemid: this.itemid,
@@ -866,13 +879,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       lastsellingprice: this.lastsellingprice,
       unitofmeasurement: this.unitofmeasurement,
       lastcost: this.lastcost,
-      discount: this.discount, // Convert to string if needed
+      discount: this.discount,
     };
 
     // Log the selected item to the console
     console.log('Selected Item:', this.selectedItem);
     console.log('Returned Buy Quantity:', this.buyquantity);
-    // Call the function to get the buy quantity
 
     // Optionally reset the inputs after adding
     this.itemname = '';

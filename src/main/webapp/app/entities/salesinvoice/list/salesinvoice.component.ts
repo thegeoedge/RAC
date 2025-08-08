@@ -54,7 +54,9 @@ export class SalesinvoiceComponent implements OnInit {
   protected ngZone = inject(NgZone);
 
   trackId = (_index: number, item: ISalesinvoice): number => this.salesinvoiceService.getSalesinvoiceIdentifier(item);
-
+  emproles: string[] = [];
+  showJobLink2: boolean = false;
+  showJobLink1: boolean = false;
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -83,6 +85,16 @@ export class SalesinvoiceComponent implements OnInit {
     this.load();
   }
   load(): void {
+    const rolesFromStorage = JSON.parse(localStorage.getItem('emproles') || '[]');
+    console.log('checckkkkkkkk45', rolesFromStorage);
+    console.log('hhhhhhrolessssssss', this.emproles);
+
+    // Add to this.emproles
+    this.emproles.push(...rolesFromStorage);
+    console.log('Updated emproles:', this.emproles);
+
+    this.showJobLink2 = this.emproles.includes('Add new sales invoice');
+    this.showJobLink1 = this.emproles.includes('Search sales invoice');
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
         this.onResponseSuccess(res);

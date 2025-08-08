@@ -10,6 +10,7 @@ import { ApplicationConfigService } from '../config/application-config.service';
 import { EmpRoleFunctionPermissionService } from 'app/entities/emp-role-function-permission/service/emp-role-function-permission.service';
 import { EmployeeService } from 'app/entities/employee/service/employee.service';
 import { EmpFunctionsService } from 'app/entities/emp-functions/service/emp-functions.service';
+import { EmpRolesService } from 'app/entities/emp-roles/service/emp-roles.service';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
@@ -23,11 +24,12 @@ export class AccountService {
   private applicationConfigService = inject(ApplicationConfigService);
   employees = inject(EmployeeService);
   empfuntions = inject(EmpFunctionsService);
+  empsroles = inject(EmpRolesService);
   save(account: Account): Observable<{}> {
     return this.http.post(this.applicationConfigService.getEndpointFor('api/account'), account);
   }
   fetchEmpRoleFunctionPermission(roleId: number): void {
-    this.emprolefuntion.query({ 'roleId.equals': roleId }).subscribe({
+    this.emprolefuntion.query({ 'roleId.equals': roleId, page: 0, size: 1000 }).subscribe({
       next: (res: any) => {
         console.log('Full Response:', res);
 
@@ -80,19 +82,42 @@ export class AccountService {
   fetchemp(name: String) {
     this.employees.query({ 'username.equals': name }).subscribe({
       next: (res: any) => {
-        console.log('Response:', res); // Log the full response
+        console.log('Employee Response:', res);
+        const employee = res.body[0];
+        const empRoleNameOrId = employee.roleName; // or use employee.roleId if available
+        console.log('Employee Role Name or ID:', empRoleNameOrId);
 
-        localStorage.setItem('empId', res.body[0].id); // Store the employee id in localStorage
-        const empRoleFunctionPermission = res.body[0].id; // The actual data response
-        localStorage.setItem('username', res.body[0].username); // Store the employee role function permission in localStorage
-        console.log('First itemzzzzzzzzzz:', empRoleFunctionPermission); // Log the first item (if it's an array)
-        this.fetchEmpRoleFunctionPermission(empRoleFunctionPermission); // Call the function with the first item's id
+        // Fetch all roles and find the matching one
+        this.empsroles.query({}).subscribe({
+          next: (rolesRes: any) => {
+            const roles = rolesRes.body;
+
+            // Find role match by name or ID
+            const matchedRole = roles.find((role: any) => role.roleName === empRoleNameOrId || role.roleId === empRoleNameOrId);
+
+            if (matchedRole) {
+              console.log('Matched Role:', matchedRole);
+              this.fetchEmpRoleFunctionPermission(matchedRole.roleId);
+            } else {
+              console.warn('No matching role found for:', empRoleNameOrId);
+            }
+          },
+          error: roleErr => {
+            console.error('Error fetching empsroles:', roleErr);
+          },
+        });
+
+        // Store data
+        localStorage.setItem('empId', employee.id);
+        localStorage.setItem('username', employee.username);
+        console.log('First employee ID:', employee.id);
       },
       error: err => {
-        console.error('Error fetching data:', err); // Log any errors that occur during the API call
+        console.error('Error fetching employee data:', err);
       },
     });
   }
+
   authenticate(identity: Account | null): void {
     this.userIdentity.set(identity);
     this.authenticationState.next(this.userIdentity());

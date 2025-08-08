@@ -72,9 +72,9 @@ export class AutocareopenjobComponent implements OnInit {
     console.log('checckkkkkkkk', this.emproles);
     //Add new inventory item
     // Advisor Instruction     Issue Items   Add new sales invoice
-    this.showJobLink = this.emproles.includes('Add new inventory item');
-    this.showJobLink1 = this.emproles.includes('Add new inventory item');
-    this.showJobLink2 = this.emproles.includes('Add new inventory item');
+    this.showJobLink = this.emproles.includes('Advisor Instruction');
+    this.showJobLink1 = this.emproles.includes('Issue Items');
+    this.showJobLink2 = this.emproles.includes('Add new sales invoice');
   }
 
   delete(autocarejob: IAutocarejob): void {

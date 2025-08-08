@@ -1,6 +1,10 @@
 import { Component, ViewChild, OnInit, AfterViewInit, ElementRef, inject, signal } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+//import { MatFormFieldModule } from '@angular/material/form-field';
+//import { MatInputModule } from '@angular/material/input';
+//import { MatCheckboxModule } from '@angular/material/checkbox';
+//import { MatButtonModule } from '@angular/material/button';
 
 import SharedModule from 'app/shared/shared.module';
 import { LoginService } from 'app/login/login.service';
@@ -9,7 +13,15 @@ import { AccountService } from 'app/core/auth/account.service';
 @Component({
   standalone: true,
   selector: 'jhi-login',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    SharedModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule, // MatFormFieldModule,
+    //   MatInputModule,
+    //   MatCheckboxModule,
+    //   MatButtonModule,
+  ],
   templateUrl: './login.component.html',
 })
 export default class LoginComponent implements OnInit, AfterViewInit {

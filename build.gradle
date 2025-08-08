@@ -1,4 +1,5 @@
 plugins {
+    id 'war' 
     id "java"
     id "maven-publish"
     id "idea"
@@ -9,6 +10,7 @@ plugins {
     id "jhipster.code-quality-conventions"
     id "jhipster.node-gradle-conventions"
     id "org.liquibase.gradle"
+    
     // jhipster-needle-gradle-plugins - JHipster will add additional gradle plugins here
 }
 
@@ -104,6 +106,16 @@ task integrationTestReport(type: TestReport) {
 tasks.matching { it.name == 'npmInstall' }.configureEach {
     doNotTrackState("This task installs Node.js modules and its outputs are not tracked by Gradle.")
 }
+task npmBuild(type: com.github.gradle.node.npm.task.NpmTask) {
+    args = ['run', 'build']
+}
+
+task copyFrontend(type: Copy) {
+    from "frontend/dist" // or "dist" if using Angular
+    into "src/main/resources/static"
+}
+
+npmBuild.finalizedBy(copyFrontend)
 
 gitProperties {
     failOnNoGitDirectory = false

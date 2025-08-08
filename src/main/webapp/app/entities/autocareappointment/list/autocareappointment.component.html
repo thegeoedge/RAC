@@ -96,6 +96,7 @@
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-autocareappointment"
         [routerLink]="['/autocareappointment/new']"
+        *ngIf="showJobLink1"
       >
         <fa-icon icon="plus"></fa-icon>
         <span>Create a new Autocareappointment</span>

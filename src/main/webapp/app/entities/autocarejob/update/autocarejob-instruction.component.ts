@@ -54,7 +54,7 @@ import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/ser
 import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
 import { PartialUpdateSystemSettings, SystemSettingsService } from 'app/entities/system-settings/service/system-settings.service';
 import { AutoCareVehicleService } from 'app/entities/auto-care-vehicle/service/auto-care-vehicle.service';
-
+import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 @Component({
   standalone: true,
   selector: 'jhi-autocarejob-instruction',
@@ -88,6 +88,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   vehiclework = inject(WorkshopvehicleworkService);
   vehicleworklist = inject(WorkshopVehicleWorkListService);
   customervehicle = inject(CustomervehicleService);
+  jobinvoice = inject(AutojobsinvoiceService);
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
@@ -143,7 +144,22 @@ export class AutocarejobInstructionComponent implements OnInit {
   newnextvalue: String = '';
   newlastvalue: String = '';
   ngOnInit(): void {
+    this.jobinvoicelines.query({ 'invoiceid.equals': 263814 }).subscribe({
+      next: lineResponse => {
+        const lines = lineResponse.body || [];
+
+        console.log('Job Invoice Lines:', lines);
+
+        // Push all items from lines into selectedItems
+        // this.selectedItems.push(...lines);
+      },
+      error: err => {
+        console.error('Error fetching job invoice lines:', err);
+        alert('Failed to fetch job invoice lines.');
+      },
+    });
     console.log('sssssssssssssssssssssssssssss', this.itemsArray);
+    this.fetchjobdet();
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
       console.log('Selected Vehicle Typeeeeeeeee:', this.vehicletypes.find(v => v.id === this.selectedVehicleTypeId)?.vehicletype);
 
@@ -194,6 +210,86 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.setAutoNextServiceDate();
     });
   }
+
+  fetchjobdet() {
+    const url = window.location.href;
+    const parts = url.split('/');
+    const jobId = parts[parts.indexOf('autocarejob') + 1];
+
+    console.log('Job ID:', jobId);
+
+    this.jobinvoice.query({ 'jobid.equals': jobId }).subscribe({
+      next: response => {
+        const body = response.body;
+
+        if (body && body.length > 0) {
+          const invoiceId = body[0].id;
+          console.log('Invoice IDaaaaaaaaaaaaaa:', invoiceId);
+
+          this.fetched(invoiceId); // Call the fetched method with the invoiceId
+        } else {
+          console.warn('No job invoice found for Job ID:', jobId);
+        }
+      },
+      error: err => {
+        console.error('Error fetching job invoice:', err);
+      },
+    });
+  }
+  fetched(invoiceId: number): void {
+    this.jobinvoicelines.fetchInvoiceLines(invoiceId).subscribe({
+      next: lineResponse => {
+        const lines = lineResponse.body || [];
+
+        console.log('Job Invoice Lines:', lines);
+
+        // Optional: clear selectedItems before pushing new data to prevent duplicates
+        this.selectedItems = []; // ✅ clear before pushing new data
+
+        this.selectedItems.push(...lines);
+        //alert('Job Invoice Lines: ' + JSON.stringify(lines));
+      },
+      error: err => {
+        console.error('Error fetching job invoice lines:', err);
+        alert('Failed to fetch job invoice lines.');
+      },
+    });
+
+    this.jobinvoicelines.fetchService(invoiceId).subscribe({
+      next: lineResponse => {
+        const lines = lineResponse.body || [];
+
+        console.log('Job Invoice Lines:', lines);
+        //alert('Job Invoice Lines: ' + JSON.stringify(lines));
+        // Optional: clear selectedItems before pushing new data to prevent duplicates
+        this.selectedServices = []; // ✅ clear before pushing new data
+
+        this.selectedServices.push(...lines);
+      },
+      error: err => {
+        console.error('Error fetching job invoice lines:', err);
+        alert('Failed to fetch job invoice lines.');
+      },
+    });
+
+    this.jobinvoicelines.fetchServiceCommon(invoiceId).subscribe({
+      next: lineResponse => {
+        const lines = lineResponse.body || [];
+
+        console.log('Job Invoice Lines:', lines);
+        //alert('Job Invoice Lines: ' + JSON.stringify(lines));
+        // Optional: clear selectedItems before pushing new data to prevent duplicates
+        this.selectedcommonServices = []; // ✅ clear before pushing new data
+
+        this.selectedcommonServices.push(...lines);
+      },
+      error: err => {
+        console.error('Error fetching job invoice lines:', err);
+        alert('Failed to fetch job invoice lines.');
+      },
+    });
+  }
+
   vehicletypeId: number = 1;
   fetchjob(): void {
     const vehicleNumber = this.editForm.get('vehiclenumber')?.value;
@@ -790,6 +886,12 @@ export class AutocarejobInstructionComponent implements OnInit {
     const selectedItem = this.filtereditems.find(item => item.name === (document.getElementById('field_item') as HTMLInputElement).value);
 
     if (selectedItem) {
+      const buyQuantity = selectedItem.requestedQuantity ?? 1;
+      const availableQuantity = selectedItem.availablequantity ?? 0;
+      if (buyQuantity > availableQuantity) {
+        alert('Buy quantity cannot be more than available quantity.');
+        return;
+      }
       // Add the selected item to the list with the required fields and default values
       const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.itemsArray.push({

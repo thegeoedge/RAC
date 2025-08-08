@@ -58,6 +58,7 @@
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: true }"
               [queryParams]="{ page: 1, size: 20, sort: 'isconformed,desc' }"
+              *ngIf="showJobLink3"
             >
               Appointment
             </a>
@@ -343,48 +344,49 @@
         </ul>
       </li>
     }
-    <!-- Administration Section (Expanded instead of Dropdown) -->
-    <li *jhiHasAnyAuthority="'ROLE_ADMIN'" (click)="isAdminExpanded = !isAdminExpanded" class="sidenav-item">
-      <a class="sidenav-link" href="javascript:void(0);"> <fa-icon icon="users-cog"></fa-icon> Administration </a>
-      <ul [ngbCollapse]="!isAdminExpanded" class="sidenav-submenu">
-        <li>
-          <a class="sidenav-link" routerLink="/authority" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-            <fa-icon icon="asterisk" [fixedWidth]="true"></fa-icon> Authority
-          </a>
-        </li>
-        <li>
-          <a class="sidenav-link" routerLink="/admin/user-management" routerLinkActive="active">
-            <fa-icon icon="users" [fixedWidth]="true"></fa-icon> User Management
-          </a>
-        </li>
-        <li>
-          <a class="sidenav-link" routerLink="/admin/metrics" routerLinkActive="active">
-            <fa-icon icon="tachometer-alt" [fixedWidth]="true"></fa-icon> Metrics
-          </a>
-        </li>
-        <li>
-          <a class="sidenav-link" routerLink="/admin/health" routerLinkActive="active">
-            <fa-icon icon="heart" [fixedWidth]="true"></fa-icon> Health
-          </a>
-        </li>
-        <li>
-          <a class="sidenav-link" routerLink="/admin/configuration" routerLinkActive="active">
-            <fa-icon icon="cogs" [fixedWidth]="true"></fa-icon> Configuration
-          </a>
-        </li>
-        <li>
-          <a class="sidenav-link" routerLink="/admin/logs" routerLinkActive="active">
-            <fa-icon icon="tasks" [fixedWidth]="true"></fa-icon> Logs
-          </a>
-        </li>
-        <li *ngIf="openAPIEnabled">
-          <a class="sidenav-link" routerLink="/admin/docs" routerLinkActive="active">
-            <fa-icon icon="book" [fixedWidth]="true"></fa-icon> API
-          </a>
-        </li>
-      </ul>
-    </li>
-
+    <div *ngIf="false">
+      <!-- Administration Section (Expanded instead of Dropdown) -->
+      <li *jhiHasAnyAuthority="'ROLE_ADMIN'" (click)="isAdminExpanded = !isAdminExpanded" class="sidenav-item">
+        <a class="sidenav-link" href="javascript:void(0);"> <fa-icon icon="users-cog"></fa-icon> Administration </a>
+        <ul [ngbCollapse]="!isAdminExpanded" class="sidenav-submenu">
+          <li>
+            <a class="sidenav-link" routerLink="/authority" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+              <fa-icon icon="asterisk" [fixedWidth]="true"></fa-icon> Authority
+            </a>
+          </li>
+          <li>
+            <a class="sidenav-link" routerLink="/admin/user-management" routerLinkActive="active">
+              <fa-icon icon="users" [fixedWidth]="true"></fa-icon> User Management
+            </a>
+          </li>
+          <li>
+            <a class="sidenav-link" routerLink="/admin/metrics" routerLinkActive="active">
+              <fa-icon icon="tachometer-alt" [fixedWidth]="true"></fa-icon> Metrics
+            </a>
+          </li>
+          <li>
+            <a class="sidenav-link" routerLink="/admin/health" routerLinkActive="active">
+              <fa-icon icon="heart" [fixedWidth]="true"></fa-icon> Health
+            </a>
+          </li>
+          <li>
+            <a class="sidenav-link" routerLink="/admin/configuration" routerLinkActive="active">
+              <fa-icon icon="cogs" [fixedWidth]="true"></fa-icon> Configuration
+            </a>
+          </li>
+          <li>
+            <a class="sidenav-link" routerLink="/admin/logs" routerLinkActive="active">
+              <fa-icon icon="tasks" [fixedWidth]="true"></fa-icon> Logs
+            </a>
+          </li>
+          <li *ngIf="openAPIEnabled">
+            <a class="sidenav-link" routerLink="/admin/docs" routerLinkActive="active">
+              <fa-icon icon="book" [fixedWidth]="true"></fa-icon> API
+            </a>
+          </li>
+        </ul>
+      </li>
+    </div>
     <!-- Account Section -->
     <li class="sidenav-item" (click)="isAccountExpanded = !isAccountExpanded">
       <a class="sidenav-link" href="javascript:void(0);">
@@ -394,16 +396,20 @@
         </ng-template>
       </a>
       <ul [ngbCollapse]="!isAccountExpanded" class="sidenav-submenu">
-        <li *ngIf="account()">
-          <a class="sidenav-link" routerLink="/account/settings" routerLinkActive="active">
-            <fa-icon icon="wrench" [fixedWidth]="true"></fa-icon> Settings
-          </a>
-        </li>
-        <li *ngIf="account()">
-          <a class="sidenav-link" routerLink="/account/password" routerLinkActive="active">
-            <fa-icon icon="lock" [fixedWidth]="true"></fa-icon> Password
-          </a>
-        </li>
+        <div *ngIf="false">
+          <li *ngIf="account()">
+            <a class="sidenav-link" routerLink="/account/settings" routerLinkActive="active">
+              <fa-icon icon="wrench" [fixedWidth]="true"></fa-icon> Settings
+            </a>
+          </li>
+        </div>
+        <div *ngIf="false">
+          <li *ngIf="account()">
+            <a class="sidenav-link" routerLink="/account/password" routerLinkActive="active">
+              <fa-icon icon="lock" [fixedWidth]="true"></fa-icon> Password
+            </a>
+          </li>
+        </div>
         <li *ngIf="account()">
           <a class="sidenav-link" (click)="logout()"> <fa-icon icon="sign-out-alt" [fixedWidth]="true"></fa-icon> Sign out </a>
         </li>

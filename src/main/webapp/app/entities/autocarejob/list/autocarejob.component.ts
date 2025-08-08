@@ -54,7 +54,9 @@ export class AutocarejobComponent implements OnInit {
   searchValue: string = '';
 
   trackId = (_index: number, item: IAutocarejob): number => this.autocarejobService.getAutocarejobIdentifier(item);
-
+  showJobLink1: boolean = false;
+  showJobLink2: boolean = false;
+  emproles: string[] = [];
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -65,6 +67,16 @@ export class AutocarejobComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0];
     this.searchValue = today;
     this.selectedSearchType = 'jobdate';
+    const rolesFromStorage = JSON.parse(localStorage.getItem('emproles') || '[]');
+    console.log('checckkkkkkkk45', rolesFromStorage);
+    console.log('hhhhhhrolessssssss', this.emproles);
+
+    // Add to this.emproles
+    this.emproles.push(...rolesFromStorage);
+    console.log('Updated emproles:', this.emproles);
+
+    this.showJobLink1 = this.emproles.includes('Create job');
+    this.showJobLink2 = this.emproles.includes('View job');
   }
 
   delete(autocarejob: IAutocarejob): void {

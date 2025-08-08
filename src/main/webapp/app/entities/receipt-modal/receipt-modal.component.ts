@@ -274,7 +274,7 @@ export class ReceiptModalComponent implements OnChanges {
     this.reciptnocustransaction.refId = recid;
     this.reciptnocustransaction.subId = subid;
     this.reciptnocustransaction.refDoc = reccode ? reccode.toString() : '';
-    this.reciptnocustransaction.credit = this.totalamount;
+    this.reciptnocustransaction.debit = this.totalamount;
     this.reciptnocustransaction.paymentTermId = termid;
     this.reciptnocustransaction.paymentTermName = termname;
     this.reciptnocustransaction.accountId = this.accountId;
