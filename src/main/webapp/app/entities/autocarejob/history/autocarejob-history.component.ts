@@ -204,6 +204,49 @@ export class AutocarejobhistoryComponent implements OnInit {
   protected onSaveSuccess(): void {
     this.previousState();
   }
+  printSection(sectionId: string): void {
+    const printContents = document.getElementById(sectionId)?.innerHTML;
+    if (!printContents) {
+      return;
+    }
+
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = `
+    <html>
+      <head>
+        <title>Print</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          table, th, td {
+            border: 1px solid #000;
+          }
+          th, td {
+            padding: 6px;
+            font-size: 12px;
+          }
+          h6, h5 {
+            margin-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        ${printContents}
+      </body>
+    </html>
+  `;
+
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // restore Angular state
+  }
 
   protected onSaveError(): void {
     // Api for inheritance.

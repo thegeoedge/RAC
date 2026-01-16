@@ -82,6 +82,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   @ViewChild(AutojobsalesinvoiceservicechargelineUpdateComponent)
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
   constructor(private cdr: ChangeDetectorRef) {} // Inject ChangeDetectorRef
+  invoiceId: number | null = null;
   isSaving = false;
   autocarejob: IAutocarejob | null = null;
   customervehicles: ICustomervehicle[] = [];
@@ -123,6 +124,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected workshopworklistService = inject(WorkshopworklistService);
 
   subcategoriesVisible = false; // Controls whether subcategories are shown or hidden
+  showPrintSummary = false; // Controls whether the print summary is shown on screen
   toggleSubcategories() {
     this.subcategoriesVisible = !this.subcategoriesVisible;
   }
@@ -510,7 +512,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
   }
   itemsArray: Array<{
-    id: number;
+    id?: number;
     invocieid: number;
     lineid: number;
     itemid: number;
@@ -538,7 +540,7 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Add the selected item to the list with the required fields and default values
       const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.itemsArray.push({
-        id: 0,
+        //id: 0,
         itemid: selectedItem.id,
         invocieid: 0,
         lineid: nextLineId,
@@ -730,18 +732,31 @@ export class AutocarejobInstructionComponent implements OnInit {
         <head>
           <title>Print Summary</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .table { width: 100%; border-collapse: collapse; }
+            body { font-family: Arial, sans-serif; padding: 20px; font-size: 10px; }
+            .table { width: 100%; border-collapse: collapse; font-size: 10px;}
             .table th, .table td { border: 1px solid black; padding: 8px; text-align: left; }
             .text-center { text-align: center; }
             .text-right { text-align: right; }
             .d-flex { display: flex; justify-content: space-between; }
             .mt-3 { margin-top: 20px; }
             .border { border: 1px solid black; padding: 10px; }
+            .print-button { margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+            .close-button { margin-top: 20px; padding: 10px 20px; background-color: #dc3545; color: white; border: none; cursor: pointer; }
+            .info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 0rem;
+  column-gap: 1.5rem;
+}
+
           </style>
         </head>
-        <body onload="window.print(); window.close();">
+        <body onload="window.print();">
           ${printContents}
+          <div style="text-align: center; margin-top: 20px;">
+            <button class="print-button" onclick="window.print();">Print</button>
+            <button class="close-button" onclick="window.close();">Close</button>
+          </div>
         </body>
         </html>
       `);
@@ -764,27 +779,17 @@ export class AutocarejobInstructionComponent implements OnInit {
   invoid: number = 0;
   saveAll(): void {
     if (this.autojobsinvoiceComponent) {
-      this.autojobsinvoiceComponent.save().subscribe({
-        next: invoiceIdFromComponent => {
-          console.log('Invoice ID returned from autojobsinvoiceComponent.save():', invoiceIdFromComponent);
-          // Do something with the invoice ID from the component
-          this.invoid = invoiceIdFromComponent;
-        },
-        error: error => {
-          console.error('Component save failed:', error);
-        },
-      });
+      this.autojobsinvoiceComponent.save();
     }
-    this.save();
-    if (this.workshopVehicleWorkListComponent) {
-      this.workshopVehicleWorkListComponent.save();
-    }
+    // Job and lines will be saved after invoice via onInvoiceSaved
   }
+
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutocarejob>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
         if (response.body) {
           const invoiceId = response.body.id; // Extract ID
+          this.invoid = invoiceId;
           console.log('Save response body:', invoiceId);
 
           // Retrieve stored invoiceId from local storage
@@ -792,7 +797,7 @@ export class AutocarejobInstructionComponent implements OnInit {
           console.log('Retrieved Invoice ID from Local Storage:', this.invoid);
 
           this.commonServiceArray.forEach(service => {
-            service.invoiceid = this.invoid; // Use extracted invoiceId
+            service.invoiceid = this.invoiceId ?? this.invoid; // Use extracted invoiceId
 
             // Assuming commonserviceoptionService.create() accepts service data and returns an observable
             this.jobcommon.create({ ...service, id: null }).subscribe({
@@ -806,7 +811,7 @@ export class AutocarejobInstructionComponent implements OnInit {
           });
 
           this.serviceArray.forEach(service => {
-            service.invoiceid = this.invoid; // Use extracted invoiceId
+            service.invoiceid = this.invoiceId ?? this.invoid; // Use extracted invoiceId
 
             // Assuming commonserviceoptionService.create() accepts service data and returns an observable
             this.jobservice.create({ ...service, id: null }).subscribe({
@@ -822,7 +827,18 @@ export class AutocarejobInstructionComponent implements OnInit {
           // Loop through the itemsArray and update the invoiceId field for each item
           this.itemsArray.forEach((item, index) => {
             setTimeout(() => {
-              item.invocieid = this.invoid;
+              item.invocieid = this.invoiceId ?? this.invoid;
+
+              console.log(`POSTING ITEM ${index + 1}`);
+              console.log('ITEMID VALUE:', item.itemid);
+              console.log('ITEMID TYPE:', typeof item.itemid);
+              console.log('FULL ITEM:', item);
+
+              // 🚨 SAFETY CHECK (prevents FK crash)
+              if (!item.itemid || typeof item.itemid !== 'number') {
+                console.error('❌ INVALID ITEMID — SKIPPING ITEM', item);
+                return;
+              }
 
               const itemWithDayjsLmd = {
                 ...item,
@@ -846,10 +862,22 @@ export class AutocarejobInstructionComponent implements OnInit {
       },
       error: () => this.onSaveError(),
     });
+    if (this.workshopVehicleWorkListComponent) {
+      this.workshopVehicleWorkListComponent.save();
+    }
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    this.showPrintSummary = true;
+    this.cdr.detectChanges();
+    // Scroll to the summary
+    setTimeout(() => {
+      const element = document.getElementById('printSummary');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+    // Removed previousState() to allow viewing the summary
   }
 
   protected onSaveError(): void {
@@ -863,5 +891,11 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected updateForm(autocarejob: IAutocarejob): void {
     this.autocarejob = autocarejob;
     this.autocarejobFormService.resetForm(this.editForm, autocarejob);
+  }
+  onInvoiceSaved(invoiceId: number): void {
+    this.invoiceId = invoiceId;
+    console.log('Invoice saved with ID:', invoiceId);
+    // Save the job now that invoice is saved
+    this.save();
   }
 }

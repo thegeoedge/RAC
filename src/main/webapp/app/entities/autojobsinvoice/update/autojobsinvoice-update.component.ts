@@ -11,6 +11,8 @@ import { IAutojobsinvoice } from '../autojobsinvoice.model';
 import { AutojobsinvoiceService } from '../service/autojobsinvoice.service';
 import { AutojobsinvoiceFormService, AutojobsinvoiceFormGroup } from './autojobsinvoice-form.service';
 
+import { Output, EventEmitter } from '@angular/core';
+
 @Component({
   standalone: true,
   selector: 'jhi-autojobsinvoice-update',
@@ -56,37 +58,28 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     window.history.back();
   }
 
-  save(): Observable<number> {
-    // Ensure this method is public
+  @Output() invoiceSaved = new EventEmitter<number>();
+
+  save(): void {
     this.isSaving = true;
     const autojobsinvoice = this.autojobsinvoiceFormService.getAutojobsinvoice(this.editForm);
+
     if (autojobsinvoice.id !== null) {
-      return this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
+      this.subscribeToSaveResponse(this.autojobsinvoiceService.update(autojobsinvoice));
     } else {
-      return this.subscribeToSaveResponse(this.autojobsinvoiceService.create(autojobsinvoice));
+      this.subscribeToSaveResponse(this.autojobsinvoiceService.create(autojobsinvoice));
     }
   }
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutojobsinvoice>>): Observable<number> {
-    return new Observable(observer => {
-      result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-        next: response => {
-          console.log('Save Successful:', response);
-          if (response.body) {
-            const invoiceId = response.body.id;
-            console.log('Saved Invoice ID:', invoiceId);
-            observer.next(invoiceId); // Emit the invoice ID
-            observer.complete();
-          } else {
-            console.error('Response body is null');
-            observer.error('Response body is null');
-          }
-        },
-        error: error => {
-          console.error('Save Failed:', error);
-          this.onSaveError();
-          observer.error(error);
-        },
-      });
+
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutojobsinvoice>>): void {
+    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
+      next: response => {
+        if (response.body?.id != null) {
+          this.invoiceSaved.emit(response.body.id); // 🔥 EMIT HERE
+        }
+        this.onSaveSuccess();
+      },
+      error: () => this.onSaveError(),
     });
   }
 

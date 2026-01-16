@@ -1,6 +1,6 @@
-<div class="d-flex justify-content-center" *ngIf="false">
+<div class="d-flex justify-content-center" *ngIf="editForm">
   <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <form name="editForm" novalidate [formGroup]="editForm" (ngSubmit)="save()">
       <h2 id="jhi-autojobsinvoice-heading" data-cy="AutojobsinvoiceCreateUpdateHeading">Create or edit a Autojobsinvoice</h2>
 
       <div>
@@ -321,13 +321,7 @@
           <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
         </button>
 
-        <button
-          type="submit"
-          id="save-entity"
-          data-cy="entityCreateSaveButton"
-          [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
-        >
+        <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" [disabled]="false" class="btn btn-primary">
           <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
         </button>
       </div>

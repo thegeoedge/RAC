@@ -17,4 +17,7 @@ export class SalesinvoiceDetailComponent {
   previousState(): void {
     window.history.back();
   }
+  print(): void {
+    window.print();
+  }
 }

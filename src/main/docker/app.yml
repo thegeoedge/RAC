@@ -1,16 +1,24 @@
-# This configuration is intended for development purpose, it's **your** responsibility to harden it for production
+# app.yml
 name: rac
 services:
   app:
     image: rac
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
-      - SPRING_PROFILES_ACTIVE=prod,api-docs
+      - SPRING_PROFILES_ACTIVE=dev
       - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
-      - SPRING_DATASOURCE_URL=jdbc:sqlserver://mssql:1433;database=rac;encrypt=false
-      - SPRING_LIQUIBASE_URL=jdbc:sqlserver://mssql:1433;database=rac;encrypt=false
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://mssql:1433;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
+      - SPRING_LIQUIBASE_URL=jdbc:sqlserver://mssql:1433;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
+      #- SPRING_DATASOURCE_URL=jdbc:sqlserver://rac-mssql-1:1433;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
+      #- SPRING_LIQUIBASE_URL=jdbc:sqlserver://rac-mssql-1:1433;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
+
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=YourStrong!Passw0rd
+      - SPRING_LIQUIBASE_ENABLED=false
+
     ports:
-      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8085:8080
+
     healthcheck:
       test:
         - CMD
@@ -20,9 +28,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 40
+
     depends_on:
       mssql:
         condition: service_healthy
+
   mssql:
     extends:
       file: ./mssql.yml

@@ -1,229 +1,387 @@
-<div class="d-flex justify-content-center">
+<style>
+  /* ===== Details Grid ===== */
+  .invoice-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem 3rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .invoice-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .invoice-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+  }
+
+  .invoice-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #212529;
+    word-break: break-word;
+  }
+
+  /* Highlight important financial items */
+  .invoice-item:nth-child(16), /* Subtotal */
+  .invoice-item:nth-child(17), /* Total Tax */
+  .invoice-item:nth-child(18), /* Total Discount */
+  .invoice-item:nth-child(19), /* Net Total */
+  .invoice-item:nth-child(20), /* Paid Amount */
+  .invoice-item:nth-child(21)  /* Amount Owing */ {
+    border-left-color: #28a745;
+    background-color: #f8fff9;
+  }
+
+  /* ===== Page Heading ===== */
+  .invoice-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .invoice-header h2 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== Action Buttons ===== */
+  .action-buttons {
+    margin-top: 3rem;
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    justify-content: center;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 992px) {
+    .invoice-details {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem 2rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .invoice-details {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .invoice-header {
+      padding: 1rem;
+    }
+
+    .invoice-header > div {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    /* Method 1: Hide everything then show only invoice */
+    * {
+      visibility: hidden;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    #main-content,
+    #main-content *,
+    .invoice-print-area,
+    .invoice-print-area * {
+      visibility: visible;
+    }
+
+    /* Method 2: Hide common Angular app containers */
+    body > *:not(.invoice-print-area),
+    app-root > *:not(.invoice-print-area),
+    .app-container > *:not(.invoice-print-area),
+    .main-container > *:not(.invoice-print-area),
+    .container-fluid > *:not(.invoice-print-area),
+    [role='navigation'],
+    [role='banner'],
+    nav,
+    header,
+    footer,
+    .navbar,
+    .sidebar,
+    .app-nav,
+    .main-header,
+    .app-header {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      width: 0 !important;
+      overflow: hidden !important;
+      position: absolute !important;
+      opacity: 0 !important;
+    }
+
+    /* Method 3: Directly target the invoice area */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      font-size: 12pt !important;
+      background: white !important;
+      -webkit-print-color-adjust: exact;
+    }
+
+    /* Force the invoice to be the only thing displayed */
+    .invoice-print-area {
+      position: fixed !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 20px !important;
+      background: white !important;
+      z-index: 99999 !important;
+    }
+
+    /* Reset all Bootstrap containers */
+    .container,
+    .container-fluid,
+    .row,
+    .col-8,
+    .d-flex {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+
+    /* Invoice styling */
+    .invoice-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #000;
+      padding-bottom: 1rem;
+    }
+
+    .invoice-header h2 {
+      font-size: 28pt !important;
+      margin: 0 0 0.5rem 0;
+    }
+
+    /* Remove duplicate grid styles - already defined above */
+    .invoice-details {
+      gap: 1rem 2rem !important;
+      margin-top: 2rem !important;
+    }
+
+    .invoice-item {
+      margin-bottom: 1rem;
+      break-inside: avoid;
+    }
+
+    .invoice-label {
+      font-size: 10pt !important;
+      font-weight: bold;
+      color: #000 !important;
+      margin-bottom: 0.25rem;
+    }
+
+    .invoice-value {
+      font-size: 11pt !important;
+      color: #000 !important;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* Hide all buttons and interactive elements */
+    button,
+    .btn,
+    a,
+    .action-buttons,
+    fa-icon,
+    jhi-alert-error,
+    jhi-alert {
+      display: none !important;
+    }
+
+    /* Page setup */
+    @page {
+      margin: 1cm;
+      size: A4 portrait;
+    }
+  }
+</style>
+
+<!-- Wrap the entire invoice content in a print area div -->
+<div class="d-flex justify-content-center invoice-print-area">
   <div class="col-8">
     @if (salesinvoice()) {
       <div>
-        <h2 data-cy="salesinvoiceDetailsHeading"><span>Sales Invoice</span></h2>
+        <!-- HEADER -->
+        <div class="invoice-header">
+          <br />
+          <h2 data-cy="salesinvoiceDetailsHeading">Sales Invoice</h2>
+          <br />
+          <hr />
+          <!-- Add invoice summary info -->
+          <div style="display: flex; justify-content: space-between; margin-top: 1rem">
+            <div><strong>Invoice #:</strong> {{ salesinvoice()!.code }}</div>
+            <div><strong>Date:</strong> {{ salesinvoice()!.invoicedate | formatMediumDatetime }}</div>
+            <div><strong>Customer:</strong> {{ salesinvoice()!.customername }}</div>
+          </div>
+        </div>
 
-        <hr />
+        <!-- DETAILS GRID -->
+        <div class="invoice-details">
+          <div class="invoice-item">
+            <span class="invoice-label">ID</span><span class="invoice-value">{{ salesinvoice()!.id }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Code</span><span class="invoice-value">{{ salesinvoice()!.code }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Invoice Date</span
+            ><span class="invoice-value">{{ salesinvoice()!.invoicedate | formatMediumDatetime }}</span>
+          </div>
 
-        <jhi-alert-error></jhi-alert-error>
+          <div class="invoice-item">
+            <span class="invoice-label">Created Date</span
+            ><span class="invoice-value">{{ salesinvoice()!.createddate | formatMediumDatetime }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Quote ID</span><span class="invoice-value">{{ salesinvoice()!.quoteid }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Order ID</span><span class="invoice-value">{{ salesinvoice()!.orderid }}</span>
+          </div>
 
-        <jhi-alert></jhi-alert>
+          <div class="invoice-item">
+            <span class="invoice-label">Delivery Date</span
+            ><span class="invoice-value">{{ salesinvoice()!.delieverydate | formatMediumDatetime }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Sales Rep ID</span><span class="invoice-value">{{ salesinvoice()!.salesrepid }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Sales Rep Name</span><span class="invoice-value">{{ salesinvoice()!.salesrepname }}</span>
+          </div>
 
-        <dl class="row-md jh-entity-details">
-          <dt><span>ID</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.id }}</span>
-          </dd>
-          <dt><span>Code</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.code }}</span>
-          </dd>
-          <dt><span>Invoicedate</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.invoicedate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Createddate</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.createddate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Quoteid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.quoteid }}</span>
-          </dd>
-          <dt><span>Orderid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.orderid }}</span>
-          </dd>
-          <dt><span>Delieverydate</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.delieverydate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Salesrepid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.salesrepid }}</span>
-          </dd>
-          <dt><span>Salesrepname</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.salesrepname }}</span>
-          </dd>
-          <dt><span>Delieverfrom</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.delieverfrom }}</span>
-          </dd>
-          <dt><span>Customerid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.customerid }}</span>
-          </dd>
-          <dt><span>Customername</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.customername }}</span>
-          </dd>
-          <dt><span>Customeraddress</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.customeraddress }}</span>
-          </dd>
-          <dt><span>Deliveryaddress</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.deliveryaddress }}</span>
-          </dd>
-          <dt><span>Subtotal</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.subtotal }}</span>
-          </dd>
-          <dt><span>Totaltax</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.totaltax }}</span>
-          </dd>
-          <dt><span>Totaldiscount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.totaldiscount }}</span>
-          </dd>
-          <dt><span>Nettotal</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.nettotal }}</span>
-          </dd>
-          <dt><span>Message</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.message }}</span>
-          </dd>
-          <dt><span>Lmu</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.lmu }}</span>
-          </dd>
-          <dt><span>Lmd</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.lmd | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Paidamount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.paidamount }}</span>
-          </dd>
-          <dt><span>Amountowing</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.amountowing }}</span>
-          </dd>
-          <dt><span>Isactive</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.isactive }}</span>
-          </dd>
-          <dt><span>Locationid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.locationid }}</span>
-          </dd>
-          <dt><span>Locationcode</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.locationcode }}</span>
-          </dd>
-          <dt><span>Referencecode</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.referencecode }}</span>
-          </dd>
-          <dt><span>Createdbyid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.createdbyid }}</span>
-          </dd>
-          <dt><span>Createdbyname</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.createdbyname }}</span>
-          </dd>
-          <dt><span>Autocarecharges</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.autocarecharges }}</span>
-          </dd>
-          <dt><span>Autocarejobid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.autocarejobid }}</span>
-          </dd>
-          <dt><span>Vehicleno</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.vehicleno }}</span>
-          </dd>
-          <dt><span>Nextmeter</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.nextmeter }}</span>
-          </dd>
-          <dt><span>Currentmeter</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.currentmeter }}</span>
-          </dd>
-          <dt><span>Remarks</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.remarks }}</span>
-          </dd>
-          <dt><span>Hasdummybill</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.hasdummybill }}</span>
-          </dd>
-          <dt><span>Dummybillid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.dummybillid }}</span>
-          </dd>
-          <dt><span>Dummybillamount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.dummybillamount }}</span>
-          </dd>
-          <dt><span>Dummycommision</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.dummycommision }}</span>
-          </dd>
-          <dt><span>Isserviceinvoice</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.isserviceinvoice }}</span>
-          </dd>
-          <dt><span>Nbtamount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.nbtamount }}</span>
-          </dd>
-          <dt><span>Vatamount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.vatamount }}</span>
-          </dd>
-          <dt><span>Autocarecompanyid</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.autocarecompanyid }}</span>
-          </dd>
-          <dt><span>Iscompanyinvoice</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.iscompanyinvoice }}</span>
-          </dd>
-          <dt><span>Invcanceldate</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.invcanceldate | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Invcancelby</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.invcancelby }}</span>
-          </dd>
-          <dt><span>Isvatinvoice</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.isvatinvoice }}</span>
-          </dd>
-          <dt><span>Paymenttype</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.paymenttype }}</span>
-          </dd>
-          <dt><span>Pendingamount</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.pendingamount }}</span>
-          </dd>
-          <dt><span>Advancepayment</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.advancepayment }}</span>
-          </dd>
-          <dt><span>Discountcode</span></dt>
-          <dd>
-            <span>{{ salesinvoice()!.discountcode }}</span>
-          </dd>
-        </dl>
+          <div class="invoice-item">
+            <span class="invoice-label">Deliver From</span><span class="invoice-value">{{ salesinvoice()!.delieverfrom }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Customer ID</span><span class="invoice-value">{{ salesinvoice()!.customerid }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Customer Name</span><span class="invoice-value">{{ salesinvoice()!.customername }}</span>
+          </div>
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
-        </button>
+          <div class="invoice-item">
+            <span class="invoice-label">Customer Address</span><span class="invoice-value">{{ salesinvoice()!.customeraddress }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Delivery Address</span><span class="invoice-value">{{ salesinvoice()!.deliveryaddress }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Vehicle No</span><span class="invoice-value">{{ salesinvoice()!.vehicleno }}</span>
+          </div>
 
-        <button type="button" [routerLink]="['/salesinvoice', salesinvoice()!.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
-        </button>
+          <div class="invoice-item">
+            <span class="invoice-label">Subtotal</span><span class="invoice-value">{{ salesinvoice()!.subtotal | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Total Tax</span><span class="invoice-value">{{ salesinvoice()!.totaltax | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Total Discount</span
+            ><span class="invoice-value">{{ salesinvoice()!.totaldiscount | currency }}</span>
+          </div>
+
+          <div class="invoice-item">
+            <span class="invoice-label">Net Total</span><span class="invoice-value">{{ salesinvoice()!.nettotal | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Paid Amount</span><span class="invoice-value">{{ salesinvoice()!.paidamount | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Amount Owing</span><span class="invoice-value">{{ salesinvoice()!.amountowing | currency }}</span>
+          </div>
+
+          <div class="invoice-item">
+            <span class="invoice-label">Payment Type</span><span class="invoice-value">{{ salesinvoice()!.paymenttype }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Pending Amount</span
+            ><span class="invoice-value">{{ salesinvoice()!.pendingamount | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Advance Payment</span
+            ><span class="invoice-value">{{ salesinvoice()!.advancepayment | currency }}</span>
+          </div>
+
+          <div class="invoice-item">
+            <span class="invoice-label">VAT Amount</span><span class="invoice-value">{{ salesinvoice()!.vatamount | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">NBT Amount</span><span class="invoice-value">{{ salesinvoice()!.nbtamount | currency }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Is VAT Invoice</span><span class="invoice-value">{{ salesinvoice()!.isvatinvoice }}</span>
+          </div>
+
+          <div class="invoice-item">
+            <span class="invoice-label">Remarks</span><span class="invoice-value">{{ salesinvoice()!.remarks }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Message</span><span class="invoice-value">{{ salesinvoice()!.message }}</span>
+          </div>
+          <div class="invoice-item">
+            <span class="invoice-label">Discount Code</span><span class="invoice-value">{{ salesinvoice()!.discountcode }}</span>
+          </div>
+        </div>
+
+        <!-- Add a totals summary for better visibility -->
+        <div style="margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #000">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; font-size: 12pt">
+            <div><strong>Subtotal:</strong> {{ salesinvoice()!.subtotal | currency }}</div>
+            <div><strong>Tax:</strong> {{ salesinvoice()!.totaltax | currency }}</div>
+            <div><strong>Discount:</strong> {{ salesinvoice()!.totaldiscount | currency }}</div>
+            <div style="font-size: 14pt"><strong>Total:</strong> {{ salesinvoice()!.nettotal | currency }}</div>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS (Hidden when printing) -->
+        <div class="action-buttons">
+          <button type="button" (click)="previousState()" class="btn btn-info"><fa-icon icon="arrow-left"></fa-icon>&nbsp;Back</button>
+
+          <button type="button" [routerLink]="['/salesinvoice', salesinvoice()!.id, 'edit']" class="btn btn-primary">
+            <fa-icon icon="pencil-alt"></fa-icon>&nbsp;Edit
+          </button>
+
+          <button type="button" class="btn btn-success" (click)="print()"><fa-icon icon="print"></fa-icon>&nbsp;Print 🖨</button>
+        </div>
       </div>
     }
   </div>

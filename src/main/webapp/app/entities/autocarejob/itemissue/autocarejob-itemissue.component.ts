@@ -3,7 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import dayjs from 'dayjs'; // Import Dayjs
+import dayjs from 'dayjs/esm';
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IAutocarejob } from '../autocarejob.model';
@@ -91,25 +91,68 @@ export class AutocarejobitemissueComponent implements OnInit {
   get allInvoiceLines(): any[] {
     return Object.values(this.autojobsInvoicesMap)
       .flatMap(invoice => invoice.invoiceLines)
-      .filter(line => !this.issuedItems.some(issued => issued.id === line.id));
+      .filter(line => !line.issued); // Only lines not issued
   }
 
   fetchhistory(): void {
     this.autojobsinvoiceService.query({ 'jobid.equals': this.autocarejob?.id }).subscribe((res: HttpResponse<IAutojobsinvoice[]>) => {
-      if (res.body && res.body.length > 0) {
-        res.body.forEach(invoice => {
-          const invoiceId = invoice.id!;
-          this.autojobsInvoicesMap[invoiceId] = {
-            invoice,
-            invoiceLines: [],
-          };
-
-          // Fetch Invoice Lines
-          this.autojobsinvoicelinesService.query({ 'invocieid.equals': invoiceId }).subscribe((linesRes: HttpResponse<any[]>) => {
-            this.autojobsInvoicesMap[invoiceId].invoiceLines = linesRes.body || [];
-          });
-        });
+      if (!res.body || res.body.length === 0) {
+        return;
       }
+
+      const invoiceRequests = res.body.map(invoice => {
+        this.autojobsInvoicesMap[invoice.id!] = {
+          invoice,
+          invoiceLines: [],
+        };
+
+        return this.autojobsinvoicelinesService
+          .query({ 'invocieid.equals': invoice.id })
+          .toPromise()
+          .then(linesRes => {
+            this.autojobsInvoicesMap[invoice.id!].invoiceLines = linesRes?.body || [];
+          });
+      });
+
+      // Wait until ALL invoice lines are loaded
+      Promise.all(invoiceRequests).then(() => {
+        this.loadBatchesAndSetIssued();
+      });
+    });
+  }
+
+  loadIssuedItems(): void {
+    this.issuedItems = Object.values(this.autojobsInvoicesMap)
+      .flatMap(inv => inv.invoiceLines)
+      .filter(line => line.issued); // Only issued items
+  }
+
+  loadBatchesAndSetIssued(): void {
+    const lineIds = Object.values(this.autojobsInvoicesMap)
+      .flatMap(inv => inv.invoiceLines.map((line: any) => line.id))
+      .filter(id => id != null);
+
+    if (lineIds.length === 0) {
+      this.loadIssuedItems();
+      return;
+    }
+
+    this.jobinvoicelinebatches.query({ 'lineid.in': lineIds }).subscribe({
+      next: (batchRes: HttpResponse<any[]>) => {
+        const issuedLineIds = new Set(batchRes.body?.filter(batch => batch.issued).map(batch => batch.lineid) || []);
+        for (const invoice of Object.values(this.autojobsInvoicesMap)) {
+          for (const line of invoice.invoiceLines) {
+            if (issuedLineIds.has(line.id)) {
+              line.issued = true;
+            }
+          }
+        }
+        this.loadIssuedItems();
+      },
+      error: err => {
+        console.error('Error loading batches:', err);
+        this.loadIssuedItems();
+      },
     });
   }
 
@@ -123,29 +166,29 @@ export class AutocarejobitemissueComponent implements OnInit {
     const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
     const nextbatchlineid = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.batchlineid), 0) + 1 : 1;
     const newItem = {
-      id: 0,
-      lineid: nextLineId,
+      id: null,
+      lineid: issuedItem.id, // Use the invoice line id
       batchlineid: nextbatchlineid,
-      itemid: issuedItem.id,
-      code: issuedItem.code ?? '',
+      itemid: issuedItem.itemid,
+      code: issuedItem.itemcode ?? '',
       batchid: 0,
       batchcode: '',
-      txdate: dayjs().toISOString(),
-      manufacturedate: dayjs().toISOString(),
-      expireddate: dayjs().toISOString(),
+      txdate: dayjs(),
+      manufacturedate: dayjs(),
+      expireddate: dayjs(),
       qty: 1,
       cost: 0,
       price: 0,
       notes: issuedItem.description ?? '',
       lmu: 0,
-      lmd: dayjs().toISOString(),
+      lmd: dayjs(),
       nbt: false,
       vat: false,
       discount: 0,
-      total: issuedItem.lastsellingprice ?? 0,
-      issued: false,
+      total: issuedItem.sellingprice ?? 0,
+      issued: true,
       issuedby: 0,
-      issueddatetime: dayjs().toISOString(),
+      issueddatetime: dayjs(),
       addedbyid: 0,
       canceloptid: 0,
       cancelopt: '',
@@ -153,7 +196,24 @@ export class AutocarejobitemissueComponent implements OnInit {
     };
 
     this.itemsArray.push(newItem);
-    this.issuedItems.push({ ...issuedItem });
+
+    // Save the issued item to the backend
+    this.jobinvoicelinebatches.create(newItem).subscribe({
+      next: createResponse => {
+        console.log('Item created and marked as issued:', createResponse);
+
+        // Update the local map to reflect the change
+        for (const invoice of Object.values(this.autojobsInvoicesMap)) {
+          const lineIndex = invoice.invoiceLines.findIndex((line: any) => line.id === issuedItem.id);
+          if (lineIndex !== -1) {
+            invoice.invoiceLines[lineIndex].issued = true;
+            break;
+          }
+        }
+        this.loadIssuedItems(); // re-sync UI after update
+      },
+      error: err => console.error('Error issuing item:', err),
+    });
 
     console.log('Issued Items:', this.itemsArray);
   }
@@ -171,29 +231,29 @@ export class AutocarejobitemissueComponent implements OnInit {
   }
 
   itemsArray: Array<{
-    id: number;
+    id: number | null;
     lineid: number;
     batchlineid: number;
     itemid: number;
     code: string;
     batchid: number;
     batchcode: string;
-    txdate: string;
-    manufacturedate: string;
-    expireddate: string;
+    txdate: dayjs.Dayjs;
+    manufacturedate: dayjs.Dayjs;
+    expireddate: dayjs.Dayjs;
     qty: number;
     cost: number;
     price: number;
     notes: string;
     lmu: number;
-    lmd: string;
+    lmd: dayjs.Dayjs;
     nbt: boolean;
     vat: boolean;
     discount: number;
     total: number;
     issued: boolean;
     issuedby: number;
-    issueddatetime: string;
+    issueddatetime: dayjs.Dayjs;
     addedbyid: number;
     canceloptid: number;
     cancelopt: string;

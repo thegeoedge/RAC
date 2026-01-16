@@ -136,4 +136,19 @@ export class SalesinvoiceComponent implements OnInit {
       });
     });
   }
+  printInvoice(id: number | null | undefined): void {
+    if (!id) {
+      return;
+    }
+
+    const url = `${window.location.origin}/salesinvoice/${id}/view`;
+    const printWindow = window.open(url, '_blank');
+
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    }
+  }
 }
