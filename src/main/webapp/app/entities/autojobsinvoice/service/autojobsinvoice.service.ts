@@ -85,7 +85,7 @@ export class AutojobsinvoiceService {
   findJobInvoicesByCustomerName(customerName: string): Observable<EntityArrayResponseType> {
     const options = createRequestOption({ 'customername.equals': customerName, page: 0, size: 20 });
     return this.http
-      .get<RestAutojobsinvoice[]>('http://localhost:9000/api/autojobsinvoices', { params: options, observe: 'response' })
+      .get<RestAutojobsinvoice[]>(SERVER_API_URL + 'api/autojobsinvoices', { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
