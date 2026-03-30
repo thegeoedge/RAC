@@ -24,13 +24,7 @@ dependencies {
     testImplementation "org.testcontainers:mssqlserver"
 }
 
-ext {
-    springProfiles = "prod" + springProfiles
 
-    if (project.hasProperty("api-docs")) {
-        springProfiles += ",api-docs"
-    }
-}
 
 if (!project.tasks.findByName('bootBuildInfo')) {
     springBoot {

@@ -209,6 +209,22 @@ To stop it and remove the container, run:
 docker compose -f src/main/docker/mssql.yml down
 ```
 
+When running the packaged WAR directly with `java -jar build/libs/rac-0.0.1-SNAPSHOT.war`, the application still requires a reachable SQL Server database.
+By default the `prod` profile points to `localhost:1438/RACTestDB` with `encrypt=false`, which matches the Docker SQL Server mapping in `src/main/docker/mssql.yml`.
+If the database is on another machine or port, override it at startup, for example:
+
+```
+set SPRING_DATASOURCE_URL=jdbc:sqlserver://<host>:<port>;databaseName=<db>;encrypt=false;trustServerCertificate=true
+set SPRING_DATASOURCE_USERNAME=<username>
+set SPRING_DATASOURCE_PASSWORD=<password>
+set SPRING_LIQUIBASE_ENABLED=true
+java -jar build/libs/rac-0.0.1-SNAPSHOT.war
+```
+
+If your SQL Server is configured for TLS 1.2+ with a valid or trusted certificate, you can set `encrypt=true` instead.
+
+Set `SPRING_LIQUIBASE_ENABLED=true` only for the first run against a fresh empty database so the schema can be created.
+
 You can also fully dockerize your application and all the services that it depends on.
 To achieve this, first build a docker image of your app by running:
 
