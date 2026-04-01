@@ -15,35 +15,31 @@
         The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
     -->
     <changeSet id="00000000000001" author="jhipster">
-        <createTable tableName="jhi_user">
+        <createTable tableName="employee">
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="login" type="varchar(50)">
-                <constraints unique="true" nullable="false" uniqueConstraintName="ux_user_login"/>
+            <column name="user_name" type="varchar(50)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_employee_user_name"/>
             </column>
-            <column name="password_hash" type="varchar(60)"/>
-            <column name="first_name" type="varchar(50)"/>
-            <column name="last_name" type="varchar(50)"/>
-            <column name="email" type="varchar(191)">
-                <constraints unique="true" nullable="true" uniqueConstraintName="ux_user_email"/>
-            </column>
-            <column name="image_url" type="varchar(256)"/>
-            <column name="activated" type="boolean" valueBoolean="false">
-                <constraints nullable="false" />
-            </column>
-            <column name="lang_key" type="varchar(10)"/>
-            <column name="activation_key" type="varchar(20)"/>
-            <column name="reset_key" type="varchar(20)"/>
-            <column name="created_by" type="varchar(50)">
+            <column name="password" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_date" type="timestamp"/>
-            <column name="reset_date" type="timestamp">
-                <constraints nullable="true"/>
+            <column name="full_name" type="varchar(100)"/>
+            <column name="surname" type="varchar(50)"/>
+            <column name="email" type="varchar(254)">
+                <constraints unique="true" nullable="true" uniqueConstraintName="ux_employee_email"/>
             </column>
-            <column name="last_modified_by" type="varchar(50)"/>
-            <column name="last_modified_date" type="timestamp"/>
+            <column name="image_path" type="varchar(256)"/>
+            <column name="is_active" type="boolean" valueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="department_code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="emp_reg_date" type="timestamp"/>
+            <column name="lmu" type="varchar(50)"/>
+            <column name="lmd" type="timestamp"/>
         </createTable>
 
         <createTable tableName="jhi_authority">
@@ -73,11 +69,7 @@
                                  baseTableName="jhi_user_authority"
                                  constraintName="fk_user_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="jhi_user"/>
-
-        <addNotNullConstraint   columnName="password_hash"
-                                columnDataType="varchar(60)"
-                                tableName="jhi_user"/>
+                                 referencedTableName="employee"/>
         <loadData
                   file="config/liquibase/data/authority.csv"
                   separator=";"
@@ -88,10 +80,11 @@
         <loadData
                   file="config/liquibase/data/user.csv"
                   separator=";"
-                  tableName="jhi_user"
+                  tableName="employee"
                   usePreparedStatements="true">
-            <column name="activated" type="boolean"/>
-            <column name="created_date" type="timestamp"/>
+            <column name="is_active" type="boolean"/>
+            <column name="emp_reg_date" type="timestamp"/>
+            <column name="lmd" type="timestamp"/>
         </loadData>
         <loadData
                   file="config/liquibase/data/user_authority.csv"
@@ -100,7 +93,6 @@
                   usePreparedStatements="true">
             <column name="user_id" type="numeric"/>
         </loadData>
-        <dropDefaultValue tableName="jhi_user" columnName="created_date" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <changeSet author="jhipster" id="00000000000002" context="test">

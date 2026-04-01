@@ -9,10 +9,10 @@ services:
       - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
       #- SPRING_DATASOURCE_URL=jdbc:sqlserver://mssql:1438;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
       #- SPRING_LIQUIBASE_URL=jdbc:sqlserver://mssql:1438;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
-      # - SPRING_DATASOURCE_URL=jdbc:sqlserver://rac-mssql-1:1438;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
-      # - SPRING_LIQUIBASE_URL=jdbc:sqlserver://rac-mssql-1:1438;database=OziErpWebRathnaweeraService;encrypt=false;trustServerCertificate=true
-      - SPRING_DATASOURCE_URL=jdbc:sqlserver://mssql:1433;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
-      - SPRING_LIQUIBASE_URL=jdbc:sqlserver://mssql:1433;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://rac-mssql-1:1438;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
+      - SPRING_LIQUIBASE_URL=jdbc:sqlserver://rac-mssql-1:1438;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
+      #- SPRING_DATASOURCE_URL=jdbc:sqlserver://mssql:1433;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
+      #- SPRING_LIQUIBASE_URL=jdbc:sqlserver://mssql:1433;databaseName=RACTestDB;encrypt=false;trustServerCertificate=true
 
       - SPRING_DATASOURCE_USERNAME=sa
       #- SPRING_DATASOURCE_PASSWORD=YourStrong!Passw0rd

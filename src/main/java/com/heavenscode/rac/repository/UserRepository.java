@@ -1,12 +1,12 @@
 package com.heavenscode.rac.repository;
 
 import com.heavenscode.rac.domain.User;
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -14,14 +14,26 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findOneByActivationKey(String activationKey);
-    List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
-    Optional<User> findOneByResetKey(String resetKey);
     Optional<User> findOneByEmailIgnoreCase(String email);
     Optional<User> findOneByLogin(String login);
 
-    @EntityGraph(attributePaths = "authorities")
-    Optional<User> findOneWithAuthoritiesByLogin(String login);
+    @Query(
+        value = """
+        select
+            [ID] as [id],
+            [UserName] as [user_name],
+            [Password] as [password],
+            [FullName] as [full_name],
+            [Surname] as [surname],
+            [Email] as [email],
+            [IsActive] as [is_active],
+            [ImagePath] as [image_path]
+        from dbo.[Employee]
+        where lower([UserName]) = lower(:login)
+        """,
+        nativeQuery = true
+    )
+    Optional<User> findOneWithAuthoritiesByLogin(@Param("login") String login);
 
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesByEmailIgnoreCase(String email);

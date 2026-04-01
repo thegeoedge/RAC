@@ -10,80 +10,89 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 
 /**
  * A user.
  */
 @Entity
-@Table(name = "jhi_user")
-public class User extends AbstractAuditingEntity<Long> implements Serializable {
+@Table(name = "`Employee`", schema = "dbo")
+public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "`ID`", nullable = false)
     private Long id;
 
     @NotNull
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
+    @Column(name = "`UserName`", length = 50, unique = true, nullable = false)
     private String login;
 
     @JsonIgnore
     @NotNull
-    @Size(min = 60, max = 60)
-    @Column(name = "password_hash", length = 60, nullable = false)
+    @Size(min = 1, max = 255)
+    @Column(name = "`Password`", length = 255, nullable = false)
     private String password;
 
-    @Size(max = 50)
-    @Column(name = "first_name", length = 50)
+    @Size(max = 255)
+    @Column(name = "`FullName`", length = 255)
     private String firstName;
 
-    @Size(max = 50)
-    @Column(name = "last_name", length = 50)
+    @Size(max = 255)
+    @Column(name = "`Surname`", length = 255)
     private String lastName;
 
     @Email
     @Size(min = 5, max = 254)
-    @Column(length = 254, unique = true)
+    @Column(name = "`Email`", length = 254, unique = true)
     private String email;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "`IsActive`", nullable = false)
     private boolean activated = false;
 
     @Size(min = 2, max = 10)
-    @Column(name = "lang_key", length = 10)
+    @Transient
     private String langKey;
 
     @Size(max = 256)
-    @Column(name = "image_url", length = 256)
+    @Column(name = "`ImagePath`", length = 256)
     private String imageUrl;
 
+    @Transient
+    private String createdBy;
+
+    @Transient
+    private Instant createdDate;
+
+    @Transient
+    private String lastModifiedBy;
+
+    @Transient
+    private Instant lastModifiedDate;
+
     @Size(max = 20)
-    @Column(name = "activation_key", length = 20)
+    @Transient
     @JsonIgnore
     private String activationKey;
 
     @Size(max = 20)
-    @Column(name = "reset_key", length = 20)
+    @Transient
     @JsonIgnore
     private String resetKey;
 
-    @Column(name = "reset_date")
+    @Transient
     private Instant resetDate = null;
 
     @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "jhi_user_authority",
-        joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
+        joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "`ID`") },
         inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
     )
     @BatchSize(size = 20)
@@ -101,9 +110,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         return login;
     }
 
-    // Lowercase the login before saving it in database
     public void setLogin(String login) {
-        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
+        this.login = login;
     }
 
     public String getPassword() {
@@ -186,6 +194,38 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         this.langKey = langKey;
     }
 
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public Instant getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Instant lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
     public Set<Authority> getAuthorities() {
         return authorities;
     }
@@ -207,7 +247,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -215,14 +256,14 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-            "login='" + login + '\'' +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", email='" + email + '\'' +
-            ", imageUrl='" + imageUrl + '\'' +
-            ", activated='" + activated + '\'' +
-            ", langKey='" + langKey + '\'' +
-            ", activationKey='" + activationKey + '\'' +
-            "}";
+                "login='" + login + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", activated='" + activated + '\'' +
+                ", langKey='" + langKey + '\'' +
+                ", activationKey='" + activationKey + '\'' +
+                "}";
     }
 }
