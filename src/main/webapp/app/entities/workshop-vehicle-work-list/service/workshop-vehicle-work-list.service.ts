@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -58,7 +58,7 @@ export class WorkshopVehicleWorkListService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<EntityResponseType> {
+  find(id: string): Observable<EntityResponseType> {
     return this.http
       .get<RestWorkshopVehicleWorkList>(`${this.resourceUrl}/${id}`, { observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -71,11 +71,29 @@ export class WorkshopVehicleWorkListService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
-  delete(id: number): Observable<HttpResponse<{}>> {
+  queryByVehicleWorkIds(vehicleWorkIds: number[]): Observable<EntityArrayResponseType> {
+    const ids = vehicleWorkIds.join(',');
+    return this.http.get<RestWorkshopVehicleWorkList[]>(`${this.resourceUrl}/vehicleworks`, { params: { ids }, observe: 'response' }).pipe(
+      map(res => this.convertResponseArrayFromServer(res)),
+      catchError(() =>
+        this.query({ size: 1000 }).pipe(
+          map((res: EntityArrayResponseType) =>
+            res.clone({
+              body: (res.body || []).filter(workshopVehicleWorkList =>
+                vehicleWorkIds.includes(Number(workshopVehicleWorkList.vehicleworkid ?? 0)),
+              ),
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  delete(id: string): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
-  getWorkshopVehicleWorkListIdentifier(workshopVehicleWorkList: Pick<IWorkshopVehicleWorkList, 'id'>): number {
+  getWorkshopVehicleWorkListIdentifier(workshopVehicleWorkList: Pick<IWorkshopVehicleWorkList, 'id'>): string {
     return workshopVehicleWorkList.id;
   }
 

@@ -199,6 +199,12 @@ public class WorkshopvehicleworkResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/job/{jobId}")
+    public ResponseEntity<List<Workshopvehiclework>> getWorkshopvehicleworksByJobId(@PathVariable("jobId") Integer jobId) {
+        log.debug("REST request to get Workshopvehicleworks by jobId : {}", jobId);
+        return ResponseEntity.ok(workshopvehicleworkRepository.findByJobid(jobId));
+    }
+
     /**
      * {@code GET  /workshopvehicleworks/:id} : get the "id" workshopvehiclework.
      *

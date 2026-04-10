@@ -2,13 +2,16 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.SaleInvoiceCommonServiceCharge;
 import com.heavenscode.rac.repository.SaleInvoiceCommonServiceChargeRepository;
+import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeQueryService;
 import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeService;
 import com.heavenscode.rac.service.criteria.SaleInvoiceCommonServiceChargeCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -43,15 +46,18 @@ public class SaleInvoiceCommonServiceChargeResource {
     private final SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository;
 
     private final SaleInvoiceCommonServiceChargeQueryService saleInvoiceCommonServiceChargeQueryService;
+    private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
 
     public SaleInvoiceCommonServiceChargeResource(
         SaleInvoiceCommonServiceChargeService saleInvoiceCommonServiceChargeService,
         SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository,
-        SaleInvoiceCommonServiceChargeQueryService saleInvoiceCommonServiceChargeQueryService
+        SaleInvoiceCommonServiceChargeQueryService saleInvoiceCommonServiceChargeQueryService,
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
     ) {
         this.saleInvoiceCommonServiceChargeService = saleInvoiceCommonServiceChargeService;
         this.saleInvoiceCommonServiceChargeRepository = saleInvoiceCommonServiceChargeRepository;
         this.saleInvoiceCommonServiceChargeQueryService = saleInvoiceCommonServiceChargeQueryService;
+        this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
     }
 
     /**
@@ -167,6 +173,18 @@ public class SaleInvoiceCommonServiceChargeResource {
         Page<SaleInvoiceCommonServiceCharge> page = saleInvoiceCommonServiceChargeQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Map<String, Object>>> getCommonChargesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get SaleInvoiceCommonServiceCharge by invoiceId : {}", invoiceId);
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("name", "name");
+        columns.put("description", "description");
+        columns.put("value", "value");
+        return ResponseEntity.ok(
+            legacyInvoiceChildrenReadService.findByInvoiceId("saleinvoicecommonservicecharge", "invoiceid", columns, invoiceId)
+        );
     }
 
     /**

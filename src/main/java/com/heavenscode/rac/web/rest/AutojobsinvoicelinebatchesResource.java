@@ -2,7 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsinvoicelinebatches;
 import com.heavenscode.rac.repository.AutojobsinvoicelinebatchesRepository;
+import com.heavenscode.rac.service.AutojobsChildInsertService;
 import com.heavenscode.rac.service.AutojobsinvoicelinebatchesQueryService;
+import com.heavenscode.rac.service.AutojobsinvoicelinebatchesReadService;
 import com.heavenscode.rac.service.AutojobsinvoicelinebatchesService;
 import com.heavenscode.rac.service.criteria.AutojobsinvoicelinebatchesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
@@ -43,15 +45,21 @@ public class AutojobsinvoicelinebatchesResource {
     private final AutojobsinvoicelinebatchesRepository autojobsinvoicelinebatchesRepository;
 
     private final AutojobsinvoicelinebatchesQueryService autojobsinvoicelinebatchesQueryService;
+    private final AutojobsinvoicelinebatchesReadService autojobsinvoicelinebatchesReadService;
+    private final AutojobsChildInsertService autojobsChildInsertService;
 
     public AutojobsinvoicelinebatchesResource(
         AutojobsinvoicelinebatchesService autojobsinvoicelinebatchesService,
         AutojobsinvoicelinebatchesRepository autojobsinvoicelinebatchesRepository,
-        AutojobsinvoicelinebatchesQueryService autojobsinvoicelinebatchesQueryService
+        AutojobsinvoicelinebatchesQueryService autojobsinvoicelinebatchesQueryService,
+        AutojobsinvoicelinebatchesReadService autojobsinvoicelinebatchesReadService,
+        AutojobsChildInsertService autojobsChildInsertService
     ) {
         this.autojobsinvoicelinebatchesService = autojobsinvoicelinebatchesService;
         this.autojobsinvoicelinebatchesRepository = autojobsinvoicelinebatchesRepository;
         this.autojobsinvoicelinebatchesQueryService = autojobsinvoicelinebatchesQueryService;
+        this.autojobsinvoicelinebatchesReadService = autojobsinvoicelinebatchesReadService;
+        this.autojobsChildInsertService = autojobsChildInsertService;
     }
 
     /**
@@ -66,14 +74,10 @@ public class AutojobsinvoicelinebatchesResource {
         @RequestBody Autojobsinvoicelinebatches autojobsinvoicelinebatches
     ) throws URISyntaxException {
         LOG.debug("REST request to save Autojobsinvoicelinebatches : {}", autojobsinvoicelinebatches);
-        if (autojobsinvoicelinebatches.getId() != null) {
-            throw new BadRequestAlertException("A new autojobsinvoicelinebatches cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        autojobsinvoicelinebatches = autojobsinvoicelinebatchesService.save(autojobsinvoicelinebatches);
-        return ResponseEntity.created(new URI("/api/autojobsinvoicelinebatches/" + autojobsinvoicelinebatches.getId()))
-            .headers(
-                HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelinebatches.getId().toString())
-            )
+        autojobsinvoicelinebatches = autojobsChildInsertService.insertInvoiceLineBatch(autojobsinvoicelinebatches);
+        String identifier = creationIdentifier(autojobsinvoicelinebatches);
+        return ResponseEntity.created(new URI("/api/autojobsinvoicelinebatches/" + identifier))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, identifier))
             .body(autojobsinvoicelinebatches);
     }
 
@@ -165,6 +169,12 @@ public class AutojobsinvoicelinebatchesResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/parent-lines")
+    public ResponseEntity<List<Autojobsinvoicelinebatches>> getBatchesByParentLineIds(@RequestParam("ids") List<Integer> ids) {
+        LOG.debug("REST request to get Autojobsinvoicelinebatches by parent invoice line IDs : {}", ids);
+        return ResponseEntity.ok(autojobsinvoicelinebatchesReadService.findByParentInvoiceLineIds(ids));
+    }
+
     /**
      * {@code GET  /autojobsinvoicelinebatches/count} : count all the autojobsinvoicelinebatches.
      *
@@ -203,5 +213,18 @@ public class AutojobsinvoicelinebatchesResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private String creationIdentifier(Autojobsinvoicelinebatches entity) {
+        if (entity.getId() != null) {
+            return entity.getId().toString();
+        }
+        if (entity.getLineid() != null && entity.getBatchlineid() != null) {
+            return entity.getLineid() + "-" + entity.getBatchlineid();
+        }
+        if (entity.getBatchlineid() != null) {
+            return entity.getBatchlineid().toString();
+        }
+        return "created";
     }
 }

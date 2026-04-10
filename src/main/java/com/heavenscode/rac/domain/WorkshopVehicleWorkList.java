@@ -8,21 +8,18 @@ import java.time.Instant;
  * A WorkshopVehicleWorkList.
  */
 @Entity
-@Table(name = "workshop_vehicle_work_list")
+@IdClass(WorkshopVehicleWorkListId.class)
+@Table(name = "workshopvehicleworklist")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class WorkshopVehicleWorkList implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    @Column(name = "id")
-    private Long id;
-
     @Column(name = "vehicleworkid")
     private Integer vehicleworkid;
 
+    @Id
     @Column(name = "lineid")
     private Integer lineid;
 
@@ -49,17 +46,12 @@ public class WorkshopVehicleWorkList implements Serializable {
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public WorkshopVehicleWorkList id(Long id) {
-        this.setId(id);
-        return this;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    @Transient
+    public String getId() {
+        if (this.vehicleworkid == null || this.lineid == null) {
+            return null;
+        }
+        return this.vehicleworkid + "-" + this.lineid;
     }
 
     public Integer getVehicleworkid() {
@@ -189,7 +181,12 @@ public class WorkshopVehicleWorkList implements Serializable {
         if (!(o instanceof WorkshopVehicleWorkList)) {
             return false;
         }
-        return getId() != null && getId().equals(((WorkshopVehicleWorkList) o).getId());
+        return (
+            getVehicleworkid() != null &&
+            getLineid() != null &&
+            getVehicleworkid().equals(((WorkshopVehicleWorkList) o).getVehicleworkid()) &&
+            getLineid().equals(((WorkshopVehicleWorkList) o).getLineid())
+        );
     }
 
     @Override
@@ -202,8 +199,7 @@ public class WorkshopVehicleWorkList implements Serializable {
     @Override
     public String toString() {
         return "WorkshopVehicleWorkList{" +
-            "id=" + getId() +
-            ", vehicleworkid=" + getVehicleworkid() +
+            "vehicleworkid=" + getVehicleworkid() +
             ", lineid=" + getLineid() +
             ", workid=" + getWorkid() +
             ", workshopwork='" + getWorkshopwork() + "'" +

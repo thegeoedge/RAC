@@ -11,10 +11,13 @@
   .full-width-form .row {
     margin: 0;
   }
-  .full-width-form .col-md-4, .full-width-form .col-md-6, .full-width-form .col-12 {
+  .full-width-form .col-md-4,
+  .full-width-form .col-md-6,
+  .full-width-form .col-12 {
     padding: 10px;
   }
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -88,7 +91,7 @@
                     type="text"
                     class="form-control form-control-sm"
                     id="field_code"
-                    formControlName="itemcode"
+                    [value]="code"
                     (input)="onItemCodeInput($event, i)"
                     (change)="onItemCodeSelect($event, i)"
                     [attr.list]="'autocomplete' + i"
@@ -134,16 +137,22 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer" (click)="onAddItem()">Add Item</button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer"
+              (click)="onAddItem()"
+            >
+              Add Item
+            </button>
           </div>
         </div>
 
         <!-- Final Payments Container -->
         <div class="col-md-4">
-           <div class="p-2 border rounded bg-light h-100">
+          <div class="p-2 border rounded bg-light h-100">
             <h6 class="fw-bold text-primary">Final Payments</h6>
             <div class="row gx-3">
-
               <!-- Left Column -->
               <div class="col-md-6">
                 <div class="mb-3">

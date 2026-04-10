@@ -17,7 +17,7 @@
                 <td>{{ item.workshopwork }}</td>
                 <td>{{ item.workshopworkdescription }}</td>
                 <td>
-                  <input type="checkbox" (change)="onworkServiceSelectionChange(item, $event)" />
+                  <input type="checkbox" [checked]="isWorkshopWorkSelected(item)" (change)="onworkServiceSelectionChange(item, $event)" />
                 </td>
               </tr>
             </tbody>

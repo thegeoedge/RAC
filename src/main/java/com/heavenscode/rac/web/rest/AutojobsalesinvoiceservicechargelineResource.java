@@ -2,13 +2,17 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsalesinvoiceservicechargeline;
 import com.heavenscode.rac.repository.AutojobsalesinvoiceservicechargelineRepository;
+import com.heavenscode.rac.service.AutojobsChildInsertService;
 import com.heavenscode.rac.service.AutojobsalesinvoiceservicechargelineQueryService;
 import com.heavenscode.rac.service.AutojobsalesinvoiceservicechargelineService;
+import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.criteria.AutojobsalesinvoiceservicechargelineCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -43,15 +47,21 @@ public class AutojobsalesinvoiceservicechargelineResource {
     private final AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository;
 
     private final AutojobsalesinvoiceservicechargelineQueryService autojobsalesinvoiceservicechargelineQueryService;
+    private final AutojobsChildInsertService autojobsChildInsertService;
+    private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
 
     public AutojobsalesinvoiceservicechargelineResource(
         AutojobsalesinvoiceservicechargelineService autojobsalesinvoiceservicechargelineService,
         AutojobsalesinvoiceservicechargelineRepository autojobsalesinvoiceservicechargelineRepository,
-        AutojobsalesinvoiceservicechargelineQueryService autojobsalesinvoiceservicechargelineQueryService
+        AutojobsalesinvoiceservicechargelineQueryService autojobsalesinvoiceservicechargelineQueryService,
+        AutojobsChildInsertService autojobsChildInsertService,
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
     ) {
         this.autojobsalesinvoiceservicechargelineService = autojobsalesinvoiceservicechargelineService;
         this.autojobsalesinvoiceservicechargelineRepository = autojobsalesinvoiceservicechargelineRepository;
         this.autojobsalesinvoiceservicechargelineQueryService = autojobsalesinvoiceservicechargelineQueryService;
+        this.autojobsChildInsertService = autojobsChildInsertService;
+        this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
     }
 
     /**
@@ -73,16 +83,10 @@ public class AutojobsalesinvoiceservicechargelineResource {
                 "idexists"
             );
         }
-        autojobsalesinvoiceservicechargeline = autojobsalesinvoiceservicechargelineService.save(autojobsalesinvoiceservicechargeline);
-        return ResponseEntity.created(new URI("/api/autojobsalesinvoiceservicechargelines/" + autojobsalesinvoiceservicechargeline.getId()))
-            .headers(
-                HeaderUtil.createEntityCreationAlert(
-                    applicationName,
-                    false,
-                    ENTITY_NAME,
-                    autojobsalesinvoiceservicechargeline.getId().toString()
-                )
-            )
+        autojobsalesinvoiceservicechargeline = autojobsChildInsertService.insertServiceChargeLine(autojobsalesinvoiceservicechargeline);
+        String identifier = creationIdentifier(autojobsalesinvoiceservicechargeline);
+        return ResponseEntity.created(new URI("/api/autojobsalesinvoiceservicechargelines/" + identifier))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, identifier))
             .body(autojobsalesinvoiceservicechargeline);
     }
 
@@ -190,6 +194,18 @@ public class AutojobsalesinvoiceservicechargelineResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Map<String, Object>>> getServiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline by invoiceId : {}", invoiceId);
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("servicename", "servicename");
+        columns.put("servicediscription", "servicediscription");
+        columns.put("value", "value");
+        return ResponseEntity.ok(
+            legacyInvoiceChildrenReadService.findByInvoiceId("autojobsalesinvoiceservicechargeline", "invoiceid", columns, invoiceId)
+        );
+    }
+
     /**
      * {@code GET  /autojobsalesinvoiceservicechargelines/count} : count all the autojobsalesinvoiceservicechargelines.
      *
@@ -229,5 +245,18 @@ public class AutojobsalesinvoiceservicechargelineResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private String creationIdentifier(Autojobsalesinvoiceservicechargeline entity) {
+        if (entity.getId() != null) {
+            return entity.getId().toString();
+        }
+        if (entity.getInvoiceid() != null && entity.getLineid() != null) {
+            return entity.getInvoiceid() + "-" + entity.getLineid();
+        }
+        if (entity.getLineid() != null) {
+            return entity.getLineid().toString();
+        }
+        return "created";
     }
 }

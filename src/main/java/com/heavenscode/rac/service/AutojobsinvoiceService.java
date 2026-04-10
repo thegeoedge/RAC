@@ -2,9 +2,11 @@ package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.Autojobsinvoice;
 import com.heavenscode.rac.repository.AutojobsinvoiceRepository;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class AutojobsinvoiceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutojobsinvoiceService.class);
+    private static final String INVOICE_CODE_PREFIX = "SI";
 
     private final AutojobsinvoiceRepository autojobsinvoiceRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public AutojobsinvoiceService(AutojobsinvoiceRepository autojobsinvoiceRepository) {
+    public AutojobsinvoiceService(AutojobsinvoiceRepository autojobsinvoiceRepository, JdbcTemplate jdbcTemplate) {
         this.autojobsinvoiceRepository = autojobsinvoiceRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -31,6 +36,7 @@ public class AutojobsinvoiceService {
      */
     public Autojobsinvoice save(Autojobsinvoice autojobsinvoice) {
         LOG.debug("Request to save Autojobsinvoice : {}", autojobsinvoice);
+        assignInvoiceCodeIfMissing(autojobsinvoice);
         return autojobsinvoiceRepository.save(autojobsinvoice);
     }
 
@@ -173,5 +179,35 @@ public class AutojobsinvoiceService {
     public void delete(Long id) {
         LOG.debug("Request to delete Autojobsinvoice : {}", id);
         autojobsinvoiceRepository.deleteById(id);
+    }
+
+    private void assignInvoiceCodeIfMissing(Autojobsinvoice autojobsinvoice) {
+        if (autojobsinvoice.getCode() != null && !autojobsinvoice.getCode().trim().isEmpty()) {
+            return;
+        }
+
+        String qualifiedTableName = resolveQualifiedTableName("autojobsinvoice");
+        String sql =
+            "SELECT COALESCE(MAX(TRY_CAST(SUBSTRING([code], 3, LEN([code])) AS INT)), 0) " +
+            "FROM " +
+            qualifiedTableName +
+            " WHERE [code] LIKE ?";
+
+        Integer maxNumber = jdbcTemplate.queryForObject(sql, Integer.class, INVOICE_CODE_PREFIX + "%");
+        autojobsinvoice.setCode(INVOICE_CODE_PREFIX + (maxNumber == null ? 1 : maxNumber + 1));
+    }
+
+    private String resolveQualifiedTableName(String tableName) {
+        List<String> tableNames = jdbcTemplate.queryForList(
+            "SELECT TOP 1 QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE LOWER(TABLE_NAME) = ?",
+            String.class,
+            tableName.toLowerCase()
+        );
+
+        if (tableNames.isEmpty()) {
+            throw new IllegalStateException("Table " + tableName + " was not found");
+        }
+
+        return tableNames.get(0);
     }
 }

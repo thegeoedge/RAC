@@ -80,6 +80,15 @@ export class AutojobsinvoicelinebatchesService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  queryByParentLineIds(ids: number[]): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestAutojobsinvoicelinebatches[]>(`${this.resourceUrl}/parent-lines`, {
+        params: { ids: ids.map(id => id.toString()) },
+        observe: 'response',
+      })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

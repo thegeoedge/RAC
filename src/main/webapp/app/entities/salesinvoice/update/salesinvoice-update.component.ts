@@ -99,11 +99,18 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     // this.invoicelines(id);
     // Extract ID from query params in case it's not in route data
     this.activatedRoute.queryParams.subscribe(params => {
+      const sourceInvoiceId = this.toValidId(params['id']);
       console.log('Query Params ID:', params['id']);
-      this.loadSalesInvoiceDummy(params['id']);
-      this.invoicelines(params['id']);
-      this.servicelines(params['id']);
-      this.servicecommonlines(params['id']);
+
+      if (sourceInvoiceId === null) {
+        this.clearFetchedSourceData();
+        return;
+      }
+
+      this.loadSalesInvoiceDummy(sourceInvoiceId);
+      this.invoicelines(sourceInvoiceId);
+      this.servicelines(sourceInvoiceId);
+      this.servicecommonlines(sourceInvoiceId);
     });
 
     this.loadVehicleTypes();
@@ -244,6 +251,17 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   fetchedServicesCommon: { itemname: string; sellingprice: number }[] = [];
 
+  private toValidId(value: unknown): number | null {
+    const numericValue = Number(value);
+    return Number.isInteger(numericValue) && numericValue > 0 ? numericValue : null;
+  }
+
+  private clearFetchedSourceData(): void {
+    this.fetchedItems = [];
+    this.fetchedServices = [];
+    this.fetchedServicesCommon = [];
+  }
+
   private servicecommonlines(id: number): void {
     this.salesInvoiceService.fetchServiceCommon(id).subscribe(
       (res: HttpResponse<ISaleInvoiceCommonServiceCharge[]>) => {
@@ -334,6 +352,10 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     console.log('iddddd', id);
     this.salesInvoiceService.fetchJobInvoice(id).subscribe(response => {
       const salesInvoiceDummy = response.body[0];
+      if (!salesInvoiceDummy) {
+        this.clearFetchedSourceData();
+        return;
+      }
       console.log('Retrieved dataaaaaaaaaaaaa:', response);
       console.log('Retrieved dataaaaaaaaaaaaa:', salesInvoiceDummy);
 

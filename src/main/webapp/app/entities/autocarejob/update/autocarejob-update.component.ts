@@ -53,25 +53,6 @@ export class AutocarejobUpdateComponent implements OnInit {
     this.loadAllAppointments();
   }
 
-  private getNextJobNumber(): number {
-    const today = dayjs().format('YYYY-MM-DD');
-    const storedDate = localStorage.getItem('jobNumberDate');
-    let jobNumber = 1;
-
-    if (storedDate === today) {
-      // If the date is the same, increment the job number
-      jobNumber = parseInt(localStorage.getItem('jobNumber') || '1', 10) + 1;
-    } else {
-      // If the date is different, reset the job number to 1
-      localStorage.setItem('jobNumberDate', today);
-    }
-
-    // Update the job number in local storage
-    localStorage.setItem('jobNumber', jobNumber.toString());
-
-    return jobNumber;
-  }
-
   loadAllAppointments(): void {
     let allAppointments: IAutocareappointment[] = [];
     let page = 20;
@@ -161,7 +142,12 @@ export class AutocarejobUpdateComponent implements OnInit {
 
   onVehicleSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const searchTerm = input.value;
+    const uppercasedValue = input.value.toUpperCase();
+    if (input.value !== uppercasedValue) {
+      input.value = uppercasedValue;
+      this.editForm.get('vehiclenumber')?.setValue(uppercasedValue, { emitEvent: false });
+    }
+    const searchTerm = uppercasedValue;
 
     if (searchTerm.length > 2) {
       // Use the new service method to fetch matching results
@@ -180,18 +166,38 @@ export class AutocarejobUpdateComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const selectedVehicleNumber = input.value;
 
-    const selectedVehicle = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
+    const selectedAppointment = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
 
-    if (selectedVehicle) {
-      console.log('Selected Vehicle:', selectedVehicle);
+    if (selectedAppointment) {
+      console.log('Selected Vehicle:', selectedAppointment);
 
-      const jobTypeText = this.jobTypeMap[selectedVehicle.appointmenttype ?? 0];
+      const jobTypeText = this.jobTypeMap[selectedAppointment.appointmenttype ?? 0];
       this.editForm.get('jobtypename')?.patchValue(jobTypeText);
-      // Example: Populate other fields as needed
-      this.editForm.get('customername')?.patchValue(selectedVehicle.customername || '');
-      this.editForm.get('customertel')?.patchValue(selectedVehicle.contactnumber || '');
-      this.editForm.get('jobtypeid')?.patchValue(selectedVehicle.appointmenttype ?? null);
-      this.editForm.get('vehicleid')?.patchValue(selectedVehicle.id ?? null); // Set vehicleid
+      this.editForm.patchValue({
+        vehiclenumber: selectedAppointment.vehiclenumber || '',
+        customername: selectedAppointment.customername || '',
+        customertel: selectedAppointment.contactnumber || '',
+        customerid: selectedAppointment.customerid ?? null,
+        jobtypeid: selectedAppointment.appointmenttype ?? null,
+        vehicleid: selectedAppointment.vehicleid ?? null,
+      });
+
+      this.customervehicleService.findByVehicleNumber(selectedVehicleNumber).subscribe(response => {
+        const selectedCustomerVehicle = (response.body || []).find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
+
+        if (selectedCustomerVehicle) {
+          this.editForm.patchValue({
+            vehicleid: selectedCustomerVehicle.id ?? selectedAppointment.vehicleid ?? null,
+            customerid: selectedCustomerVehicle.customerid ?? selectedAppointment.customerid ?? null,
+            vehicletypeid: selectedCustomerVehicle.typeid ?? null,
+          });
+        } else {
+          this.editForm.patchValue({
+            vehicletypeid: null,
+          });
+          console.error('No matching customer vehicle found for:', selectedVehicleNumber);
+        }
+      });
     } else {
       console.error('No matching vehicle found for:', selectedVehicleNumber);
     }
@@ -201,19 +207,15 @@ export class AutocarejobUpdateComponent implements OnInit {
     this.isSaving = true;
     const autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
 
-    // Ensure jobtypeid and vehicleid are set
+    // Ensure lookup-driven fields are included in the payload
     autocarejob.jobtypeid = this.editForm.get('jobtypeid')?.value;
     autocarejob.vehicleid = this.editForm.get('vehicleid')?.value;
+    autocarejob.customerid = this.editForm.get('customerid')?.value;
+    autocarejob.vehicletypeid = this.editForm.get('vehicletypeid')?.value;
 
     if (autocarejob.id !== null) {
       this.subscribeToSaveResponse(this.autocarejobService.update(autocarejob));
     } else {
-      // Create new job
-      const jobNumber = this.getNextJobNumber(); // Get the next job number
-      autocarejob.jobnumber = jobNumber; // Set the job number
-
-      // Patch the job number into the form control
-      this.editForm.get('jobnumber')?.patchValue(jobNumber);
       this.subscribeToSaveResponse(this.autocarejobService.create(autocarejob));
     }
   }

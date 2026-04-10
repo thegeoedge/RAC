@@ -2,13 +2,17 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsaleinvoicecommonservicecharge;
 import com.heavenscode.rac.repository.AutojobsaleinvoicecommonservicechargeRepository;
+import com.heavenscode.rac.service.AutojobsChildInsertService;
 import com.heavenscode.rac.service.AutojobsaleinvoicecommonservicechargeQueryService;
 import com.heavenscode.rac.service.AutojobsaleinvoicecommonservicechargeService;
+import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.criteria.AutojobsaleinvoicecommonservicechargeCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -43,15 +47,21 @@ public class AutojobsaleinvoicecommonservicechargeResource {
     private final AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository;
 
     private final AutojobsaleinvoicecommonservicechargeQueryService autojobsaleinvoicecommonservicechargeQueryService;
+    private final AutojobsChildInsertService autojobsChildInsertService;
+    private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
 
     public AutojobsaleinvoicecommonservicechargeResource(
         AutojobsaleinvoicecommonservicechargeService autojobsaleinvoicecommonservicechargeService,
         AutojobsaleinvoicecommonservicechargeRepository autojobsaleinvoicecommonservicechargeRepository,
-        AutojobsaleinvoicecommonservicechargeQueryService autojobsaleinvoicecommonservicechargeQueryService
+        AutojobsaleinvoicecommonservicechargeQueryService autojobsaleinvoicecommonservicechargeQueryService,
+        AutojobsChildInsertService autojobsChildInsertService,
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
     ) {
         this.autojobsaleinvoicecommonservicechargeService = autojobsaleinvoicecommonservicechargeService;
         this.autojobsaleinvoicecommonservicechargeRepository = autojobsaleinvoicecommonservicechargeRepository;
         this.autojobsaleinvoicecommonservicechargeQueryService = autojobsaleinvoicecommonservicechargeQueryService;
+        this.autojobsChildInsertService = autojobsChildInsertService;
+        this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
     }
 
     /**
@@ -73,18 +83,10 @@ public class AutojobsaleinvoicecommonservicechargeResource {
                 "idexists"
             );
         }
-        autojobsaleinvoicecommonservicecharge = autojobsaleinvoicecommonservicechargeService.save(autojobsaleinvoicecommonservicecharge);
-        return ResponseEntity.created(
-            new URI("/api/autojobsaleinvoicecommonservicecharges/" + autojobsaleinvoicecommonservicecharge.getId())
-        )
-            .headers(
-                HeaderUtil.createEntityCreationAlert(
-                    applicationName,
-                    false,
-                    ENTITY_NAME,
-                    autojobsaleinvoicecommonservicecharge.getId().toString()
-                )
-            )
+        autojobsaleinvoicecommonservicecharge = autojobsChildInsertService.insertCommonServiceCharge(autojobsaleinvoicecommonservicecharge);
+        String identifier = creationIdentifier(autojobsaleinvoicecommonservicecharge);
+        return ResponseEntity.created(new URI("/api/autojobsaleinvoicecommonservicecharges/" + identifier))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, identifier))
             .body(autojobsaleinvoicecommonservicecharge);
     }
 
@@ -197,6 +199,18 @@ public class AutojobsaleinvoicecommonservicechargeResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Map<String, Object>>> getCommonChargesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge by invoiceId : {}", invoiceId);
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("name", "name");
+        columns.put("description", "description");
+        columns.put("value", "value");
+        return ResponseEntity.ok(
+            legacyInvoiceChildrenReadService.findByInvoiceId("autojobsaleinvoicecommonservicecharge", "invoiceid", columns, invoiceId)
+        );
+    }
+
     /**
      * {@code GET  /autojobsaleinvoicecommonservicecharges/count} : count all the autojobsaleinvoicecommonservicecharges.
      *
@@ -236,5 +250,18 @@ public class AutojobsaleinvoicecommonservicechargeResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private String creationIdentifier(Autojobsaleinvoicecommonservicecharge entity) {
+        if (entity.getId() != null) {
+            return entity.getId().toString();
+        }
+        if (entity.getInvoiceid() != null && entity.getLineid() != null) {
+            return entity.getInvoiceid() + "-" + entity.getLineid();
+        }
+        if (entity.getLineid() != null) {
+            return entity.getLineid().toString();
+        }
+        return "created";
     }
 }

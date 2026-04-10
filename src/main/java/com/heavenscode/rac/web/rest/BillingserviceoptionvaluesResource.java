@@ -3,6 +3,7 @@ package com.heavenscode.rac.web.rest;
 import com.heavenscode.rac.domain.Billingserviceoptionvalues;
 import com.heavenscode.rac.repository.BillingserviceoptionvaluesRepository;
 import com.heavenscode.rac.service.BillingserviceoptionvaluesQueryService;
+import com.heavenscode.rac.service.BillingserviceoptionvaluesReadService;
 import com.heavenscode.rac.service.BillingserviceoptionvaluesService;
 import com.heavenscode.rac.service.criteria.BillingserviceoptionvaluesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
@@ -44,14 +45,18 @@ public class BillingserviceoptionvaluesResource {
 
     private final BillingserviceoptionvaluesQueryService billingserviceoptionvaluesQueryService;
 
+    private final BillingserviceoptionvaluesReadService billingserviceoptionvaluesReadService;
+
     public BillingserviceoptionvaluesResource(
         BillingserviceoptionvaluesService billingserviceoptionvaluesService,
         BillingserviceoptionvaluesRepository billingserviceoptionvaluesRepository,
-        BillingserviceoptionvaluesQueryService billingserviceoptionvaluesQueryService
+        BillingserviceoptionvaluesQueryService billingserviceoptionvaluesQueryService,
+        BillingserviceoptionvaluesReadService billingserviceoptionvaluesReadService
     ) {
         this.billingserviceoptionvaluesService = billingserviceoptionvaluesService;
         this.billingserviceoptionvaluesRepository = billingserviceoptionvaluesRepository;
         this.billingserviceoptionvaluesQueryService = billingserviceoptionvaluesQueryService;
+        this.billingserviceoptionvaluesReadService = billingserviceoptionvaluesReadService;
     }
 
     /**
@@ -188,6 +193,14 @@ public class BillingserviceoptionvaluesResource {
         LOG.debug("REST request to get Billingserviceoptionvalues : {}", id);
         Optional<Billingserviceoptionvalues> billingserviceoptionvalues = billingserviceoptionvaluesService.findOne(id);
         return ResponseUtil.wrapOrNotFound(billingserviceoptionvalues);
+    }
+
+    @GetMapping("/vehicle-type/{vehicleTypeId}")
+    public ResponseEntity<List<Billingserviceoptionvalues>> getBillingserviceoptionvaluesByVehicleType(
+        @PathVariable("vehicleTypeId") Integer vehicleTypeId
+    ) {
+        LOG.debug("REST request to get Billingserviceoptionvalues by vehicleTypeId : {}", vehicleTypeId);
+        return ResponseEntity.ok(billingserviceoptionvaluesReadService.findByVehicleTypeId(vehicleTypeId));
     }
 
     /**

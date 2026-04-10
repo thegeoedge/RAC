@@ -47,16 +47,14 @@ export class SalesinvoiceService {
   protected resourceInvoiceLinesUrlsercom = this.applicationConfigService.getEndpointFor('api/autojobsaleinvoicecommonservicecharges');
   resourceJobInvoiceUrl = this.applicationConfigService.getEndpointFor('api/autojobsinvoices');
   fetchService(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}/invoice/${id}`, { observe: 'response' });
   }
   fetchJobInvoice(id: number): Observable<HttpResponse<any>> {
     return this.http.get<any>(`/api/autojobsinvoices?id.equals=${id}`, { observe: 'response' });
   }
 
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}/invoice/${id}`, { observe: 'response' });
   }
   fetchReceiptCode(): Observable<HttpResponse<any>> {
     return this.http.get<HttpResponse<any>>('/api/receipts?page=0&size=20&sort=id,desc', { observe: 'response' });
@@ -78,8 +76,7 @@ export class SalesinvoiceService {
   }
 
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invocieid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}/invoice/${id}`, { observe: 'response' });
   }
 
   create(salesinvoice: NewSalesinvoice): Observable<EntityResponseType> {

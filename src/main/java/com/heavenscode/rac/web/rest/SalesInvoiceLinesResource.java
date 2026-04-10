@@ -2,13 +2,16 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.SalesInvoiceLines;
 import com.heavenscode.rac.repository.SalesInvoiceLinesRepository;
+import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.SalesInvoiceLinesQueryService;
 import com.heavenscode.rac.service.SalesInvoiceLinesService;
 import com.heavenscode.rac.service.criteria.SalesInvoiceLinesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -43,15 +46,18 @@ public class SalesInvoiceLinesResource {
     private final SalesInvoiceLinesRepository salesInvoiceLinesRepository;
 
     private final SalesInvoiceLinesQueryService salesInvoiceLinesQueryService;
+    private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
 
     public SalesInvoiceLinesResource(
         SalesInvoiceLinesService salesInvoiceLinesService,
         SalesInvoiceLinesRepository salesInvoiceLinesRepository,
-        SalesInvoiceLinesQueryService salesInvoiceLinesQueryService
+        SalesInvoiceLinesQueryService salesInvoiceLinesQueryService,
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
     ) {
         this.salesInvoiceLinesService = salesInvoiceLinesService;
         this.salesInvoiceLinesRepository = salesInvoiceLinesRepository;
         this.salesInvoiceLinesQueryService = salesInvoiceLinesQueryService;
+        this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
     }
 
     /**
@@ -160,6 +166,27 @@ public class SalesInvoiceLinesResource {
         Page<SalesInvoiceLines> page = salesInvoiceLinesQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Map<String, Object>>> getInvoiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get SalesInvoiceLines by invoiceId : {}", invoiceId);
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("itemname", "itemname");
+        columns.put("itemcode", "itemcode");
+        columns.put("description", "description");
+        columns.put("quantity", "quantity");
+        columns.put("unitofmeasurement", "unitofmeasurement");
+        columns.put("itemprice", "itemprice");
+        columns.put("linetotal", "linetotal");
+        return ResponseEntity.ok(
+            legacyInvoiceChildrenReadService.findByInvoiceId(
+                "salesinvoicelines",
+                List.of("invoiceid", "invoiceId", "invocieid"),
+                columns,
+                invoiceId
+            )
+        );
     }
 
     /**

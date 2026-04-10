@@ -73,6 +73,12 @@ export class BillingserviceoptionvaluesService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  findByVehicleTypeId(vehicleTypeId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestBillingserviceoptionvalues[]>(`${this.resourceUrl}/vehicle-type/${vehicleTypeId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

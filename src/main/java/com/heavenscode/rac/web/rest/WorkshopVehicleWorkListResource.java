@@ -1,13 +1,16 @@
 package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.WorkshopVehicleWorkList;
+import com.heavenscode.rac.domain.WorkshopVehicleWorkListId;
 import com.heavenscode.rac.repository.WorkshopVehicleWorkListRepository;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,12 +58,13 @@ public class WorkshopVehicleWorkListResource {
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
         LOG.debug("REST request to save WorkshopVehicleWorkList : {}", workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() != null) {
+        WorkshopVehicleWorkListId workshopVehicleWorkListId = toCompositeId(workshopVehicleWorkList);
+        if (workshopVehicleWorkListId.getVehicleworkid() == null || workshopVehicleWorkListId.getLineid() == null) {
             throw new BadRequestAlertException("A new workshopVehicleWorkList cannot already have an ID", ENTITY_NAME, "idexists");
         }
         workshopVehicleWorkList = workshopVehicleWorkListRepository.save(workshopVehicleWorkList);
         return ResponseEntity.created(new URI("/api/workshop-vehicle-work-lists/" + workshopVehicleWorkList.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId()))
             .body(workshopVehicleWorkList);
     }
 
@@ -76,24 +80,25 @@ public class WorkshopVehicleWorkListResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<WorkshopVehicleWorkList> updateWorkshopVehicleWorkList(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "id", required = false) final String id,
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
         LOG.debug("REST request to update WorkshopVehicleWorkList : {}, {}", id, workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() == null) {
+        WorkshopVehicleWorkListId workshopVehicleWorkListId = toCompositeId(workshopVehicleWorkList);
+        if (workshopVehicleWorkListId.getVehicleworkid() == null || workshopVehicleWorkListId.getLineid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, workshopVehicleWorkList.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!workshopVehicleWorkListRepository.existsById(id)) {
+        if (!workshopVehicleWorkListRepository.existsById(workshopVehicleWorkListId)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         workshopVehicleWorkList = workshopVehicleWorkListRepository.save(workshopVehicleWorkList);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId()))
             .body(workshopVehicleWorkList);
     }
 
@@ -110,23 +115,24 @@ public class WorkshopVehicleWorkListResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<WorkshopVehicleWorkList> partialUpdateWorkshopVehicleWorkList(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "id", required = false) final String id,
         @RequestBody WorkshopVehicleWorkList workshopVehicleWorkList
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update WorkshopVehicleWorkList partially : {}, {}", id, workshopVehicleWorkList);
-        if (workshopVehicleWorkList.getId() == null) {
+        WorkshopVehicleWorkListId workshopVehicleWorkListId = toCompositeId(workshopVehicleWorkList);
+        if (workshopVehicleWorkListId.getVehicleworkid() == null || workshopVehicleWorkListId.getLineid() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, workshopVehicleWorkList.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!workshopVehicleWorkListRepository.existsById(id)) {
+        if (!workshopVehicleWorkListRepository.existsById(workshopVehicleWorkListId)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         Optional<WorkshopVehicleWorkList> result = workshopVehicleWorkListRepository
-            .findById(workshopVehicleWorkList.getId())
+            .findById(workshopVehicleWorkListId)
             .map(existingWorkshopVehicleWorkList -> {
                 if (workshopVehicleWorkList.getVehicleworkid() != null) {
                     existingWorkshopVehicleWorkList.setVehicleworkid(workshopVehicleWorkList.getVehicleworkid());
@@ -162,7 +168,7 @@ public class WorkshopVehicleWorkListResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, workshopVehicleWorkList.getId())
         );
     }
 
@@ -182,6 +188,22 @@ public class WorkshopVehicleWorkListResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/vehicleworks")
+    public ResponseEntity<List<WorkshopVehicleWorkList>> getWorkshopVehicleWorkListsByVehicleworkids(@RequestParam("ids") String ids) {
+        LOG.debug("REST request to get WorkshopVehicleWorkLists by vehiclework ids : {}", ids);
+        List<Integer> vehicleworkids = Arrays.stream(ids.split(","))
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .map(Integer::valueOf)
+            .collect(Collectors.toList());
+
+        if (vehicleworkids.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        return ResponseEntity.ok(workshopVehicleWorkListRepository.findByVehicleworkidIn(vehicleworkids));
+    }
+
     /**
      * {@code GET  /workshop-vehicle-work-lists/:id} : get the "id" workshopVehicleWorkList.
      *
@@ -189,9 +211,9 @@ public class WorkshopVehicleWorkListResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the workshopVehicleWorkList, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<WorkshopVehicleWorkList> getWorkshopVehicleWorkList(@PathVariable("id") Long id) {
+    public ResponseEntity<WorkshopVehicleWorkList> getWorkshopVehicleWorkList(@PathVariable("id") String id) {
         LOG.debug("REST request to get WorkshopVehicleWorkList : {}", id);
-        Optional<WorkshopVehicleWorkList> workshopVehicleWorkList = workshopVehicleWorkListRepository.findById(id);
+        Optional<WorkshopVehicleWorkList> workshopVehicleWorkList = workshopVehicleWorkListRepository.findById(parseCompositeId(id));
         return ResponseUtil.wrapOrNotFound(workshopVehicleWorkList);
     }
 
@@ -202,11 +224,22 @@ public class WorkshopVehicleWorkListResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWorkshopVehicleWorkList(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteWorkshopVehicleWorkList(@PathVariable("id") String id) {
         LOG.debug("REST request to delete WorkshopVehicleWorkList : {}", id);
-        workshopVehicleWorkListRepository.deleteById(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
-            .build();
+        workshopVehicleWorkListRepository.deleteById(parseCompositeId(id));
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id)).build();
+    }
+
+    private WorkshopVehicleWorkListId toCompositeId(WorkshopVehicleWorkList workshopVehicleWorkList) {
+        return new WorkshopVehicleWorkListId(workshopVehicleWorkList.getVehicleworkid(), workshopVehicleWorkList.getLineid());
+    }
+
+    private WorkshopVehicleWorkListId parseCompositeId(String id) {
+        if (id == null || !id.contains("-")) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+
+        String[] idParts = id.split("-", 2);
+        return new WorkshopVehicleWorkListId(Integer.valueOf(idParts[0]), Integer.valueOf(idParts[1]));
     }
 }

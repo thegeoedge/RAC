@@ -280,6 +280,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   }
   removeServiceChargeDummy(index: number): void {
     this.serviceChargesArray.removeAt(index);
+    this.updateLineTotal();
   }
   protected onSaveSuccess(): void {
     this.previousState();

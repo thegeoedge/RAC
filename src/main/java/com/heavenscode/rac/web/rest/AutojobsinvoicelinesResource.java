@@ -2,7 +2,9 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Autojobsinvoicelines;
 import com.heavenscode.rac.repository.AutojobsinvoicelinesRepository;
+import com.heavenscode.rac.service.AutojobsChildInsertService;
 import com.heavenscode.rac.service.AutojobsinvoicelinesQueryService;
+import com.heavenscode.rac.service.AutojobsinvoicelinesReadService;
 import com.heavenscode.rac.service.AutojobsinvoicelinesService;
 import com.heavenscode.rac.service.criteria.AutojobsinvoicelinesCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
@@ -43,15 +45,21 @@ public class AutojobsinvoicelinesResource {
     private final AutojobsinvoicelinesRepository autojobsinvoicelinesRepository;
 
     private final AutojobsinvoicelinesQueryService autojobsinvoicelinesQueryService;
+    private final AutojobsinvoicelinesReadService autojobsinvoicelinesReadService;
+    private final AutojobsChildInsertService autojobsChildInsertService;
 
     public AutojobsinvoicelinesResource(
         AutojobsinvoicelinesService autojobsinvoicelinesService,
         AutojobsinvoicelinesRepository autojobsinvoicelinesRepository,
-        AutojobsinvoicelinesQueryService autojobsinvoicelinesQueryService
+        AutojobsinvoicelinesQueryService autojobsinvoicelinesQueryService,
+        AutojobsinvoicelinesReadService autojobsinvoicelinesReadService,
+        AutojobsChildInsertService autojobsChildInsertService
     ) {
         this.autojobsinvoicelinesService = autojobsinvoicelinesService;
         this.autojobsinvoicelinesRepository = autojobsinvoicelinesRepository;
         this.autojobsinvoicelinesQueryService = autojobsinvoicelinesQueryService;
+        this.autojobsinvoicelinesReadService = autojobsinvoicelinesReadService;
+        this.autojobsChildInsertService = autojobsChildInsertService;
     }
 
     /**
@@ -68,9 +76,10 @@ public class AutojobsinvoicelinesResource {
         if (autojobsinvoicelines.getId() != null) {
             throw new BadRequestAlertException("A new autojobsinvoicelines cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        autojobsinvoicelines = autojobsinvoicelinesService.save(autojobsinvoicelines);
-        return ResponseEntity.created(new URI("/api/autojobsinvoicelines/" + autojobsinvoicelines.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autojobsinvoicelines.getId().toString()))
+        autojobsinvoicelines = autojobsChildInsertService.insertInvoiceLine(autojobsinvoicelines);
+        String identifier = creationIdentifier(autojobsinvoicelines);
+        return ResponseEntity.created(new URI("/api/autojobsinvoicelines/" + identifier))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, identifier))
             .body(autojobsinvoicelines);
     }
 
@@ -162,6 +171,12 @@ public class AutojobsinvoicelinesResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Autojobsinvoicelines>> getInvoiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get Autojobsinvoicelines by invoiceId : {}", invoiceId);
+        return ResponseEntity.ok(autojobsinvoicelinesReadService.findByInvoiceId(invoiceId));
+    }
+
     /**
      * {@code GET  /autojobsinvoicelines/count} : count all the autojobsinvoicelines.
      *
@@ -200,5 +215,18 @@ public class AutojobsinvoicelinesResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private String creationIdentifier(Autojobsinvoicelines entity) {
+        if (entity.getId() != null) {
+            return entity.getId().toString();
+        }
+        if (entity.getInvocieid() != null && entity.getLineid() != null) {
+            return entity.getInvocieid() + "-" + entity.getLineid();
+        }
+        if (entity.getLineid() != null) {
+            return entity.getLineid().toString();
+        }
+        return "created";
     }
 }

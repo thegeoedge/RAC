@@ -50,7 +50,7 @@ export class WorkshopVehicleWorkListComponent implements OnInit {
   protected modalService = inject(NgbModal);
   protected ngZone = inject(NgZone);
 
-  trackId = (item: IWorkshopVehicleWorkList): number => this.workshopVehicleWorkListService.getWorkshopVehicleWorkListIdentifier(item);
+  trackId = (item: IWorkshopVehicleWorkList): string => this.workshopVehicleWorkListService.getWorkshopVehicleWorkListIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

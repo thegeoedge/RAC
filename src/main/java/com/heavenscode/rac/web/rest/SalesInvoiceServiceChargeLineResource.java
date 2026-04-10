@@ -2,13 +2,16 @@ package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.SalesInvoiceServiceChargeLine;
 import com.heavenscode.rac.repository.SalesInvoiceServiceChargeLineRepository;
+import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.SalesInvoiceServiceChargeLineQueryService;
 import com.heavenscode.rac.service.SalesInvoiceServiceChargeLineService;
 import com.heavenscode.rac.service.criteria.SalesInvoiceServiceChargeLineCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -43,15 +46,18 @@ public class SalesInvoiceServiceChargeLineResource {
     private final SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository;
 
     private final SalesInvoiceServiceChargeLineQueryService salesInvoiceServiceChargeLineQueryService;
+    private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
 
     public SalesInvoiceServiceChargeLineResource(
         SalesInvoiceServiceChargeLineService salesInvoiceServiceChargeLineService,
         SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository,
-        SalesInvoiceServiceChargeLineQueryService salesInvoiceServiceChargeLineQueryService
+        SalesInvoiceServiceChargeLineQueryService salesInvoiceServiceChargeLineQueryService,
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
     ) {
         this.salesInvoiceServiceChargeLineService = salesInvoiceServiceChargeLineService;
         this.salesInvoiceServiceChargeLineRepository = salesInvoiceServiceChargeLineRepository;
         this.salesInvoiceServiceChargeLineQueryService = salesInvoiceServiceChargeLineQueryService;
+        this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
     }
 
     /**
@@ -165,6 +171,18 @@ public class SalesInvoiceServiceChargeLineResource {
         Page<SalesInvoiceServiceChargeLine> page = salesInvoiceServiceChargeLineQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<List<Map<String, Object>>> getServiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
+        LOG.debug("REST request to get SalesInvoiceServiceChargeLine by invoiceId : {}", invoiceId);
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("serviceName", "servicename");
+        columns.put("serviceDescription", "servicediscription");
+        columns.put("value", "value");
+        return ResponseEntity.ok(
+            legacyInvoiceChildrenReadService.findByInvoiceId("salesinvoiceservicechargeline", "invoiceid", columns, invoiceId)
+        );
     }
 
     /**

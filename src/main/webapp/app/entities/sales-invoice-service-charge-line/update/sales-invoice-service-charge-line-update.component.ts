@@ -366,6 +366,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
   removeServiceChargeLine(index: number): void {
     this.serviceChargeLinesArray.removeAt(index);
+    this.updateLineTotal();
   }
 
   protected updateForm(salesInvoiceServiceChargeLines: ISalesInvoiceServiceChargeLine[]): void {

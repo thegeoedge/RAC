@@ -124,6 +124,10 @@ export class SalesInvoiceServiceChargeLineService {
     return this.http.get<ISalesInvoiceServiceChargeLine[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
+  queryByInvoiceId(invoiceId: number): Observable<HttpResponse<any[]>> {
+    return this.http.get<any[]>(`${this.resourceUrl}/invoice/${invoiceId}`, { observe: 'response' });
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

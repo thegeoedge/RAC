@@ -117,7 +117,9 @@ export class AutocarejobFormService {
       vehicleid: new FormControl(autocarejobRawValue.vehicleid),
       vehiclenumber: new FormControl(autocarejobRawValue.vehiclenumber),
       millage: new FormControl(autocarejobRawValue.millage),
-      nextmillage: new FormControl(autocarejobRawValue.nextmillage),
+      nextmillage: new FormControl(autocarejobRawValue.nextmillage, {
+        validators: [Validators.required],
+      }),
       nextservicedate: new FormControl(autocarejobRawValue.nextservicedate),
       vehicletypeid: new FormControl(autocarejobRawValue.vehicletypeid),
       jobtypeid: new FormControl(autocarejobRawValue.jobtypeid),

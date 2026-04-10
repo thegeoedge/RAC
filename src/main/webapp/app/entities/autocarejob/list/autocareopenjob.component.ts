@@ -113,6 +113,35 @@ export class AutocareopenjobComponent implements OnInit {
     this.handleNavigation(page, this.sortState());
   }
 
+  needsExternalRegistration(job: IAutocarejob): boolean {
+    return !job.customerid || !job.vehicleid;
+  }
+
+  private buildEncodedQuery(params: Record<string, string>): string {
+    return Object.entries(params)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
+  }
+
+  getCustomerRegistrationUrl(job: IAutocarejob): string {
+    const params = this.buildEncodedQuery({
+      NewCustomer: job.customername ?? '',
+      Tel: job.customertel ?? '',
+      JobId: String(job.id ?? ''),
+    });
+
+    return `http://192.168.1.150:81/Sales/customer_profile.aspx?${params}`;
+  }
+
+  getVehicleRegistrationUrl(job: IAutocarejob): string {
+    const params = this.buildEncodedQuery({
+      NewVehicle: job.vehiclenumber ?? '',
+      cusId: job.customerid != null ? String(job.customerid) : '',
+    });
+
+    return `http://192.168.1.150:81/AutoCare/AutoCareVehicle.aspx?${params}`;
+  }
+
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
     this.page = +(page ?? 1);

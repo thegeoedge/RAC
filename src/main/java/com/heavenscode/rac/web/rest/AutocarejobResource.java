@@ -5,6 +5,9 @@ import com.heavenscode.rac.repository.AutocarejobRepository;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,10 +59,25 @@ public class AutocarejobResource {
         if (autocarejob.getId() != null) {
             throw new BadRequestAlertException("A new autocarejob cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        Instant jobDate = autocarejob.getJobdate() != null ? autocarejob.getJobdate() : Instant.now();
+        autocarejob.setJobdate(jobDate);
+        autocarejob.setJobnumber(getNextDailyJobNumber(jobDate));
         autocarejob = autocarejobRepository.save(autocarejob);
         return ResponseEntity.created(new URI("/api/autocarejobs/" + autocarejob.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, autocarejob.getId().toString()))
             .body(autocarejob);
+    }
+
+    private Integer getNextDailyJobNumber(Instant jobDate) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate localJobDate = jobDate.atZone(zoneId).toLocalDate();
+        Instant startOfDay = localJobDate.atStartOfDay(zoneId).toInstant();
+        Instant startOfNextDay = localJobDate.plusDays(1).atStartOfDay(zoneId).toInstant();
+
+        return autocarejobRepository
+            .findTopByJobdateBetweenOrderByJobnumberDesc(startOfDay, startOfNextDay)
+            .map(existingJob -> (existingJob.getJobnumber() != null ? existingJob.getJobnumber() : 0) + 1)
+            .orElse(1);
     }
 
     /**

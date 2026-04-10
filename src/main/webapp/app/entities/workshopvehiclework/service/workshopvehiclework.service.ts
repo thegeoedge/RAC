@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -69,6 +69,21 @@ export class WorkshopvehicleworkService {
     return this.http
       .get<RestWorkshopvehiclework[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  queryByJobId(jobId: number): Observable<EntityArrayResponseType> {
+    return this.http.get<RestWorkshopvehiclework[]>(`${this.resourceUrl}/job/${jobId}`, { observe: 'response' }).pipe(
+      map(res => this.convertResponseArrayFromServer(res)),
+      catchError(() =>
+        this.query({ size: 1000 }).pipe(
+          map((res: EntityArrayResponseType) =>
+            res.clone({
+              body: (res.body || []).filter(workshopvehiclework => Number(workshopvehiclework.jobid ?? 0) === jobId),
+            }),
+          ),
+        ),
+      ),
+    );
   }
 
   delete(id: number): Observable<HttpResponse<{}>> {

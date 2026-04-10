@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, Input } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
 
@@ -35,6 +35,8 @@ import { BillingserviceoptionvaluesService } from 'app/entities/billingserviceop
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
+import { AutojobsinvoicelinebatchesService } from 'app/entities/autojobsinvoicelinebatches/service/autojobsinvoicelinebatches.service';
+import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
 import { IWorkshopworklist } from 'app/entities/workshopworklist/workshopworklist.model';
 import { WorkshopworklistService } from 'app/entities/workshopworklist/service/workshopworklist.service';
 import { AutojobsinvoiceUpdateComponent } from 'app/entities/autojobsinvoice/update/autojobsinvoice-update.component';
@@ -42,13 +44,17 @@ import { AutocarejobUpdateComponent } from './autocarejob-update.component';
 import { AutojobsaleinvoicecommonservicechargeUpdateComponent } from 'app/entities/autojobsaleinvoicecommonservicecharge/update/autojobsaleinvoicecommonservicecharge-update.component';
 import { AutojobsinvoicelinesUpdateComponent } from 'app/entities/autojobsinvoicelines/update/autojobsinvoicelines-update.component';
 import { AutojobsalesinvoiceservicechargelineUpdateComponent } from 'app/entities/autojobsalesinvoiceservicechargeline/update/autojobsalesinvoiceservicechargeline-update.component';
-import { WorkshopVehicleWorkListUpdateComponent } from 'app/entities/workshop-vehicle-work-list/update/workshop-vehicle-work-list-update.component';
 import { IAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
 import { WorkshopvehicleworkUpdateComponent } from 'app/entities/workshopvehiclework/update/workshopvehiclework-update.component';
 import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojobsalesinvoiceservicechargeline/service/autojobsalesinvoiceservicechargeline.service';
 
 import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
 import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopvehiclework.model';
+import { WorkshopvehicleworkService } from 'app/entities/workshopvehiclework/service/workshopvehiclework.service';
+import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
+import { IWorkshopVehicleWorkList } from 'app/entities/workshop-vehicle-work-list/workshop-vehicle-work-list.model';
+import { AutocareJobServiceOptionService } from '../service/autocare-job-service-option.service';
+import { IAutocareJobServiceOption } from '../autocare-job-service-option.model';
 
 @Component({
   standalone: true,
@@ -62,7 +68,6 @@ import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopv
     AutojobsaleinvoicecommonservicechargeUpdateComponent,
     AutojobsinvoicelinesUpdateComponent,
     AutojobsalesinvoiceservicechargelineUpdateComponent,
-    WorkshopVehicleWorkListUpdateComponent,
     WorkshopvehicleworkUpdateComponent,
 
     AutocarejobUpdateComponent,
@@ -71,11 +76,13 @@ import { IWorkshopvehiclework } from 'app/entities/workshopvehiclework/workshopv
 export class AutocarejobInstructionComponent implements OnInit {
   @Input() invid: number = 0;
   @ViewChild(AutojobsinvoiceUpdateComponent) autojobsinvoiceComponent!: AutojobsinvoiceUpdateComponent;
-  @ViewChild(WorkshopVehicleWorkListUpdateComponent) workshopVehicleWorkListComponent!: WorkshopVehicleWorkListUpdateComponent;
+  @ViewChild(WorkshopvehicleworkUpdateComponent) workshopvehicleworkComponent!: WorkshopvehicleworkUpdateComponent;
   @ViewChild(AutojobsaleinvoicecommonservicechargeUpdateComponent)
   autojobsaleinvoicecommonservicechargeComponent!: AutojobsaleinvoicecommonservicechargeUpdateComponent;
   @ViewChild(AutojobsinvoicelinesUpdateComponent) autojobsinvoicelinesComponent!: AutojobsinvoicelinesUpdateComponent;
   jobinvoicelines = inject(AutojobsinvoicelinesService);
+  jobinvoicebatches = inject(AutojobsinvoicelinebatchesService);
+  autojobinvoice = inject(AutojobsinvoiceService);
   jobcommon = inject(AutojobsaleinvoicecommonservicechargeService);
   jobservice = inject(AutojobsalesinvoiceservicechargelineService);
   @ViewChild(AutocarejobUpdateComponent) autocarejobComponent!: AutocarejobUpdateComponent;
@@ -100,8 +107,19 @@ export class AutocarejobInstructionComponent implements OnInit {
   vehicletypes: IVehicletype[] = [];
   selectedVehicleTypeId: number | null = null;
   filteredBillingServiceOptionValues: IBillingserviceoptionvalues[] = [];
+  private lastRequestedVehicleTypeId: number | null = null;
+  private loadedItemsInvoiceKey: string | null = null;
+  private persistedItemBatchKeys = new Set<string>();
+  private savedServiceOptionIds = new Set<number>();
+  private savedCommonServiceOptionIds = new Set<number>();
+  private savedServiceNames = new Set<string>();
+  private savedCommonServiceNames = new Set<string>();
+  private savedCommonServiceCodes = new Set<string>();
+  private savedSubcategoryIds = new Set<number>();
+  private savedSubcategoryNames = new Set<string>();
   workshopworklist: IWorkshopworklist[] = [];
   selectedworkItems: IWorkshopworklist[] = [];
+  selectedSubcategoryItems: IServicesubcategory[] = [];
 
   // Variables for service selection and total calculation
   selectedServices: IBillingserviceoptionvalues[] = [];
@@ -122,8 +140,11 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected billingserviceoptionvaluesService = inject(BillingserviceoptionvaluesService);
   protected vehicletypesService = inject(VehicletypeService);
   protected workshopworklistService = inject(WorkshopworklistService);
+  protected workshopvehicleworkService = inject(WorkshopvehicleworkService);
+  protected workshopVehicleWorkListService = inject(WorkshopVehicleWorkListService);
+  protected autocareJobServiceOptionService = inject(AutocareJobServiceOptionService);
 
-  subcategoriesVisible = false; // Controls whether subcategories are shown or hidden
+  subcategoriesVisible = true; // Show service options by default
   showPrintSummary = false; // Controls whether the print summary is shown on screen
   toggleSubcategories() {
     this.subcategoriesVisible = !this.subcategoriesVisible;
@@ -144,13 +165,11 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.loadDataFromServicesEntities();
       this.loadDataFromServicessubEntities();
       this.loadDataFromCommonServiceOptionEntities();
-
-      this.loadDataFromBillingServiceOptionValuesEntities();
       this.loadVehicleTypes();
       this.loadBillingServiceOptions();
-      this.loadBillingServiceOptionValues();
       this.loadDataFromWorkshopWorklistEntities();
       this.setAutoNextServiceDate();
+      this.loadExistingItemsForCurrentJob();
     });
   }
 
@@ -166,6 +185,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   loadVehicleTypes(): void {
     this.vehicletypesService.query({ size: 1000 }).subscribe((res: HttpResponse<IVehicletype[]>) => {
       this.vehicletypes = res.body || [];
+      this.syncVehicleTypeSelectionFromForm();
     });
   }
 
@@ -195,59 +215,34 @@ export class AutocarejobInstructionComponent implements OnInit {
     fetchPage();
   }
 
-  billingOptionsByVehicleType: { [key: number]: IBillingserviceoptionvalues[] } = {};
-
-  loadBillingServiceOptionValues(): void {
-    let page = 0;
-    const pageSize = 20;
-    this.billingserviceoptionvalues = [];
-
-    const fetchPage = () => {
-      this.billingserviceoptionvaluesService.query({ page, size: pageSize }).subscribe(
-        (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
-          this.billingserviceoptionvalues = [...this.billingserviceoptionvalues, ...(res.body || [])];
-
-          const totalItems = res.headers.get('X-Total-Count');
-          const totalRecords = totalItems ? parseInt(totalItems, 10) : 0;
-
-          if (this.billingserviceoptionvalues.length < totalRecords) {
-            page++;
-            fetchPage();
-          } else {
-            this.createBillingOptionsLookup();
-            this.filterBillingServiceOptionValues();
-          }
-        },
-        error => {},
-      );
-    };
-
-    fetchPage();
-  }
-
-  createBillingOptionsLookup(): void {
-    this.billingOptionsByVehicleType = {};
-
-    this.billingserviceoptionvalues.forEach(value => {
-      if (value.vehicletypeid != null && !this.billingOptionsByVehicleType[value.vehicletypeid]) {
-        this.billingOptionsByVehicleType[value.vehicletypeid] = [];
-      }
-      if (value.vehicletypeid != null) {
-        this.billingOptionsByVehicleType[value.vehicletypeid].push(value);
-      }
-    });
-
-    console.log('Billing Options Lookup:', this.billingOptionsByVehicleType); // Debugging
-  }
-
   filterBillingServiceOptionValues(): void {
-    if (this.selectedVehicleTypeId) {
-      this.filteredBillingServiceOptionValues = this.billingOptionsByVehicleType[this.selectedVehicleTypeId] || [];
-    } else {
-      this.filteredBillingServiceOptionValues = this.billingserviceoptionvalues;
+    const vehicleTypeId = this.selectedVehicleTypeId != null ? Number(this.selectedVehicleTypeId) : null;
+
+    if (vehicleTypeId == null || Number.isNaN(vehicleTypeId)) {
+      this.filteredBillingServiceOptionValues = [];
+      this.lastRequestedVehicleTypeId = null;
+      console.log('Filtered Billing Service Option Values:', this.filteredBillingServiceOptionValues);
+      return;
     }
 
-    console.log('Filtered Billing Service Option Values:', this.filteredBillingServiceOptionValues); // Debugging
+    if (this.lastRequestedVehicleTypeId === vehicleTypeId) {
+      return;
+    }
+
+    this.lastRequestedVehicleTypeId = vehicleTypeId;
+    this.billingserviceoptionvaluesService.findByVehicleTypeId(vehicleTypeId).subscribe({
+      next: (res: HttpResponse<IBillingserviceoptionvalues[]>) => {
+        this.filteredBillingServiceOptionValues = res.body || [];
+        this.syncSelectedServicesFromSaved();
+        this.cdr.detectChanges();
+        console.log('Filtered Billing Service Option Values:', this.filteredBillingServiceOptionValues);
+      },
+      error: error => {
+        console.error('Failed to load billing service option values:', error);
+        this.filteredBillingServiceOptionValues = [];
+        this.lastRequestedVehicleTypeId = null;
+      },
+    });
   }
 
   getBillingServiceOptionName(billingserviceoptionId: number | null | undefined): string {
@@ -261,12 +256,30 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   onVehicleTypeChange(): void {
+    this.editForm.get('vehicletypeid')?.setValue(this.selectedVehicleTypeId != null ? Number(this.selectedVehicleTypeId) : null);
     this.filterBillingServiceOptionValues();
     this.calculateTotalCharge();
   }
 
+  private syncVehicleTypeSelectionFromForm(): void {
+    const formVehicleTypeId = this.editForm.get('vehicletypeid')?.value;
+    this.selectedVehicleTypeId = formVehicleTypeId != null ? Number(formVehicleTypeId) : null;
+
+    if (this.selectedVehicleTypeId != null && !Number.isNaN(this.selectedVehicleTypeId)) {
+      this.filterBillingServiceOptionValues();
+    } else {
+      this.filteredBillingServiceOptionValues = [];
+    }
+  }
+
   isServiceSelected(item: IBillingserviceoptionvalues): boolean {
-    return this.selectedServices.some(service => service.id === item.id);
+    const optionId = Number(item.billingserviceoptionid ?? 0);
+    const serviceName = this.getBillingServiceOptionName(item.billingserviceoptionid).trim().toLowerCase();
+    return (
+      this.savedServiceOptionIds.has(optionId) ||
+      this.savedServiceNames.has(serviceName) ||
+      this.selectedServices.some(service => Number(service.billingserviceoptionid ?? 0) === optionId)
+    );
   }
 
   // Define the serviceArray to hold the selected service details
@@ -289,8 +302,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (event.target.checked) {
       // Check if the service already exists in the selectedServices array
       const nextLineId = this.serviceArray.length > 0 ? Math.max(...this.serviceArray.map(item => item.lineid), 0) + 1 : 1;
-      const nextOpId = this.serviceArray.length > 0 ? Math.max(...this.serviceArray.map(item => item.lineid), 0) + 1 : 1;
-      const exists = this.selectedServices.some(service => service.billingserviceoptionid === item.billingserviceoptionid);
+      const exists = this.selectedServices.some(service => service.id === item.id);
 
       if (!exists) {
         // Add the service to selectedServices with the service name and value
@@ -303,7 +315,7 @@ export class AutocarejobInstructionComponent implements OnInit {
         this.serviceArray.push({
           invoiceid: 0,
           lineid: nextLineId,
-          optionid: nextOpId,
+          optionid: item.billingserviceoptionid ?? 0,
           servicename: serviceName,
           servicediscription: '',
           value: item.value ?? 0,
@@ -315,10 +327,10 @@ export class AutocarejobInstructionComponent implements OnInit {
       }
     } else {
       // Remove the service by filtering it out
-      this.selectedServices = this.selectedServices.filter(service => service.billingserviceoptionid !== item.billingserviceoptionid);
+      this.selectedServices = this.selectedServices.filter(service => service.id !== item.id);
 
       // Remove the service from serviceArray by filtering it out
-      this.serviceArray = this.serviceArray.filter(service => service.optionid !== item.billingserviceoptionid);
+      this.serviceArray = this.serviceArray.filter(service => service.optionid !== (item.billingserviceoptionid ?? 0));
     }
 
     this.calculateTotalCharges(); // Ensure this is called
@@ -335,7 +347,24 @@ export class AutocarejobInstructionComponent implements OnInit {
     // console.log('Selected Service Names:', selectedServiceNames);
   }
 
-  onAmountChange(item: IBillingserviceoptionvalues): void {
+  formatServiceAmount(value: number | null | undefined): string {
+    return (Number(value) || 0).toFixed(2);
+  }
+
+  onAmountChange(item: IBillingserviceoptionvalues, value: string | number): void {
+    const normalizedValue = Number(value) || 0;
+    item.value = normalizedValue;
+
+    const selectedService = this.selectedServices.find(service => service.id === item.id);
+    if (selectedService) {
+      selectedService.value = normalizedValue;
+    }
+
+    const serviceEntry = this.serviceArray.find(service => service.optionid === (item.billingserviceoptionid ?? 0));
+    if (serviceEntry) {
+      serviceEntry.value = normalizedValue;
+    }
+
     console.log(`Updated Amount for Service ID ${item.id}:`, item.value);
     this.calculateTotalCharges(); // Recalculate the total when the amount is changed
   }
@@ -360,6 +389,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   loadDataFromCommonServiceOptionEntities() {
     this.commonserviceoptionService.query().subscribe((res: any) => {
       this.commonserviceoption = res.body;
+      this.syncSelectedCommonServicesFromSaved();
+      this.cdr.detectChanges();
     });
   }
   // Define the new array with the given structure
@@ -378,6 +409,18 @@ export class AutocarejobInstructionComponent implements OnInit {
   }> = [];
 
   selectedcommonServices: Array<ICommonserviceoption> = []; // Assuming this is defined elsewhere
+
+  isCommonServiceSelected(service: ICommonserviceoption): boolean {
+    const optionId = Number(service.id ?? 0);
+    const name = (service.name ?? '').trim().toLowerCase();
+    const code = (service.code ?? '').trim().toLowerCase();
+    return (
+      this.savedCommonServiceOptionIds.has(optionId) ||
+      this.savedCommonServiceNames.has(name) ||
+      this.savedCommonServiceCodes.has(code) ||
+      this.selectedcommonServices.some(selected => Number(selected.id ?? 0) === optionId)
+    );
+  }
 
   onServiceSelectionChange(service: ICommonserviceoption, event: any) {
     if (event.target.checked) {
@@ -442,18 +485,32 @@ export class AutocarejobInstructionComponent implements OnInit {
   loadDataFromServicessubEntities(): void {
     this.servicesubcategoryService.query({ size: 1000 }).subscribe((res: HttpResponse<IServicesubcategory[]>) => {
       this.servicesubcategory = res.body || [];
+      this.syncSelectedSubcategoriesFromSaved();
+      this.cdr.detectChanges();
     });
+  }
+
+  isSubcategorySelected(subcategory: IServicesubcategory): boolean {
+    const subcategoryId = Number(subcategory.id ?? 0);
+    const subcategoryName = (subcategory.name ?? '').trim().toLowerCase();
+    return (
+      this.savedSubcategoryIds.has(subcategoryId) ||
+      this.savedSubcategoryNames.has(subcategoryName) ||
+      this.selectedSubcategoryItems.some(item => Number(item.id ?? 0) === subcategoryId)
+    );
   }
 
   onSubcategorySelectionChange(subcategory: IServicesubcategory, event: any): void {
     if (event.target.checked) {
       // Add the subcategory to the selected list
-      this.selectedworkItems.push(subcategory);
+      if (!this.selectedSubcategoryItems.some(item => Number(item.id ?? 0) === Number(subcategory.id ?? 0))) {
+        this.selectedSubcategoryItems.push(subcategory);
+      }
     } else {
       // Remove the subcategory from the selected list
-      this.selectedworkItems = this.selectedworkItems.filter(item => item.id !== subcategory.id);
+      this.selectedSubcategoryItems = this.selectedSubcategoryItems.filter(item => item.id !== subcategory.id);
     }
-    console.log('Selected Subcategories:', this.selectedworkItems);
+    console.log('Selected Subcategories:', this.selectedSubcategoryItems);
   }
 
   loadDataFromWorkshopWorklistEntities() {
@@ -468,12 +525,6 @@ export class AutocarejobInstructionComponent implements OnInit {
     } else {
       this.selectedworkItems = this.selectedworkItems.filter(selectedworkItem => selectedworkItem !== item);
     }
-  }
-
-  loadDataFromBillingServiceOptionValuesEntities() {
-    this.billingserviceoptionvaluesService.query().subscribe((res: any) => {
-      this.billingserviceoptionvalues = res.body;
-    });
   }
 
   filteredVehicles: ICustomervehicle[] = [];
@@ -495,6 +546,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   filtereditems: IInventory[] = [];
   selectedItems: Array<IInventory & { discountPercentage: number; requestedQuantity: number }> = [];
+  itemAddErrorMessage: string | null = null;
 
   onItemSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -533,10 +585,310 @@ export class AutocarejobInstructionComponent implements OnInit {
     vat: boolean;
   }> = [];
 
+  private loadExistingItemsForCurrentJob(): void {
+    const jobId = this.editForm.controls.id.value;
+
+    if (jobId == null || jobId <= 0) {
+      this.loadedItemsInvoiceKey = null;
+      this.persistedItemBatchKeys.clear();
+      this.savedServiceOptionIds.clear();
+      this.savedCommonServiceOptionIds.clear();
+      this.savedSubcategoryIds.clear();
+      this.savedSubcategoryNames.clear();
+      return;
+    }
+
+    this.loadExistingServiceOptionSelections(jobId);
+
+    this.autojobinvoice.query({ 'jobid.equals': jobId, page: 0, size: 1000 }).subscribe({
+      next: (invoiceResponse: HttpResponse<IAutojobsinvoice[]>) => {
+        const invoices = (invoiceResponse.body || []).filter(invoice => invoice.id != null);
+        const invoiceIds = invoices.map(invoice => invoice.id!);
+        const invoiceKey = invoiceIds
+          .slice()
+          .sort((left, right) => left - right)
+          .join(',');
+
+        if (invoiceIds.length === 0) {
+          this.invoiceId = null;
+          this.loadedItemsInvoiceKey = null;
+          this.persistedItemBatchKeys.clear();
+          this.savedServiceOptionIds.clear();
+          this.savedCommonServiceOptionIds.clear();
+          this.savedSubcategoryIds.clear();
+          this.savedSubcategoryNames.clear();
+          this.itemsArray = [];
+          this.selectedItems = [];
+          return;
+        }
+
+        this.invoiceId = invoiceIds[invoiceIds.length - 1];
+
+        if (this.loadedItemsInvoiceKey === invoiceKey) {
+          return;
+        }
+
+        this.loadedItemsInvoiceKey = invoiceKey;
+        forkJoin(invoiceIds.map(invoiceId => this.jobinvoicelines.queryByInvoiceId(invoiceId))).subscribe({
+          next: (lineResponses: HttpResponse<any[]>[]) => {
+            const invoiceLines = lineResponses.flatMap(response => response.body || []);
+            this.itemsArray = invoiceLines.map(line => this.mapInvoiceLineToItemsArray(line));
+            this.selectedItems = invoiceLines.map(line => this.mapInvoiceLineToSelectedItem(line));
+            this.updateItemTotal();
+            this.loadExistingChargeSelections(invoiceIds);
+
+            this.jobinvoicebatches.queryByParentLineIds(invoiceIds).subscribe({
+              next: batchResponse => {
+                this.persistedItemBatchKeys = new Set((batchResponse.body || []).map(batch => this.buildItemBatchKey(batch)));
+              },
+              error: (batchError: unknown) => {
+                console.error('Failed to load existing job item batches:', batchError);
+                this.persistedItemBatchKeys.clear();
+              },
+            });
+          },
+          error: (error: unknown) => {
+            console.error('Failed to load existing job items:', error);
+          },
+        });
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load auto job invoice for current job:', error);
+      },
+    });
+  }
+
+  private loadExistingChargeSelections(invoiceIds: number[]): void {
+    if (invoiceIds.length === 0) {
+      this.savedServiceOptionIds.clear();
+      this.savedCommonServiceOptionIds.clear();
+      this.savedServiceNames.clear();
+      this.savedCommonServiceNames.clear();
+      this.savedCommonServiceCodes.clear();
+      return;
+    }
+
+    forkJoin({
+      services: forkJoin(invoiceIds.map(invoiceId => this.jobservice.queryByInvoiceId(invoiceId))),
+      commonServices: forkJoin(invoiceIds.map(invoiceId => this.jobcommon.queryByInvoiceId(invoiceId))),
+    }).subscribe({
+      next: ({ services, commonServices }) => {
+        const savedServices = services.flatMap(response => response.body || []);
+        const savedCommonServices = commonServices.flatMap(response => response.body || []);
+
+        this.savedServiceOptionIds = new Set(savedServices.map(service => Number(service.optionid ?? 0)).filter(optionId => optionId > 0));
+        this.savedServiceNames = new Set(
+          savedServices
+            .map(service =>
+              String(service.servicename ?? '')
+                .trim()
+                .toLowerCase(),
+            )
+            .filter(name => name.length > 0),
+        );
+        this.savedCommonServiceOptionIds = new Set(
+          savedCommonServices.map(service => Number(service.optionid ?? 0)).filter(optionId => optionId > 0),
+        );
+        this.savedCommonServiceNames = new Set(
+          savedCommonServices
+            .map(service =>
+              String(service.name ?? '')
+                .trim()
+                .toLowerCase(),
+            )
+            .filter(name => name.length > 0),
+        );
+        this.savedCommonServiceCodes = new Set(
+          savedCommonServices
+            .map(service =>
+              String(service.code ?? '')
+                .trim()
+                .toLowerCase(),
+            )
+            .filter(code => code.length > 0),
+        );
+
+        this.syncSelectedServicesFromSaved();
+        this.syncSelectedCommonServicesFromSaved();
+
+        this.calculateTotalCharges();
+        this.calculateTotalCharge();
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load existing charge selections:', error);
+      },
+    });
+  }
+
+  private syncSelectedServicesFromSaved(): void {
+    this.selectedServices = this.filteredBillingServiceOptionValues.filter(service => {
+      const optionId = Number(service.billingserviceoptionid ?? 0);
+      const serviceName = this.getBillingServiceOptionName(service.billingserviceoptionid).trim().toLowerCase();
+      return this.savedServiceOptionIds.has(optionId) || this.savedServiceNames.has(serviceName);
+    });
+  }
+
+  private syncSelectedCommonServicesFromSaved(): void {
+    this.selectedcommonServices = this.commonserviceoption.filter(service => {
+      const optionId = Number(service.id ?? 0);
+      const name = (service.name ?? '').trim().toLowerCase();
+      const code = (service.code ?? '').trim().toLowerCase();
+      return (
+        this.savedCommonServiceOptionIds.has(optionId) || this.savedCommonServiceNames.has(name) || this.savedCommonServiceCodes.has(code)
+      );
+    });
+  }
+
+  private loadExistingServiceOptionSelections(jobId: number): void {
+    this.autocareJobServiceOptionService.queryByJobId(jobId).subscribe({
+      next: (response: HttpResponse<IAutocareJobServiceOption[]>) => {
+        const savedRows = response.body || [];
+
+        this.savedSubcategoryIds = new Set(savedRows.map(row => Number(row.servicesubcategoryid ?? 0)).filter(id => id > 0));
+        this.savedSubcategoryNames.clear();
+
+        this.syncSelectedSubcategoriesFromSaved();
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load saved service option selections:', error);
+        this.savedSubcategoryIds.clear();
+        this.savedSubcategoryNames.clear();
+      },
+    });
+  }
+
+  private syncSelectedSubcategoriesFromSaved(): void {
+    const savedSubcategories = this.servicesubcategory.filter(subcategory => {
+      const subcategoryId = Number(subcategory.id ?? 0);
+      return this.savedSubcategoryIds.has(subcategoryId);
+    });
+
+    // Merge: keep any manually-checked items that aren't in the saved set, plus all saved ones
+    const manualSelections = this.selectedSubcategoryItems.filter(
+      item => !savedSubcategories.some(subcategory => Number(subcategory.id ?? 0) === Number(item.id ?? 0)),
+    );
+
+    this.selectedSubcategoryItems = [...manualSelections, ...savedSubcategories];
+  }
+
+  private mapInvoiceLineToItemsArray(line: any): (typeof this.itemsArray)[number] {
+    return {
+      id: line.id ?? undefined,
+      invocieid: line.invocieid ?? this.invoiceId ?? 0,
+      lineid: line.lineid ?? 0,
+      itemid: line.itemid ?? 0,
+      itemcode: line.itemcode ?? '',
+      itemname: line.itemname ?? '',
+      description: line.description ?? '',
+      unitofmeasurement: line.unitofmeasurement ?? '',
+      quantity: line.quantity ?? 1,
+      itemcost: line.itemcost ?? 0,
+      itemprice: line.itemprice ?? 0,
+      discount: line.discount ?? 0,
+      tax: line.tax ?? 0,
+      sellingprice: line.sellingprice ?? 0,
+      linetotal: line.linetotal ?? 0,
+      lmu: line.lmu ?? 0,
+      lmd: line.lmd ? dayjs(line.lmd).toString() : '',
+      nbt: line.nbt ?? false,
+      vat: line.vat ?? false,
+    };
+  }
+
+  private mapInvoiceLineToSelectedItem(line: any): IInventory & { discountPercentage: number; requestedQuantity: number } {
+    return {
+      id: line.itemid ?? 0,
+      code: line.itemcode ?? '',
+      name: line.itemname ?? '',
+      description: line.description ?? '',
+      unitofmeasurement: line.unitofmeasurement ?? '',
+      availablequantity: null,
+      lastsellingprice: line.sellingprice ?? 0,
+      discountPercentage: line.discount ?? 0,
+      requestedQuantity: line.quantity ?? 1,
+    };
+  }
+
+  private syncItemsArrayFromSelection(): void {
+    this.selectedItems.forEach((selectedItem, index) => {
+      const itemLine = this.itemsArray[index];
+
+      if (!itemLine) {
+        return;
+      }
+
+      itemLine.quantity = selectedItem.requestedQuantity ?? 1;
+      itemLine.discount = selectedItem.discountPercentage ?? 0;
+      itemLine.itemprice = selectedItem.lastsellingprice ?? 0;
+      itemLine.sellingprice = selectedItem.lastsellingprice ?? 0;
+      itemLine.linetotal = this.calculateItemTotal(selectedItem);
+    });
+  }
+
+  private buildItemBatchKey(item: any): string {
+    return `${item.invocieid ?? item.id ?? ''}|${item.lineid ?? ''}|${item.itemid ?? ''}|${item.itemcode ?? item.code ?? ''}`;
+  }
+
+  private createInvoiceLineBatch(item: (typeof this.itemsArray)[number]): void {
+    const parentInvoiceId = item.invocieid || item.id;
+
+    if (parentInvoiceId == null || item.lineid == null || item.itemid == null) {
+      console.error('Skipping invoice line batch creation because parent key is incomplete:', item);
+      return;
+    }
+
+    const batchPayload: any = {
+      id: parentInvoiceId,
+      lineid: item.lineid,
+      batchlineid: 0,
+      itemid: item.itemid,
+      code: item.itemcode,
+      batchid: 0,
+      batchcode: '',
+      txdate: dayjs(),
+      manufacturedate: dayjs(),
+      expireddate: dayjs(),
+      qty: item.quantity ?? 1,
+      cost: item.itemcost ?? 0,
+      price: item.itemprice ?? item.sellingprice ?? 0,
+      notes: item.description ?? '',
+      lmu: item.lmu ?? 0,
+      lmd: item.lmd ? dayjs(item.lmd) : dayjs(),
+      nbt: item.nbt ?? false,
+      vat: item.vat ?? false,
+      discount: item.discount ?? 0,
+      total: item.linetotal ?? 0,
+      issued: false,
+      issuedby: 0,
+      issueddatetime: dayjs(),
+      addedbyid: 0,
+      canceloptid: 0,
+      cancelopt: '',
+      cancelby: 0,
+    };
+
+    this.jobinvoicebatches.create(batchPayload).subscribe({
+      next: () => {
+        this.persistedItemBatchKeys.add(this.buildItemBatchKey(item));
+      },
+      error: createError => {
+        console.error('Error creating invoice line batch:', createError);
+      },
+    });
+  }
+
   onAddItem(): void {
     const selectedItem = this.filtereditems.find(item => item.name === (document.getElementById('field_item') as HTMLInputElement).value);
 
     if (selectedItem) {
+      if ((selectedItem.availablequantity ?? 0) <= 0) {
+        this.itemAddErrorMessage = `Cannot add "${selectedItem.name}". Available quantity is zero.`;
+        return;
+      }
+
+      this.itemAddErrorMessage = null;
       // Add the selected item to the list with the required fields and default values
       const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
       this.itemsArray.push({
@@ -568,6 +920,8 @@ export class AutocarejobInstructionComponent implements OnInit {
       // Clear the search input and suggestions
       (document.getElementById('field_item') as HTMLInputElement).value = '';
       this.filtereditems = [];
+    } else {
+      this.itemAddErrorMessage = null;
     }
 
     console.log('Selected Items Arrayyyyuuu:', this.itemsArray);
@@ -576,6 +930,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   onDeleteItem(index: number): void {
     // Remove the item from the list
     this.selectedItems.splice(index, 1);
+    this.itemsArray.splice(index, 1);
     this.updateItemTotal(); // Update totals after deletion
   }
 
@@ -608,6 +963,8 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   // Update the item total when discount or requested quantity changes
   updateItemTotal(): void {
+    this.syncItemsArrayFromSelection();
+
     // Recalculate totals
     this.calculateTotalWithoutDiscount();
     this.calculateTotalDiscount();
@@ -626,19 +983,65 @@ export class AutocarejobInstructionComponent implements OnInit {
     const selectedVehicle = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
 
     if (selectedVehicle && selectedVehicle.customerid != null) {
+      this.selectedVehicleTypeId = selectedVehicle.typeid ?? null;
+      this.editForm.patchValue({
+        vehicleid: selectedVehicle.id ?? null,
+        vehicletypeid: selectedVehicle.typeid ?? null,
+        customerid: selectedVehicle.customerid ?? null,
+        vehiclenumber: selectedVehicle.vehiclenumber ?? '',
+        nextmillage: selectedVehicle.nextmilage ? Number(selectedVehicle.nextmilage) : null,
+        nextgearoilmilage: selectedVehicle.nextgearoilmilage ?? null,
+      });
+      this.filterBillingServiceOptionValues();
+
       this.customerService.find(selectedVehicle.customerid).subscribe(res => {
         this.searchedCustomer = res.body;
         console.log(this.searchedCustomer?.fullname);
-        this.editForm.get('customername')?.patchValue(this.searchedCustomer?.fullname);
-        this.editForm.get('customertel')?.patchValue(this.searchedCustomer?.residencephone);
+        this.editForm.patchValue({
+          customername: this.searchedCustomer?.fullname ?? '',
+          customertel: this.searchedCustomer?.residencephone ?? '',
+        });
       });
     } else {
       console.error('Invalid customer ID:', selectedVehicle);
+      this.selectedVehicleTypeId = null;
+      this.editForm.patchValue({
+        vehicletypeid: null,
+        customerid: null,
+      });
+      this.filterBillingServiceOptionValues();
     }
   }
 
   nextmillage: number | null = null;
   selectedRadioValue: number | null = null;
+  nextMilageSelectionAttempted = false;
+
+  isNextMilageInvalid(): boolean {
+    const nextMillageControl = this.editForm.get('nextmillage');
+    return !!nextMillageControl && nextMillageControl.invalid && (nextMillageControl.touched || this.nextMilageSelectionAttempted);
+  }
+
+  canNavigateToOtherTabs(): boolean {
+    return !this.editForm.get('nextmillage')?.invalid;
+  }
+
+  private markNextMilageAsRequired(): void {
+    const nextMillageControl = this.editForm.get('nextmillage');
+    this.nextMilageSelectionAttempted = true;
+    nextMillageControl?.markAsTouched();
+    nextMillageControl?.markAsDirty();
+    nextMillageControl?.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  onTabNavigationAttempt(event: Event): void {
+    if (this.editForm.get('nextmillage')?.invalid) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.markNextMilageAsRequired();
+    }
+  }
 
   // Handle changes in the millage input field
   onMillageChange(event: Event): void {
@@ -652,6 +1055,9 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.selectedRadioValue = selectedValue;
     const millage = this.editForm.get('millage')?.value;
     this.calculateNextMillage(millage ?? 0, selectedValue);
+    this.nextMilageSelectionAttempted = false;
+    this.editForm.get('nextmillage')?.markAsTouched();
+    this.editForm.get('nextmillage')?.updateValueAndValidity();
   }
 
   // Calculate the next millage value
@@ -697,24 +1103,28 @@ export class AutocarejobInstructionComponent implements OnInit {
     };
   }
 
-  mapFormTowork(formValue: any): IWorkshopvehiclework {
+  mapFormTowork(formValue: any, vehicleBrand?: string, vehicleModel?: string): IWorkshopvehiclework {
+    // jobid must always be Autocarejob.id — never from WorkshopWorkList
+    const jobId = this.editForm.controls.id.value ?? formValue.id ?? null;
+    const formRaw = this.editForm.getRawValue();
+
     return {
       id: formValue.id || null,
-      jobid: formValue.jobid || null,
-      vehicleid: formValue.vehicleid || null,
-      customerid: formValue.customerid || null,
-      customername: formValue.customername || '',
-      contactno: formValue.contactno || '',
-      vehicleno: formValue.vehicleno || '',
-      vehiclebrand: formValue.vehiclebrand || '',
-      vehiclemodel: formValue.vehiclemodel || '',
-      mileage: formValue.mileage || '',
-      addeddate: formValue.addeddate ? dayjs(formValue.addeddate) : null,
-      iscalltocustomer: formValue.iscalltocustomer || null,
-      remarks: formValue.remarks || '',
-      calldate: formValue.calldate ? dayjs(formValue.calldate) : null,
-      lmu: formValue.lmu || null,
-      lmd: formValue.lmd ? dayjs(formValue.lmd) : null,
+      jobid: jobId,
+      vehicleid: formRaw.vehicleid ?? null,
+      customerid: formRaw.customerid ?? null,
+      customername: formRaw.customername ?? '',
+      contactno: formRaw.customertel ?? '',
+      vehicleno: formRaw.vehiclenumber ?? '',
+      vehiclebrand: vehicleBrand ?? '',
+      vehiclemodel: vehicleModel ?? '',
+      mileage: String(formRaw.millage ?? ''),
+      addeddate: dayjs(),
+      iscalltocustomer: formRaw.updatetocustomer ?? false,
+      remarks: null,
+      calldate: null,
+      lmu: 0,
+      lmd: dayjs(),
     };
   }
 
@@ -777,7 +1187,29 @@ export class AutocarejobInstructionComponent implements OnInit {
     }
   }
   invoid: number = 0;
+
+  /**
+   * Called from the "Save Workshop Work Services" button in the Workshop Work
+   * Service tab.  Saves only the workshop tab selections without touching the
+   * advisor invoice or other tabs.
+   * jobId = Autocarejob.id (must already be saved).
+   */
+  saveWorkshopTab(): void {
+    const jobId = Number(this.editForm.controls.id.value ?? 0);
+    if (jobId > 0 && this.workshopvehicleworkComponent) {
+      this.workshopvehicleworkComponent.saveWorkshopWorkListDetails(jobId);
+    }
+  }
+
   saveAll(): void {
+    this.syncItemsArrayFromSelection();
+
+    // Persist Workshop Work Service tab selections directly — keyed by jobId = Autocarejob.id
+    const jobId = Number(this.editForm.controls.id.value ?? 0);
+    if (jobId > 0 && this.workshopvehicleworkComponent) {
+      this.workshopvehicleworkComponent.saveWorkshopWorkListDetails(jobId);
+    }
+
     if (this.autojobsinvoiceComponent) {
       this.autojobsinvoiceComponent.save();
     }
@@ -788,16 +1220,22 @@ export class AutocarejobInstructionComponent implements OnInit {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
         if (response.body) {
-          const invoiceId = response.body.id; // Extract ID
-          this.invoid = invoiceId;
-          console.log('Save response body:', invoiceId);
+          const savedJobId = response.body.id;
+          this.invoid = savedJobId;
+          console.log('Saved job ID:', savedJobId);
 
-          // Retrieve stored invoiceId from local storage
-
-          console.log('Retrieved Invoice ID from Local Storage:', this.invoid);
+          const effectiveInvoiceId = this.invoiceId;
+          if (effectiveInvoiceId == null) {
+            console.error('Invoice ID is missing. Skipping dependent line saves.');
+            if (savedJobId != null) {
+              this.persistWorkshopSelections(savedJobId);
+            }
+            this.onSaveSuccess();
+            return;
+          }
 
           this.commonServiceArray.forEach(service => {
-            service.invoiceid = this.invoiceId ?? this.invoid; // Use extracted invoiceId
+            service.invoiceid = effectiveInvoiceId;
 
             // Assuming commonserviceoptionService.create() accepts service data and returns an observable
             this.jobcommon.create({ ...service, id: null }).subscribe({
@@ -811,7 +1249,7 @@ export class AutocarejobInstructionComponent implements OnInit {
           });
 
           this.serviceArray.forEach(service => {
-            service.invoiceid = this.invoiceId ?? this.invoid; // Use extracted invoiceId
+            service.invoiceid = effectiveInvoiceId;
 
             // Assuming commonserviceoptionService.create() accepts service data and returns an observable
             this.jobservice.create({ ...service, id: null }).subscribe({
@@ -827,7 +1265,15 @@ export class AutocarejobInstructionComponent implements OnInit {
           // Loop through the itemsArray and update the invoiceId field for each item
           this.itemsArray.forEach((item, index) => {
             setTimeout(() => {
-              item.invocieid = this.invoiceId ?? this.invoid;
+              if (item.id != null) {
+                console.log(`Skipping existing item ${index + 1}:`, item);
+                if (!this.persistedItemBatchKeys.has(this.buildItemBatchKey(item))) {
+                  this.createInvoiceLineBatch(item);
+                }
+                return;
+              }
+
+              item.invocieid = effectiveInvoiceId;
 
               console.log(`POSTING ITEM ${index + 1}`);
               console.log('ITEMID VALUE:', item.itemid);
@@ -847,11 +1293,25 @@ export class AutocarejobInstructionComponent implements OnInit {
               };
 
               this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
-                next: createResponse => console.log(`Item ${index + 1} created:`, createResponse),
+                next: createResponse => {
+                  const savedItem = createResponse.body;
+
+                  item.id = savedItem?.id ?? effectiveInvoiceId;
+                  item.invocieid = savedItem?.invocieid ?? effectiveInvoiceId;
+                  item.lineid = savedItem?.lineid ?? item.lineid;
+
+                  console.log(`Item ${index + 1} created:`, createResponse);
+                  this.createInvoiceLineBatch(item);
+                },
                 error: createError => console.error(`Error for item ${index + 1}:`, createError),
               });
             }, index * 500); // 500ms delay per request
           });
+
+          if (savedJobId != null) {
+            this.persistServiceOptionSelections(savedJobId);
+            this.persistWorkshopSelections(savedJobId);
+          }
 
           // console.log('Updated itemsArray:', this.itemsArray);
           // console.log('arryyyyyyyyyyyyyyyyyyyyay service', this.serviceArray);
@@ -862,9 +1322,6 @@ export class AutocarejobInstructionComponent implements OnInit {
       },
       error: () => this.onSaveError(),
     });
-    if (this.workshopVehicleWorkListComponent) {
-      this.workshopVehicleWorkListComponent.save();
-    }
   }
 
   protected onSaveSuccess(): void {
@@ -891,7 +1348,208 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected updateForm(autocarejob: IAutocarejob): void {
     this.autocarejob = autocarejob;
     this.autocarejobFormService.resetForm(this.editForm, autocarejob);
+    this.syncVehicleTypeSelectionFromForm();
   }
+
+  private persistServiceOptionSelections(jobId: number): void {
+    // Diff-based save: only create newly added, only delete removed — leave existing rows untouched
+    this.autocareJobServiceOptionService.queryByJobId(jobId).subscribe({
+      next: (response: HttpResponse<IAutocareJobServiceOption[]>) => {
+        const existingRows = response.body || [];
+        const existingSubcategoryIds = new Set(existingRows.map(row => Number(row.servicesubcategoryid ?? 0)).filter(id => id > 0));
+        const desiredSubcategoryIds = new Set(this.selectedSubcategoryItems.map(item => Number(item.id ?? 0)).filter(id => id > 0));
+
+        // Rows to DELETE: exist in DB but not in current selection
+        const rowsToDelete = existingRows.filter(
+          row => row.id != null && !desiredSubcategoryIds.has(Number(row.servicesubcategoryid ?? 0)),
+        );
+
+        // IDs to CREATE: in current selection but not in DB
+        const idsToCreate = [...desiredSubcategoryIds].filter(id => !existingSubcategoryIds.has(id));
+
+        // Delete removed rows
+        rowsToDelete.forEach(row => {
+          this.autocareJobServiceOptionService.delete(row.id).subscribe({
+            next: () => {},
+            error: err => console.error('Failed to delete service option row:', err),
+          });
+        });
+
+        // Create new rows
+        idsToCreate.forEach(subcategoryId => {
+          const payload = {
+            id: null,
+            jobid: jobId,
+            servicesubcategoryid: subcategoryId,
+            pendding: true,
+            ongoing: false,
+            finished: false,
+            lmu: 0,
+            lmd: new Date().toISOString(),
+            starttime: null,
+            endtime: null,
+          };
+          this.autocareJobServiceOptionService.create(payload).subscribe({
+            next: () => {},
+            error: err => console.error('Failed to create service option row:', err),
+          });
+        });
+      },
+      error: err => {
+        console.error('Failed to load existing service options for diff:', err);
+      },
+    });
+  }
+
+  private persistWorkshopSelections(jobId: number): void {
+    const selectedWorkshopWorks = this.workshopvehicleworkComponent?.selectedworkItems || [];
+
+    const desiredRows = [
+      ...selectedWorkshopWorks.map(item => ({
+        workid: Number(item.id ?? 0),
+        workshopwork: String(item.workshopwork ?? '').trim(),
+      })),
+    ]
+      .filter(item => item.workid > 0 || item.workshopwork.length > 0)
+      .filter(
+        (item, index, array) =>
+          array.findIndex(
+            candidate => candidate.workid === item.workid && candidate.workshopwork.toLowerCase() === item.workshopwork.toLowerCase(),
+          ) === index,
+      );
+
+    if (desiredRows.length === 0) {
+      return;
+    }
+
+    this.workshopvehicleworkService.queryByJobId(jobId).subscribe({
+      next: (headerResponse: HttpResponse<IWorkshopvehiclework[]>) => {
+        const existingHeader = (headerResponse.body || []).find(header => Number(header.id ?? 0) > 0);
+        const vehicleId = this.editForm.controls.vehicleid?.value;
+
+        // Helper: fetch vehicle then call callback with brand/model
+        const withVehicleDetails = (callback: (brand: string, model: string) => void) => {
+          if (vehicleId) {
+            this.customervehicleService.find(vehicleId).subscribe({
+              next: vRes => callback(vRes.body?.makename ?? '', vRes.body?.model ?? ''),
+              error: () => callback('', ''),
+            });
+          } else {
+            callback('', '');
+          }
+        };
+
+        if (existingHeader?.id) {
+          // Always update the existing header with current form values
+          withVehicleDetails((brand, model) => {
+            const formRaw = this.editForm.getRawValue();
+            const updatedHeader: IWorkshopvehiclework = {
+              ...existingHeader,
+              vehicleid: formRaw.vehicleid ?? existingHeader.vehicleid,
+              customerid: formRaw.customerid ?? existingHeader.customerid,
+              customername: formRaw.customername ?? existingHeader.customername ?? '',
+              contactno: formRaw.customertel ?? existingHeader.contactno ?? '',
+              vehicleno: formRaw.vehiclenumber ?? existingHeader.vehicleno ?? '',
+              vehiclebrand: brand || existingHeader.vehiclebrand || '',
+              vehiclemodel: model || existingHeader.vehiclemodel || '',
+              mileage: String(formRaw.millage ?? existingHeader.mileage ?? ''),
+              addeddate: existingHeader.addeddate ?? dayjs(),
+              iscalltocustomer: formRaw.updatetocustomer ?? false,
+              lmu: 0,
+              lmd: dayjs(),
+            };
+            this.workshopvehicleworkService.update(updatedHeader).subscribe({
+              next: () => this.persistWorkshopDetailRows(existingHeader.id, desiredRows),
+              error: () => this.persistWorkshopDetailRows(existingHeader.id, desiredRows),
+            });
+          });
+          return;
+        }
+
+        // Create new header
+        withVehicleDetails((brand, model) => {
+          const workshopHeaderPayload = {
+            ...this.mapFormTowork(this.editForm.getRawValue(), brand, model),
+            id: null,
+            jobid: jobId,
+          };
+
+          this.workshopvehicleworkService.create(workshopHeaderPayload).subscribe({
+            next: createResponse => {
+              const vehicleWorkId = Number(createResponse.body?.id ?? 0);
+              if (vehicleWorkId > 0) {
+                this.persistWorkshopDetailRows(vehicleWorkId, desiredRows);
+              }
+            },
+            error: createError => {
+              console.error('Failed to create workshop vehicle work header:', createError);
+            },
+          });
+        });
+      },
+      error: headerError => {
+        console.error('Failed to load workshop vehicle work header for save:', headerError);
+      },
+    });
+  }
+
+  private persistWorkshopDetailRows(vehicleWorkId: number, desiredRows: Array<{ workid: number; workshopwork: string }>): void {
+    this.workshopVehicleWorkListService.queryByVehicleWorkIds([vehicleWorkId]).subscribe({
+      next: (detailResponse: HttpResponse<IWorkshopVehicleWorkList[]>) => {
+        const existingRows = detailResponse.body || [];
+
+        // Delete all stale existing rows first, then recreate from desiredRows.
+        // Filter out rows with a falsy id to avoid DELETE /undefined (400 Bad Request)
+        // which can happen when the API fallback path returns unfiltered items.
+        const validExistingRows = existingRows.filter(
+          row => row.id != null && String(row.id).trim() !== '' && String(row.id) !== 'undefined',
+        );
+        const deleteOps = validExistingRows.map(row => this.workshopVehicleWorkListService.delete(row.id));
+
+        const doCreate = () => {
+          let lineId = 0;
+          desiredRows.forEach(row => {
+            lineId += 1;
+            const detailPayload = {
+              id: null,
+              vehicleworkid: vehicleWorkId,
+              lineid: lineId,
+              workid: row.workid || null,
+              workshopwork: row.workshopwork || '',
+              isjobdone: false,
+              jobdonedate: null,
+              jobnumber: '',
+              jobvalue: 0,
+              estimatevalue: 0,
+            };
+            this.workshopVehicleWorkListService.create(detailPayload).subscribe({
+              next: () => {},
+              error: detailError => {
+                console.error('Failed to create workshop vehicle work detail row:', detailError);
+              },
+            });
+          });
+        };
+
+        if (deleteOps.length === 0) {
+          doCreate();
+        } else {
+          forkJoin(deleteOps).subscribe({
+            next: () => doCreate(),
+            error: deleteError => {
+              console.error('Failed to delete stale workshop detail rows:', deleteError);
+              // Proceed with creation even if some deletes failed
+              doCreate();
+            },
+          });
+        }
+      },
+      error: detailError => {
+        console.error('Failed to load existing workshop vehicle work detail rows:', detailError);
+      },
+    });
+  }
+
   onInvoiceSaved(invoiceId: number): void {
     this.invoiceId = invoiceId;
     console.log('Invoice saved with ID:', invoiceId);

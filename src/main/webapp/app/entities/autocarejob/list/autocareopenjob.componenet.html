@@ -438,6 +438,27 @@
 
                 <td class="text-end">
                   <div class="btn-group">
+                    @if (needsExternalRegistration(autocarejob)) {
+                    <a
+                      [href]="getCustomerRegistrationUrl(autocarejob)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn btn-info btn-sm"
+                      title="Register Customer"
+                    >
+                      <fa-icon icon="user-plus"></fa-icon>
+                    </a>
+
+                    <a
+                      [href]="getVehicleRegistrationUrl(autocarejob)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn btn-secondary btn-sm"
+                      title="Register Vehicle"
+                    >
+                      <fa-icon icon="car"></fa-icon>
+                    </a>
+                    } @else {
                     <a
                       [routerLink]="['/autocarejob', autocarejob.id, 'view']"
                       class="btn btn-info btn-sm"
@@ -447,6 +468,7 @@
                       <fa-icon icon="eye"></fa-icon>
                       <!-- <span class="d-none d-md-inline">View</span> -->
                     </a>
+                    }
 
                     <a
                       [routerLink]="['/autocarejob', autocarejob.id, 'edit']"

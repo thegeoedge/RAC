@@ -69,6 +69,12 @@ export class AutojobsinvoicelinesService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  queryByInvoiceId(invoiceId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestAutojobsinvoicelines[]>(`${this.resourceUrl}/invoice/${invoiceId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

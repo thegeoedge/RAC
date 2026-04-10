@@ -1,7 +1,7 @@
 import dayjs from 'dayjs/esm';
 
 export interface IWorkshopVehicleWorkList {
-  id: number;
+  id: string;
   vehicleworkid?: number | null;
   lineid?: number | null;
   workid?: number | null;

@@ -61,6 +61,7 @@ export class AutocarejobitemissueComponent implements OnInit {
   protected autocareappointmentService = inject(AutocareappointmentService);
   issuedItems: any[] = []; // Items that are issued
   availableItems: any[] = [];
+  persistedIssuedKeys = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
@@ -91,7 +92,11 @@ export class AutocarejobitemissueComponent implements OnInit {
   get allInvoiceLines(): any[] {
     return Object.values(this.autojobsInvoicesMap)
       .flatMap(invoice => invoice.invoiceLines)
-      .filter(line => !line.issued); // Only lines not issued
+      .filter(line => !this.isLineIssued(line)); // Only lines not issued
+  }
+
+  get hasItemHistory(): boolean {
+    return this.allInvoiceLines.length > 0 || this.issuedItems.length > 0;
   }
 
   fetchhistory(): void {
@@ -107,7 +112,7 @@ export class AutocarejobitemissueComponent implements OnInit {
         };
 
         return this.autojobsinvoicelinesService
-          .query({ 'invocieid.equals': invoice.id })
+          .queryByInvoiceId(invoice.id!)
           .toPromise()
           .then(linesRes => {
             this.autojobsInvoicesMap[invoice.id!].invoiceLines = linesRes?.body || [];
@@ -116,7 +121,7 @@ export class AutocarejobitemissueComponent implements OnInit {
 
       // Wait until ALL invoice lines are loaded
       Promise.all(invoiceRequests).then(() => {
-        this.loadBatchesAndSetIssued();
+        this.syncIssuedStateFromBatches();
       });
     });
   }
@@ -124,36 +129,38 @@ export class AutocarejobitemissueComponent implements OnInit {
   loadIssuedItems(): void {
     this.issuedItems = Object.values(this.autojobsInvoicesMap)
       .flatMap(inv => inv.invoiceLines)
-      .filter(line => line.issued); // Only issued items
+      .filter(line => this.isLineIssued(line)); // Only issued items
   }
 
-  loadBatchesAndSetIssued(): void {
-    const lineIds = Object.values(this.autojobsInvoicesMap)
-      .flatMap(inv => inv.invoiceLines.map((line: any) => line.id))
-      .filter(id => id != null);
+  syncIssuedStateFromBatches(): void {
+    const invoiceLines = Object.values(this.autojobsInvoicesMap).flatMap(inv => inv.invoiceLines);
+    const parentIds = invoiceLines.map(line => line.invocieid ?? line.id).filter((id): id is number => typeof id === 'number');
 
-    if (lineIds.length === 0) {
+    if (parentIds.length === 0) {
+      this.persistedIssuedKeys.clear();
       this.loadIssuedItems();
       return;
     }
 
-    this.jobinvoicelinebatches.query({ 'lineid.in': lineIds }).subscribe({
-      next: (batchRes: HttpResponse<any[]>) => {
-        const issuedLineIds = new Set(batchRes.body?.filter(batch => batch.issued).map(batch => batch.lineid) || []);
-        for (const invoice of Object.values(this.autojobsInvoicesMap)) {
-          for (const line of invoice.invoiceLines) {
-            if (issuedLineIds.has(line.id)) {
-              line.issued = true;
-            }
-          }
-        }
+    this.jobinvoicelinebatches.queryByParentLineIds(parentIds).subscribe({
+      next: res => {
+        const batches = res.body ?? [];
+        this.persistedIssuedKeys = new Set(batches.filter(batch => batch.issued).map(batch => this.buildLineKey(batch)));
         this.loadIssuedItems();
       },
       error: err => {
-        console.error('Error loading batches:', err);
+        console.error('Error loading issued item state:', err);
         this.loadIssuedItems();
       },
     });
+  }
+
+  buildLineKey(line: any): string {
+    return `${line.invocieid ?? line.id ?? ''}|${line.lineid ?? ''}|${line.itemid ?? ''}|${line.itemcode ?? line.code ?? ''}`;
+  }
+
+  isLineIssued(line: any): boolean {
+    return line?.issued === true || this.persistedIssuedKeys.has(this.buildLineKey(line));
   }
 
   //issue an item
@@ -163,11 +170,18 @@ export class AutocarejobitemissueComponent implements OnInit {
       return;
     }
 
-    const nextLineId = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.lineid), 0) + 1 : 1;
     const nextbatchlineid = this.itemsArray.length > 0 ? Math.max(...this.itemsArray.map(item => item.batchlineid), 0) + 1 : 1;
-    const newItem = {
-      id: null,
-      lineid: issuedItem.id, // Use the invoice line id
+    const parentInvoiceId = issuedItem.invocieid ?? null;
+    const parentLineId = issuedItem.lineid ?? null;
+
+    if (parentInvoiceId == null || parentLineId == null) {
+      console.error('Missing parent invoice line key for issued item:', issuedItem);
+      return;
+    }
+
+    const newItem: any = {
+      id: parentInvoiceId,
+      lineid: parentLineId,
       batchlineid: nextbatchlineid,
       itemid: issuedItem.itemid,
       code: issuedItem.itemcode ?? '',
@@ -201,15 +215,8 @@ export class AutocarejobitemissueComponent implements OnInit {
     this.jobinvoicelinebatches.create(newItem).subscribe({
       next: createResponse => {
         console.log('Item created and marked as issued:', createResponse);
-
-        // Update the local map to reflect the change
-        for (const invoice of Object.values(this.autojobsInvoicesMap)) {
-          const lineIndex = invoice.invoiceLines.findIndex((line: any) => line.id === issuedItem.id);
-          if (lineIndex !== -1) {
-            invoice.invoiceLines[lineIndex].issued = true;
-            break;
-          }
-        }
+        issuedItem.issued = true;
+        this.persistedIssuedKeys.add(this.buildLineKey(issuedItem));
         this.loadIssuedItems(); // re-sync UI after update
       },
       error: err => console.error('Error issuing item:', err),

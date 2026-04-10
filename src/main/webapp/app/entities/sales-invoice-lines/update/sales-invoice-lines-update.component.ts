@@ -281,6 +281,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   // Remove a line from the form
   removeSalesInvoiceLine(index: number): void {
     this.salesInvoiceLinesArray.removeAt(index);
+    this.calculateTotal();
   }
 
   previousState(): void {
@@ -397,5 +398,6 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   removeInvoiceLine(index: number): void {
     this.salesInvoiceLinesDummyArray.removeAt(index);
+    this.calculateTotal();
   }
 }
