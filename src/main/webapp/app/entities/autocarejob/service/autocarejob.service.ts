@@ -131,10 +131,10 @@ export class AutocarejobService {
     return {
       ...autocarejob,
       nextservicedate: autocarejob.nextservicedate?.format(DATE_FORMAT) ?? null,
-      jobopentime: autocarejob.jobopentime?.toJSON() ?? null,
-      lmd: autocarejob.lmd?.toJSON() ?? null,
-      jobclosetime: autocarejob.jobclosetime?.toJSON() ?? null,
-      jobdate: autocarejob.jobdate?.toJSON() ?? null,
+      jobopentime: this.toLocalIsoString(autocarejob.jobopentime),
+      lmd: this.toLocalIsoString(autocarejob.lmd),
+      jobclosetime: this.toLocalIsoString(autocarejob.jobclosetime),
+      jobdate: this.toLocalIsoString(autocarejob.jobdate),
     };
   }
 
@@ -142,11 +142,43 @@ export class AutocarejobService {
     return {
       ...restAutocarejob,
       nextservicedate: restAutocarejob.nextservicedate ? dayjs(restAutocarejob.nextservicedate) : undefined,
-      jobopentime: restAutocarejob.jobopentime ? dayjs(restAutocarejob.jobopentime) : undefined,
-      lmd: restAutocarejob.lmd ? dayjs(restAutocarejob.lmd) : undefined,
-      jobclosetime: restAutocarejob.jobclosetime ? dayjs(restAutocarejob.jobclosetime) : undefined,
-      jobdate: restAutocarejob.jobdate ? dayjs(restAutocarejob.jobdate) : undefined,
+      jobopentime: this.fromLocalIsoString(restAutocarejob.jobopentime),
+      lmd: this.fromLocalIsoString(restAutocarejob.lmd),
+      jobclosetime: this.fromLocalIsoString(restAutocarejob.jobclosetime),
+      jobdate: this.fromLocalIsoString(restAutocarejob.jobdate),
     };
+  }
+
+  private toLocalIsoString(value?: dayjs.Dayjs | null): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const localAsUtc = new Date(
+      Date.UTC(value.year(), value.month(), value.date(), value.hour(), value.minute(), value.second(), value.millisecond()),
+    );
+
+    return localAsUtc.toISOString();
+  }
+
+  private fromLocalIsoString(value?: string | null): dayjs.Dayjs | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const stored = new Date(value);
+
+    return dayjs(
+      new Date(
+        stored.getUTCFullYear(),
+        stored.getUTCMonth(),
+        stored.getUTCDate(),
+        stored.getUTCHours(),
+        stored.getUTCMinutes(),
+        stored.getUTCSeconds(),
+        stored.getUTCMilliseconds(),
+      ),
+    );
   }
 
   protected convertResponseFromServer(res: HttpResponse<RestAutocarejob>): HttpResponse<IAutocarejob> {

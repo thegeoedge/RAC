@@ -124,6 +124,7 @@ export class ServicecategoryComponent implements OnInit {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
+      'showsecurity.equals': true,
     };
     filters.filterOptions.forEach(filterOption => {
       queryObject[filterOption.name] = filterOption.values;

@@ -463,8 +463,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   loadDataFromServicesEntities() {
-    this.servicecategoryService.query({ size: 1000 }).subscribe((res: any) => {
-      this.servicecategory = res.body;
+    this.servicecategoryService.query({ size: 1000, 'showsecurity.equals': true }).subscribe((res: any) => {
+      this.servicecategory = res.body || [];
     });
   }
 
@@ -483,7 +483,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   // Load servicesubcategory data
   loadDataFromServicessubEntities(): void {
-    this.servicesubcategoryService.query({ size: 1000 }).subscribe((res: HttpResponse<IServicesubcategory[]>) => {
+    this.servicesubcategoryService.query({ size: 1000, 'isactive.equals': true }).subscribe((res: HttpResponse<IServicesubcategory[]>) => {
       this.servicesubcategory = res.body || [];
       this.syncSelectedSubcategoriesFromSaved();
       this.cdr.detectChanges();
