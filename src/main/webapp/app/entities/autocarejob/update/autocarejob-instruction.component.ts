@@ -536,7 +536,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     if (searchTerm.length > 2) {
       // Use the new service method to fetch matching results
       this.customervehicleService.findByVehicleNumber(searchTerm).subscribe(response => {
-        this.filteredVehicles = response.body || [];
+        this.filteredVehicles = this.getFirstCreatedVehicles(response.body || []);
       });
     } else {
       // Clear the suggestions if input is too short
@@ -1349,6 +1349,22 @@ export class AutocarejobInstructionComponent implements OnInit {
     this.autocarejob = autocarejob;
     this.autocarejobFormService.resetForm(this.editForm, autocarejob);
     this.syncVehicleTypeSelectionFromForm();
+  }
+
+  private getFirstCreatedVehicles(vehicles: ICustomervehicle[]): ICustomervehicle[] {
+    const uniqueVehicles = new Map<string, ICustomervehicle>();
+
+    [...vehicles]
+      .sort((left, right) => (left.id ?? Number.MAX_SAFE_INTEGER) - (right.id ?? Number.MAX_SAFE_INTEGER))
+      .forEach(vehicle => {
+        const vehicleNumber = vehicle.vehiclenumber?.trim();
+
+        if (vehicleNumber && !uniqueVehicles.has(vehicleNumber)) {
+          uniqueVehicles.set(vehicleNumber, vehicle);
+        }
+      });
+
+    return [...uniqueVehicles.values()];
   }
 
   private persistServiceOptionSelections(jobId: number): void {

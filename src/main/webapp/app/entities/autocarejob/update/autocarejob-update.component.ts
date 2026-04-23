@@ -152,7 +152,7 @@ export class AutocarejobUpdateComponent implements OnInit {
     if (searchTerm.length > 2) {
       // Use the new service method to fetch matching results
       this.autocareappointmentService.findByVehicleNumber(searchTerm).subscribe(response => {
-        this.filteredVehicles = response.body || [];
+        this.filteredVehicles = this.getFirstCreatedAppointments(response.body || []);
       });
     } else {
       // Clear the suggestions if input is too short
@@ -258,5 +258,21 @@ export class AutocarejobUpdateComponent implements OnInit {
   protected updateForm(autocarejob: IAutocarejob): void {
     this.autocarejob = autocarejob;
     this.autocarejobFormService.resetForm(this.editForm, autocarejob);
+  }
+
+  private getFirstCreatedAppointments(appointments: IAutocareappointment[]): IAutocareappointment[] {
+    const uniqueAppointments = new Map<string, IAutocareappointment>();
+
+    [...appointments]
+      .sort((left, right) => (left.id ?? Number.MAX_SAFE_INTEGER) - (right.id ?? Number.MAX_SAFE_INTEGER))
+      .forEach(appointment => {
+        const vehicleNumber = appointment.vehiclenumber?.trim();
+
+        if (vehicleNumber && !uniqueAppointments.has(vehicleNumber)) {
+          uniqueAppointments.set(vehicleNumber, appointment);
+        }
+      });
+
+    return [...uniqueAppointments.values()];
   }
 }
