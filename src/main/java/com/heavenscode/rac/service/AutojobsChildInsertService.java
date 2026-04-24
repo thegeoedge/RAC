@@ -159,6 +159,57 @@ public class AutojobsChildInsertService {
             entity.setId(invoiceLineKey.id());
             entity.setLineid(invoiceLineKey.lineId());
             String tableName = resolveQualifiedTableName("autojobsinvoicelinebatches");
+
+            // Check if a record already exists for this invoice line item
+            Integer existingCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM " +
+                tableName +
+                " WHERE " +
+                bracket("id") +
+                " = ? AND " +
+                bracket("lineid") +
+                " = ? AND " +
+                bracket("itemid") +
+                " = ?",
+                Integer.class,
+                entity.getId(),
+                entity.getLineid(),
+                entity.getItemid()
+            );
+
+            if (existingCount != null && existingCount > 0) {
+                // Update existing record
+                String updateSql =
+                    "UPDATE " +
+                    tableName +
+                    " SET " +
+                    bracket("issued") +
+                    " = ?, " +
+                    bracket("issueddatetime") +
+                    " = ?, " +
+                    bracket("issuedby") +
+                    " = ?, " +
+                    bracket("lmd") +
+                    " = ? WHERE " +
+                    bracket("id") +
+                    " = ? AND " +
+                    bracket("lineid") +
+                    " = ? AND " +
+                    bracket("itemid") +
+                    " = ?";
+                jdbcTemplate.update(
+                    updateSql,
+                    entity.getIssued() != null ? (entity.getIssued() ? 1 : 0) : 0,
+                    toTimestamp(entity.getIssueddatetime()),
+                    entity.getIssuedby(),
+                    toTimestamp(Instant.now()),
+                    entity.getId(),
+                    entity.getLineid(),
+                    entity.getItemid()
+                );
+                return entity;
+            }
+
             entity.setBatchlineid(resolveNextBatchLineId(tableName, entity.getId(), entity.getLineid(), entity.getBatchlineid()));
             GeneratedKey generatedKey = insertWithDetectedKey(
                 tableName,

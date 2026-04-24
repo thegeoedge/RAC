@@ -58,7 +58,7 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
     window.history.back();
   }
 
-  @Output() invoiceSaved = new EventEmitter<number>();
+  @Output() invoiceSaved = new EventEmitter<IAutojobsinvoice>();
 
   save(): void {
     this.isSaving = true;
@@ -74,8 +74,8 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAutojobsinvoice>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
-        if (response.body?.id != null) {
-          this.invoiceSaved.emit(response.body.id); // 🔥 EMIT HERE
+        if (response.body != null) {
+          this.invoiceSaved.emit(response.body); // 🔥 EMIT HERE
         }
         this.onSaveSuccess();
       },

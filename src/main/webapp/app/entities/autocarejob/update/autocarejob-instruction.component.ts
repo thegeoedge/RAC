@@ -55,6 +55,8 @@ import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-wo
 import { IWorkshopVehicleWorkList } from 'app/entities/workshop-vehicle-work-list/workshop-vehicle-work-list.model';
 import { AutocareJobServiceOptionService } from '../service/autocare-job-service-option.service';
 import { IAutocareJobServiceOption } from '../autocare-job-service-option.model';
+import { AlertService } from 'app/core/util/alert.service';
+import { AlertMuteService } from 'app/core/util/alert-mute.service';
 
 @Component({
   standalone: true,
@@ -90,6 +92,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   autojobsalesinvoiceservicechargelineComponent!: AutojobsalesinvoiceservicechargelineUpdateComponent;
   constructor(private cdr: ChangeDetectorRef) {} // Inject ChangeDetectorRef
   invoiceId: number | null = null;
+  invoiceCode: string | null = null;
   isSaving = false;
   autocarejob: IAutocarejob | null = null;
   customervehicles: ICustomervehicle[] = [];
@@ -143,6 +146,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected workshopvehicleworkService = inject(WorkshopvehicleworkService);
   protected workshopVehicleWorkListService = inject(WorkshopVehicleWorkListService);
   protected autocareJobServiceOptionService = inject(AutocareJobServiceOptionService);
+  protected alertService = inject(AlertService);
+  protected alertMuteService = inject(AlertMuteService);
 
   subcategoriesVisible = true; // Show service options by default
   showPrintSummary = false; // Controls whether the print summary is shown on screen
@@ -622,7 +627,9 @@ export class AutocarejobInstructionComponent implements OnInit {
           return;
         }
 
-        this.invoiceId = invoiceIds[invoiceIds.length - 1];
+        const latestInvoice = invoices[invoices.length - 1];
+        this.invoiceId = latestInvoice.id!;
+        this.invoiceCode = latestInvoice.code || null;
 
         if (this.loadedItemsInvoiceKey === invoiceKey) {
           return;
@@ -1075,7 +1082,7 @@ export class AutocarejobInstructionComponent implements OnInit {
     return {
       id: this.invoiceId || formValue.id || null,
       jobid: this.editForm.controls.id.value ?? 0,
-      code: formValue.code || '',
+      code: this.invoiceCode || formValue.code || '',
       quoteid: formValue.quoteid || null,
       orderid: formValue.orderid || 0,
       autojobsrepid: formValue.autojobsrepid || null,
@@ -1175,6 +1182,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   save(): void {
+    this.alertMuteService.mute();
     this.isSaving = true;
     let autocarejob = this.autocarejobFormService.getAutocarejob(this.editForm);
 
@@ -1202,6 +1210,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   saveAll(): void {
+    this.alertMuteService.mute();
     this.syncItemsArrayFromSelection();
 
     // Persist Workshop Work Service tab selections directly — keyed by jobId = Autocarejob.id
@@ -1325,6 +1334,12 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.alertService.addAlert({
+      type: 'success',
+      message: 'Job Saved Successfully',
+      timeout: 5000,
+    });
+
     this.showPrintSummary = true;
     this.cdr.detectChanges();
     // Scroll to the summary
@@ -1334,11 +1349,16 @@ export class AutocarejobInstructionComponent implements OnInit {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+
+    // Unmute after some time to allow background saves to finish without alerts
+    setTimeout(() => {
+      this.alertMuteService.unmute();
+    }, 10000); // 10 seconds should cover the background item saves
     // Removed previousState() to allow viewing the summary
   }
 
   protected onSaveError(): void {
-    // Api for inheritance.
+    this.alertMuteService.unmute();
   }
 
   protected onSaveFinalize(): void {
@@ -1566,9 +1586,10 @@ export class AutocarejobInstructionComponent implements OnInit {
     });
   }
 
-  onInvoiceSaved(invoiceId: number): void {
-    this.invoiceId = invoiceId;
-    console.log('Invoice saved with ID:', invoiceId);
+  onInvoiceSaved(invoice: IAutojobsinvoice): void {
+    this.invoiceId = invoice.id ?? null;
+    this.invoiceCode = invoice.code ?? null;
+    console.log('Invoice saved with ID:', this.invoiceId, 'and Code:', this.invoiceCode);
     // Save the job now that invoice is saved
     this.save();
   }

@@ -158,15 +158,23 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       (response: HttpResponse<any>) => {
         console.log('Full Response:', response);
         console.log('Status:', response.status);
-        console.log('Headersssssssssssssssssss:', response.headers);
 
-        let originalCode = response.body || '';
-        console.log('Original eeeeeeeeeeeee:', originalCode);
+        const accounts = response.body || [];
 
-        // Extract the numeric part and increment by 1
+        if (accounts.length > 0) {
+          // Assuming the first matched account holds the customer's balance
+          const customerAccount = accounts[0];
+
+          // Grab the balance (or default to 0 if null)
+          const amountOwing = customerAccount.balance || 0;
+
+          console.log(`Loaded Amount Owing for ${name} from Accounts:`, amountOwing);
+
+          // We no longer patch this to the form because we are taking it from AutoJobsInvoice
+        }
       },
       error => {
-        console.error('Error fetching receipt data:', error);
+        console.error('Error fetching account balance:', error);
       },
     );
   }
@@ -376,9 +384,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
       const transformedData: any = {
         id: null as unknown as number,
+        code: (salesInvoiceDummy as any).code || undefined,
+        orderid: (salesInvoiceDummy as any).orderid ?? (salesInvoiceDummy as any).orderID ?? (salesInvoiceDummy as any).orderId ?? null,
+        customerid:
+          (salesInvoiceDummy as any).customerid ?? (salesInvoiceDummy as any).customerID ?? (salesInvoiceDummy as any).customerId ?? null,
         customername: (salesInvoiceDummy as any).customername,
         vehicleno: '',
         customeraddress: (salesInvoiceDummy as any).customeraddress,
+        amountowing: Number((salesInvoiceDummy as any).amountowing) || 0,
         subtotal: Number((salesInvoiceDummy as any).subtotal) || 0,
         nettotal: Number((salesInvoiceDummy as any).nettotal) || 0,
         totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,

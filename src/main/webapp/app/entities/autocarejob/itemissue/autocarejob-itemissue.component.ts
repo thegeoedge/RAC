@@ -29,6 +29,10 @@ import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvo
 import { SalesInvoiceServiceChargeLineService } from 'app/entities/sales-invoice-service-charge-line/service/sales-invoice-service-charge-line.service';
 import { SaleInvoiceCommonServiceChargeService } from 'app/entities/sale-invoice-common-service-charge/service/sale-invoice-common-service-charge.service';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
+import { AlertService } from 'app/core/util/alert.service';
+import { AlertMuteService } from 'app/core/util/alert-mute.service';
+import { AccountService } from 'app/core/auth/account.service';
+import { Account } from 'app/core/auth/account.model';
 
 @Component({
   standalone: true,
@@ -56,10 +60,16 @@ export class AutocarejobitemissueComponent implements OnInit {
   salesinvoicecommonservicechargeService = inject(SaleInvoiceCommonServiceChargeService);
   salesinvoicelineService = inject(SalesInvoiceLinesService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected accountService = inject(AccountService);
+  account: any | null = null;
+  currentUserId: number = 0;
   protected customervehicleService = inject(CustomervehicleService);
   protected customerService = inject(CustomerService);
   protected autocareappointmentService = inject(AutocareappointmentService);
+  protected alertService = inject(AlertService);
+  protected alertMuteService = inject(AlertMuteService);
   issuedItems: any[] = []; // Items that are issued
+  allBatches: any[] = []; // Store all batches (issued and non-issued)
   availableItems: any[] = [];
   persistedIssuedKeys = new Set<string>();
 
@@ -67,6 +77,23 @@ export class AutocarejobitemissueComponent implements OnInit {
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
 
   ngOnInit(): void {
+    this.accountService.identity().subscribe(account => {
+      this.account = account;
+      if (account) {
+        // Try getting ID from account object directly if present
+        if ((account as any).id) {
+          this.currentUserId = (account as any).id;
+        } else {
+          // Fallback to localStorage as set by AccountService
+          const storedUserId = localStorage.getItem('userId');
+          if (storedUserId) {
+            this.currentUserId = parseInt(storedUserId, 10);
+          }
+        }
+        console.log('Current User ID for Item Issuance:', this.currentUserId);
+      }
+    });
+
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
       this.autocarejob = autocarejob;
 
@@ -144,8 +171,8 @@ export class AutocarejobitemissueComponent implements OnInit {
 
     this.jobinvoicelinebatches.queryByParentLineIds(parentIds).subscribe({
       next: res => {
-        const batches = res.body ?? [];
-        this.persistedIssuedKeys = new Set(batches.filter(batch => batch.issued).map(batch => this.buildLineKey(batch)));
+        this.allBatches = res.body ?? [];
+        this.persistedIssuedKeys = new Set(this.allBatches.filter(batch => batch.issued).map(batch => this.buildLineKey(batch)));
         this.loadIssuedItems();
       },
       error: err => {
@@ -199,9 +226,9 @@ export class AutocarejobitemissueComponent implements OnInit {
       nbt: false,
       vat: false,
       discount: 0,
-      total: issuedItem.sellingprice ?? 0,
+      total: issuedItem.linetotal ?? 0,
       issued: true,
-      issuedby: 0,
+      issuedby: this.currentUserId,
       issueddatetime: dayjs(),
       addedbyid: 0,
       canceloptid: 0,
@@ -211,15 +238,21 @@ export class AutocarejobitemissueComponent implements OnInit {
 
     this.itemsArray.push(newItem);
 
-    // Save the issued item to the backend
+    this.alertMuteService.mute();
+    // Save the issued item to the backend (now performs upsert in the service)
     this.jobinvoicelinebatches.create(newItem).subscribe({
-      next: createResponse => {
-        console.log('Item created and marked as issued:', createResponse);
+      next: (response: any) => {
+        console.log('Item marked as issued:', response);
         issuedItem.issued = true;
         this.persistedIssuedKeys.add(this.buildLineKey(issuedItem));
         this.loadIssuedItems(); // re-sync UI after update
+        this.alertMuteService.unmute();
+        this.alertService.addAlert({ type: 'success', message: 'Item Issued Successfully', timeout: 3000 });
       },
-      error: err => console.error('Error issuing item:', err),
+      error: (err: any) => {
+        console.error('Error issuing item:', err);
+        this.alertMuteService.unmute();
+      },
     });
 
     console.log('Issued Items:', this.itemsArray);
