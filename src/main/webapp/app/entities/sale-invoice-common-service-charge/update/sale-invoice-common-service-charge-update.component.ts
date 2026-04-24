@@ -14,12 +14,13 @@ import {
 } from './sale-invoice-common-service-charge-form.service';
 import { IServicesubcategory } from 'app/entities/servicesubcategory/servicesubcategory.model';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
+import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 
 @Component({
   standalone: true,
   selector: 'jhi-sale-invoice-common-service-charge-update',
   templateUrl: './sale-invoice-common-service-charge-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
+  imports: [SharedModule, FormsModule, ReactiveFormsModule, DecimalInputDirective],
 })
 export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   isSaving = false;
@@ -87,8 +88,6 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       if (saleInvoiceCommonServiceCharges && saleInvoiceCommonServiceCharges.length > 0) {
         this.saleInvoiceCommonServiceCharge = saleInvoiceCommonServiceCharges;
         this.updateForm(saleInvoiceCommonServiceCharges);
-      } else {
-        this.addServiceChargeDummy(); // Add default row when no data is available
       }
     });
     this.fetchCommonServiceOptions();
@@ -241,8 +240,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => ({
       ...line,
       invoiceId: inid, // Assign invoice ID
-      lineId: line.lineid ?? index + 1, // Ensure unique line ID
-      optionId: index + 1, // Default option ID to 0
+      lineId: index + 1, // Ensure unique line ID for this invoice
+      optionId: index + 1, // Default option ID
     }));
 
     console.log('Modified sales invoice lines:', serviceCharges);
@@ -252,11 +251,14 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
     const requests: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>[] = serviceCharges.map(
       (dummy: ISaleInvoiceCommonServiceCharge | NewSaleInvoiceCommonServiceCharge) => {
-        console.log('Processing Dummy - ID:', dummy.id); // Log ID of each dummy
-
-        return dummy.id
-          ? this.saleInvoiceCommonServiceChargeService.update(dummy)
-          : this.saleInvoiceCommonServiceChargeService.create({ ...dummy, id: null });
+        console.log('Processing Dummy - ID:', dummy.id);
+        // If the charge doesn't have an ID, or if it belongs to a different invoice, create it as new
+        if (!dummy.id || dummy.invoiceId !== inid) {
+          return this.saleInvoiceCommonServiceChargeService.create({ ...dummy, id: null, invoiceId: inid });
+        } else {
+          // If it's an existing charge for THIS invoice, update it
+          return this.saleInvoiceCommonServiceChargeService.update(dummy);
+        }
       },
     );
 

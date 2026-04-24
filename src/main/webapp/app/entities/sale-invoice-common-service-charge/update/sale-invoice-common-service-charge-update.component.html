@@ -35,13 +35,13 @@
               <th>Code</th>
               <th>Name</th>
               <th>Description</th>
-              <th>Value</th>
+              <th class="text-end">Value</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody formArrayName="serviceCharges">
             <tr *ngFor="let dummy of serviceChargesArray.controls; let i = index" [formGroupName]="i">
-              <td>
+              <td *ngIf="false">
                 <input type="number" class="form-control" formControlName="id" [readonly]="true" *ngIf="dummy.get('id')?.value" />
               </td>
 
@@ -80,8 +80,8 @@
               <td>
                 <input type="text" class="form-control" formControlName="description" />
               </td>
-              <td>
-                <input type="number" class="form-control" formControlName="value" />
+              <td class="text-end">
+                <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="value" />
               </td>
               <td class="text-center">
                 <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeServiceChargeDummy(i)">

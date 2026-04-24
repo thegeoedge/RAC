@@ -3,6 +3,7 @@ package com.heavenscode.rac.web.rest;
 import com.heavenscode.rac.domain.SalesInvoiceServiceChargeLine;
 import com.heavenscode.rac.repository.SalesInvoiceServiceChargeLineRepository;
 import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
+import com.heavenscode.rac.service.SalesInvoiceChildInsertService;
 import com.heavenscode.rac.service.SalesInvoiceServiceChargeLineQueryService;
 import com.heavenscode.rac.service.SalesInvoiceServiceChargeLineService;
 import com.heavenscode.rac.service.criteria.SalesInvoiceServiceChargeLineCriteria;
@@ -47,17 +48,20 @@ public class SalesInvoiceServiceChargeLineResource {
 
     private final SalesInvoiceServiceChargeLineQueryService salesInvoiceServiceChargeLineQueryService;
     private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
+    private final SalesInvoiceChildInsertService salesInvoiceChildInsertService;
 
     public SalesInvoiceServiceChargeLineResource(
         SalesInvoiceServiceChargeLineService salesInvoiceServiceChargeLineService,
         SalesInvoiceServiceChargeLineRepository salesInvoiceServiceChargeLineRepository,
         SalesInvoiceServiceChargeLineQueryService salesInvoiceServiceChargeLineQueryService,
-        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService,
+        SalesInvoiceChildInsertService salesInvoiceChildInsertService
     ) {
         this.salesInvoiceServiceChargeLineService = salesInvoiceServiceChargeLineService;
         this.salesInvoiceServiceChargeLineRepository = salesInvoiceServiceChargeLineRepository;
         this.salesInvoiceServiceChargeLineQueryService = salesInvoiceServiceChargeLineQueryService;
         this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
+        this.salesInvoiceChildInsertService = salesInvoiceChildInsertService;
     }
 
     /**
@@ -75,12 +79,8 @@ public class SalesInvoiceServiceChargeLineResource {
         if (salesInvoiceServiceChargeLine.getId() != null) {
             throw new BadRequestAlertException("A new salesInvoiceServiceChargeLine cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        salesInvoiceServiceChargeLine = salesInvoiceServiceChargeLineService.save(salesInvoiceServiceChargeLine);
-        return ResponseEntity.created(new URI("/api/sales-invoice-service-charge-lines/" + salesInvoiceServiceChargeLine.getId()))
-            .headers(
-                HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceServiceChargeLine.getId().toString())
-            )
-            .body(salesInvoiceServiceChargeLine);
+        salesInvoiceServiceChargeLine = salesInvoiceChildInsertService.insertServiceChargeLine(salesInvoiceServiceChargeLine);
+        return ResponseEntity.created(new URI("/api/sales-invoice-service-charge-lines")).body(salesInvoiceServiceChargeLine);
     }
 
     /**

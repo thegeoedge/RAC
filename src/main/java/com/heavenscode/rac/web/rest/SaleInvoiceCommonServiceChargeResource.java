@@ -5,6 +5,7 @@ import com.heavenscode.rac.repository.SaleInvoiceCommonServiceChargeRepository;
 import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
 import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeQueryService;
 import com.heavenscode.rac.service.SaleInvoiceCommonServiceChargeService;
+import com.heavenscode.rac.service.SalesInvoiceChildInsertService;
 import com.heavenscode.rac.service.criteria.SaleInvoiceCommonServiceChargeCriteria;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -47,17 +48,20 @@ public class SaleInvoiceCommonServiceChargeResource {
 
     private final SaleInvoiceCommonServiceChargeQueryService saleInvoiceCommonServiceChargeQueryService;
     private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
+    private final SalesInvoiceChildInsertService salesInvoiceChildInsertService;
 
     public SaleInvoiceCommonServiceChargeResource(
         SaleInvoiceCommonServiceChargeService saleInvoiceCommonServiceChargeService,
         SaleInvoiceCommonServiceChargeRepository saleInvoiceCommonServiceChargeRepository,
         SaleInvoiceCommonServiceChargeQueryService saleInvoiceCommonServiceChargeQueryService,
-        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService,
+        SalesInvoiceChildInsertService salesInvoiceChildInsertService
     ) {
         this.saleInvoiceCommonServiceChargeService = saleInvoiceCommonServiceChargeService;
         this.saleInvoiceCommonServiceChargeRepository = saleInvoiceCommonServiceChargeRepository;
         this.saleInvoiceCommonServiceChargeQueryService = saleInvoiceCommonServiceChargeQueryService;
         this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
+        this.salesInvoiceChildInsertService = salesInvoiceChildInsertService;
     }
 
     /**
@@ -75,12 +79,8 @@ public class SaleInvoiceCommonServiceChargeResource {
         if (saleInvoiceCommonServiceCharge.getId() != null) {
             throw new BadRequestAlertException("A new saleInvoiceCommonServiceCharge cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        saleInvoiceCommonServiceCharge = saleInvoiceCommonServiceChargeService.save(saleInvoiceCommonServiceCharge);
-        return ResponseEntity.created(new URI("/api/sale-invoice-common-service-charges/" + saleInvoiceCommonServiceCharge.getId()))
-            .headers(
-                HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, saleInvoiceCommonServiceCharge.getId().toString())
-            )
-            .body(saleInvoiceCommonServiceCharge);
+        saleInvoiceCommonServiceCharge = salesInvoiceChildInsertService.insertCommonServiceCharge(saleInvoiceCommonServiceCharge);
+        return ResponseEntity.created(new URI("/api/sale-invoice-common-service-charges")).body(saleInvoiceCommonServiceCharge);
     }
 
     /**

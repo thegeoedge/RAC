@@ -33,12 +33,12 @@
           <thead>
             <tr>
               <th *ngIf="false">ID</th>
-              <th>Invoice Id</th>
+              <th *ngIf="false">Invoice Id</th>
               <th *ngIf="false">Line Id</th>
               <th *ngIf="false">Option Id</th>
               <th>Service Name</th>
               <th *ngIf="false">Service Description</th>
-              <th>Value</th>
+              <th class="text-end">Value</th>
               <th>Is Customer Service</th>
               <th>Actions</th>
             </tr>
@@ -69,8 +69,8 @@
               <td *ngIf="false">
                 <input type="text" class="form-control" formControlName="serviceDescription" />
               </td>
-              <td>
-                <input type="number" class="form-control" formControlName="value" />
+              <td class="text-end">
+                <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="value" />
               </td>
               <td>
                 <input type="checkbox" class="form-check" formControlName="isCustomerService" />

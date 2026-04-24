@@ -511,6 +511,16 @@
                     </a>
 
                     <button
+                      type="button"
+                      (click)="navigateToInvoice(autocarejob)"
+                      class="btn btn-success btn-sm"
+                      data-cy="entityInvoiceButton"
+                      title="Create Invoice"
+                    >
+                      <fa-icon icon="file-invoice"></fa-icon>
+                    </button>
+
+                    <button
                       type="submit"
                       (click)="delete(autocarejob)"
                       class="btn btn-danger btn-sm"

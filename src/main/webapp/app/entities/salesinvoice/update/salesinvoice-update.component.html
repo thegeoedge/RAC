@@ -55,11 +55,13 @@
             <div class="mb-2">
               <label class="form-label" for="field_amountOwing">Amount Owing</label>
               <input
-                type="number"
-                class="form-control form-control-sm"
+                type="text"
+                inputmode="decimal"
+                class="form-control form-control-sm text-end"
                 name="amountOwing"
                 id="field_amountOwing"
                 formControlName="amountowing"
+                appDecimal
               />
             </div>
             <div class="mb-2">
@@ -158,11 +160,13 @@
                 <div class="mb-3">
                   <label class="form-label me-2" for="field_subTotal">Sub Total</label>
                   <input
-                    type="number"
-                    class="form-control form-control-sm"
+                    type="text"
+                    inputmode="decimal"
+                    class="form-control form-control-sm text-end"
                     name="subTotal"
                     id="field_subTotal"
                     formControlName="subtotal"
+                    appDecimal
                   />
                 </div>
 
@@ -252,11 +256,13 @@
                 <div class="mb-3">
                   <label class="form-label me-2" for="field_netTotal">Net Total</label>
                   <input
-                    type="number"
-                    class="form-control form-control-sm"
+                    type="text"
+                    inputmode="decimal"
+                    class="form-control form-control-sm text-end"
                     name="netTotal"
                     id="field_netTotal"
                     formControlName="nettotal"
+                    appDecimal
                   />
                 </div>
               </div>

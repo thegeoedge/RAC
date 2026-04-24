@@ -13,12 +13,13 @@ import { SalesInvoiceLinesFormGroup, SalesInvoiceLinesFormService } from './sale
 import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
 import CommonModule from 'app/shared/shared.module';
+import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-update',
   templateUrl: './sales-invoice-lines-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
+  imports: [SharedModule, FormsModule, ReactiveFormsModule, DecimalInputDirective],
 })
 export class SalesInvoiceLinesUpdateComponent implements OnInit {
   isSaving = false;
@@ -59,13 +60,20 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   }
 
   addItemToFormArray(item: any): void {
+    const resolvedSellingPrice = Number(item.lastsellingprice ?? item.sellingprice ?? item.itemprice ?? 0);
     const newItem = this.fb.group({
+      itemid: [item.id ?? item.itemid ?? null],
       itemcode: [item.code || item.itemcode || ''], // Match template
       itemname: [item.name || item.itemname], // Match template
-      quantity: [item.availablequantity || item.quantity],
-      sellingprice: [item.lastsellingprice || item.lastsellingprice || item.sellingprice], // Match template
+      description: [item.description ?? null],
+      unitofmeasurement: [item.unitofmeasurement ?? null],
+      quantity: [item.availablequantity ?? item.quantity ?? 0],
+      itemcost: [Number(item.lastcost ?? item.itemcost ?? 0)],
+      itemprice: [resolvedSellingPrice],
+      tax: [Number(item.tax ?? 0)],
+      sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
-      discount: [0],
+      discount: [Number(item.discount ?? 0)],
     });
     console.log('New Item Addedaazzz:', newItem.value);
     console.log(this.selectedItem);
@@ -106,16 +114,19 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     console.log('Selected Item on Initttt:', this.selectedItem); // Log selected item
 
     this.activatedRoute.data.subscribe(({ salesInvoiceLines }) => {
-      // Ensure salesInvoiceLines is always an array
-      this.salesInvoiceLines = Array.isArray(salesInvoiceLines) ? salesInvoiceLines : [salesInvoiceLines];
-
-      if (salesInvoiceLines && salesInvoiceLines.length > 0) {
-        this.salesInvoiceLines = salesInvoiceLines;
-        this.updateForm(salesInvoiceLines);
+      if (salesInvoiceLines) {
+        if (Array.isArray(salesInvoiceLines)) {
+          if (salesInvoiceLines.length > 0) {
+            this.salesInvoiceLines = salesInvoiceLines;
+            this.updateForm(this.salesInvoiceLines);
+          }
+        } else if (salesInvoiceLines.id !== null && salesInvoiceLines.id !== undefined) {
+          // It's a single object with a valid ID
+          this.salesInvoiceLines = [salesInvoiceLines];
+          this.updateForm(this.salesInvoiceLines);
+        }
       }
-
-      console.log('Sales Invoice Lines:', this.salesInvoiceLines); // Add this line to see if the data is correct
-      this.updateForm(this.salesInvoiceLines);
+      console.log('Sales Invoice Lines:', this.salesInvoiceLines);
     });
   }
 
@@ -138,6 +149,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         itemcode: selectedItem.code,
         itemname: selectedItem.name,
         itemid: selectedItem.id, // Update other fields as necessary
+        description: selectedItem.description ?? null,
+        unitofmeasurement: selectedItem.unitofmeasurement ?? null,
+        itemcost: Number(selectedItem.lastcost ?? 0),
+        itemprice: Number(selectedItem.lastsellingprice ?? 0),
+        sellingprice: Number(selectedItem.lastsellingprice ?? 0),
+        tax: Number((selectedItem as any).tax ?? 0),
         // Add any other fields you want to update with the selected item's details
       });
     } else {
@@ -164,6 +181,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         itemcode: selectedItem.code,
         itemname: selectedItem.name,
         itemid: selectedItem.id, // Update other fields as necessary
+        description: selectedItem.description ?? null,
+        unitofmeasurement: selectedItem.unitofmeasurement ?? null,
+        itemcost: Number(selectedItem.lastcost ?? 0),
+        itemprice: Number(selectedItem.lastsellingprice ?? 0),
+        sellingprice: Number(selectedItem.lastsellingprice ?? 0),
+        tax: Number((selectedItem as any).tax ?? 0),
         // Add any other fields you want to update with the selected item's details
       });
     } else {
@@ -312,11 +335,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     // Get the invoice lines from the form (now it's a FormArray)
     let salesInvoiceLines = this.salesInvoiceLinesFormService.getSalesInvoiceLines(this.salesInvoiceLinesArray);
 
-    // Assign invoiceid to all rows and ensure unique lineid
+    // Assign invoiceid to all rows and ensure unique lineid across all aggregated lines
     salesInvoiceLines = salesInvoiceLines.map((line, index) => ({
       ...line,
       invoiceid: inid, // Assign the provided invoice ID
-      lineid: line.lineid ?? index + 1, // Assign a unique `lineid` if it's missing
+      lineid: index + 1, // Recalculate unique lineid for the current invoice
+      description: line.description ?? line.itemname ?? null,
     }));
 
     console.log('Modified sales invoice lines:', salesInvoiceLines);
@@ -324,11 +348,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     const saveObservables: Observable<HttpResponse<ISalesInvoiceLines>>[] = [];
 
     salesInvoiceLines.forEach(line => {
-      if (line.id === null || line.id === undefined) {
-        // If id is null or undefined, it's a new line, so we create it
-        saveObservables.push(this.salesInvoiceLinesService.create({ ...line, id: null }));
+      // If the line doesn't have an ID, or if it belongs to a different invoice (aggregated data), create it as new
+      if (line.id === null || line.id === undefined || line.invoiceid !== inid) {
+        saveObservables.push(this.salesInvoiceLinesService.create({ ...line, id: null, invoiceid: inid }));
       } else {
-        // If id is not null, it's an existing line, so we update it
+        // If it's an existing line for THIS invoice, update it
         saveObservables.push(this.salesInvoiceLinesService.update(line));
       }
     });

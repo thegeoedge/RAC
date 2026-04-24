@@ -3,6 +3,7 @@ package com.heavenscode.rac.web.rest;
 import com.heavenscode.rac.domain.SalesInvoiceLines;
 import com.heavenscode.rac.repository.SalesInvoiceLinesRepository;
 import com.heavenscode.rac.service.LegacyInvoiceChildrenReadService;
+import com.heavenscode.rac.service.SalesInvoiceChildInsertService;
 import com.heavenscode.rac.service.SalesInvoiceLinesQueryService;
 import com.heavenscode.rac.service.SalesInvoiceLinesService;
 import com.heavenscode.rac.service.criteria.SalesInvoiceLinesCriteria;
@@ -47,17 +48,20 @@ public class SalesInvoiceLinesResource {
 
     private final SalesInvoiceLinesQueryService salesInvoiceLinesQueryService;
     private final LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService;
+    private final SalesInvoiceChildInsertService salesInvoiceChildInsertService;
 
     public SalesInvoiceLinesResource(
         SalesInvoiceLinesService salesInvoiceLinesService,
         SalesInvoiceLinesRepository salesInvoiceLinesRepository,
         SalesInvoiceLinesQueryService salesInvoiceLinesQueryService,
-        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService
+        LegacyInvoiceChildrenReadService legacyInvoiceChildrenReadService,
+        SalesInvoiceChildInsertService salesInvoiceChildInsertService
     ) {
         this.salesInvoiceLinesService = salesInvoiceLinesService;
         this.salesInvoiceLinesRepository = salesInvoiceLinesRepository;
         this.salesInvoiceLinesQueryService = salesInvoiceLinesQueryService;
         this.legacyInvoiceChildrenReadService = legacyInvoiceChildrenReadService;
+        this.salesInvoiceChildInsertService = salesInvoiceChildInsertService;
     }
 
     /**
@@ -74,10 +78,8 @@ public class SalesInvoiceLinesResource {
         if (salesInvoiceLines.getId() != null) {
             throw new BadRequestAlertException("A new salesInvoiceLines cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        salesInvoiceLines = salesInvoiceLinesService.save(salesInvoiceLines);
-        return ResponseEntity.created(new URI("/api/sales-invoice-lines/" + salesInvoiceLines.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, salesInvoiceLines.getId().toString()))
-            .body(salesInvoiceLines);
+        salesInvoiceLines = salesInvoiceChildInsertService.insertInvoiceLine(salesInvoiceLines);
+        return ResponseEntity.created(new URI("/api/sales-invoice-lines")).body(salesInvoiceLines);
     }
 
     /**

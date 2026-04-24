@@ -1,5 +1,5 @@
 import { Component, NgZone, inject, OnInit } from '@angular/core';
-import { HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router, RouterModule } from '@angular/router';
 import { combineLatest, filter, Observable, Subscription, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -16,6 +16,8 @@ import { IAutocarejob } from '../autocarejob.model';
 import { EntityArrayResponseType, AutocarejobService } from '../service/autocarejob.service';
 import { AutocarejobDeleteDialogComponent } from '../delete/autocarejob-delete-dialog.component';
 import { AutocareclosejobComponent } from '../list/autocareclosejob.component';
+import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
+import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.model';
 
 @Component({
   standalone: true,
@@ -49,6 +51,7 @@ export class AutocareopenjobComponent implements OnInit {
 
   public router = inject(Router);
   protected autocarejobService = inject(AutocarejobService);
+  protected autojobsinvoiceService = inject(AutojobsinvoiceService);
   protected activatedRoute = inject(ActivatedRoute);
   protected sortService = inject(SortService);
   protected modalService = inject(NgbModal);
@@ -115,6 +118,23 @@ export class AutocareopenjobComponent implements OnInit {
 
   needsExternalRegistration(job: IAutocarejob): boolean {
     return !job.customerid || !job.vehicleid;
+  }
+
+  navigateToInvoice(job: IAutocarejob): void {
+    if (job.id == null) return;
+    this.autojobsinvoiceService.query({ 'jobid.equals': job.id, page: 0, size: 1 }).subscribe({
+      next: (res: HttpResponse<IAutojobsinvoice[]>) => {
+        const invoices = res.body || [];
+        if (invoices.length > 0 && invoices[0].id != null) {
+          this.router.navigate(['/salesinvoice', 'new'], { queryParams: { id: invoices[0].id } });
+        } else {
+          alert('No invoice found for this job.');
+        }
+      },
+      error: () => {
+        alert('Failed to load invoice. Please try again.');
+      },
+    });
   }
 
   private buildEncodedQuery(params: Record<string, string>): string {

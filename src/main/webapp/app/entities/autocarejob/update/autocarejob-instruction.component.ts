@@ -1073,7 +1073,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   mapFormToAutojobsinvoice(formValue: any): IAutojobsinvoice {
     return {
-      id: formValue.id || null,
+      id: this.invoiceId || formValue.id || null,
       jobid: this.editForm.controls.id.value ?? 0,
       code: formValue.code || '',
       quoteid: formValue.quoteid || null,

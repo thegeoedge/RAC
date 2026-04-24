@@ -16,12 +16,13 @@ import {
 } from './sales-invoice-service-charge-line-form.service';
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
+import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 
 @Component({
   standalone: true,
   selector: 'jhi-sales-invoice-service-charge-line-update',
   templateUrl: './sales-invoice-service-charge-line-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
+  imports: [SharedModule, FormsModule, ReactiveFormsModule, DecimalInputDirective],
 })
 export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   isSaving = false;
@@ -73,8 +74,6 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       if (salesInvoiceServiceChargeLines && salesInvoiceServiceChargeLines.length > 0) {
         this.salesInvoiceServiceChargeLine = salesInvoiceServiceChargeLines;
         this.updateForm(salesInvoiceServiceChargeLines);
-      } else {
-        this.addServiceChargeLine();
       }
     });
     this.loadVehicleTypes();
@@ -316,7 +315,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     const serviceChargeLines = this.serviceChargeLinesArray.value.map((line: any, index: number) => ({
       ...line,
       invoiceId: inid, // Assign invoice ID
-      lineId: line.lineid ?? index + 1, // Ensure unique line ID
+      lineId: index + 1, // Ensure unique line ID for this invoice
       optionId: index + 1,
     }));
 
@@ -325,11 +324,17 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     const requests: Observable<HttpResponse<ISalesInvoiceServiceChargeLine>>[] = serviceChargeLines.map(
       (line: ISalesInvoiceServiceChargeLine | NewSalesInvoiceServiceChargeLine) => {
         console.log('Processing line:', line);
-        console.log('Line ID:', line?.id); // Use optional chaining to avoid errors
-
-        return line.id
-          ? this.salesInvoiceServiceChargeLineService.update(line)
-          : this.salesInvoiceServiceChargeLineService.create(line as NewSalesInvoiceServiceChargeLine);
+        // If the line doesn't have an ID, or if it belongs to a different invoice, create it as new
+        if (!line.id || line.invoiceId !== inid) {
+          return this.salesInvoiceServiceChargeLineService.create({
+            ...line,
+            id: null,
+            invoiceId: inid,
+          } as NewSalesInvoiceServiceChargeLine);
+        } else {
+          // If it's an existing line for THIS invoice, update it
+          return this.salesInvoiceServiceChargeLineService.update(line);
+        }
       },
     );
 

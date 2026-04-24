@@ -21,8 +21,8 @@
             <th *ngIf="showCodeField" style="width: 150px">Item Price</th>
             <th style="width: 100px">Discount</th>
             <th *ngIf="showCodeField" style="width: 120px">Tax</th>
-            <th style="width: 150px">Selling Price</th>
-            <th style="width: 150px">Line Total</th>
+            <th style="width: 150px" class="text-end">Selling Price</th>
+            <th style="width: 150px" class="text-end">Line Total</th>
             <th *ngIf="showCodeField" style="width: 120px">Lmu</th>
             <th *ngIf="showCodeField" style="width: 180px">Lmd</th>
             <th *ngIf="showCodeField" style="width: 100px">Nbt</th>
@@ -50,7 +50,7 @@
                 [attr.list]="'autocomplete' + i"
               />
               <datalist [id]="'autocomplete' + i">
-                <option *ngFor="let item of filteredItems[i]" [value]="item.code">
+                <option *ngFor="let item of filteredItems[i]" [value]="item.name">
                   {{ item.name }}
                 </option>
               </datalist>
@@ -62,7 +62,7 @@
                 type="text"
                 class="form-control border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 w-48"
                 (input)="onItemNameInput($event, i)"
-                (change)="onItemCodeSelect($event, i)"
+                (change)="onItemNameSelect($event, i)"
                 [attr.list]="'autocomplete' + i"
               />
               <datalist [id]="'autocomplete' + i">
@@ -73,14 +73,18 @@
             </td>
 
             <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="description" /></td>
-            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName=" unitofmeasurement" /></td>
+            <td *ngIf="showCodeField"><input type="text" class="form-control" formControlName="unitofmeasurement" /></td>
             <td><input type="number" class="form-control" formControlName="quantity" (input)="onQuantityChange(i)" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemcost" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemprice" /></td>
             <td><input type="number" class="form-control" formControlName="discount" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="tax" /></td>
-            <td><input type="number" class="form-control" formControlName="sellingprice" /></td>
-            <td><input type="number" class="form-control" formControlName="linetotal" /></td>
+            <td class="text-end">
+              <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="sellingprice" />
+            </td>
+            <td class="text-end">
+              <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="linetotal" />
+            </td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="lmu" /></td>
             <td *ngIf="showCodeField"><input type="datetime-local" class="form-control" formControlName="lmd" /></td>
             <td *ngIf="showCodeField"><input type="checkbox" class="form-check" formControlName="nbt" /></td>

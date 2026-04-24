@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { debounceTime } from 'rxjs/operators';
 
@@ -24,8 +24,12 @@ import { IInventory } from 'app/entities/inventory/inventory.model';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
+import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.model';
 import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
 import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.component';
+import { AutocarejobService } from 'app/entities/autocarejob/service/autocarejob.service';
+import { IAutocarejob } from 'app/entities/autocarejob/autocarejob.model';
+import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -38,6 +42,7 @@ import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.
     SaleInvoiceCommonServiceChargeUpdateComponent,
     SalesInvoiceServiceChargeLineUpdateComponent,
     ReceiptModalComponent,
+    DecimalInputDirective,
   ],
 })
 export class SalesinvoiceUpdateComponent implements OnInit {
@@ -59,6 +64,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
   protected activatedRoute = inject(ActivatedRoute);
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
+  protected autocarejobService = inject(AutocarejobService);
 
   filteredItems: IInventory[][] = [];
   ISalesInvoiceLines: ISalesInvoiceLines[] = [];
@@ -108,9 +114,6 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       }
 
       this.loadSalesInvoiceDummy(sourceInvoiceId);
-      this.invoicelines(sourceInvoiceId);
-      this.servicelines(sourceInvoiceId);
-      this.servicecommonlines(sourceInvoiceId);
     });
 
     this.loadVehicleTypes();
@@ -249,7 +252,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
   }
 
-  fetchedServicesCommon: { itemname: string; sellingprice: number }[] = [];
+  fetchedServicesCommon: { itemcode: string; itemname: string; sellingprice: number }[] = [];
 
   private toValidId(value: unknown): number | null {
     const numericValue = Number(value);
@@ -262,85 +265,79 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.fetchedServicesCommon = [];
   }
 
-  private servicecommonlines(id: number): void {
-    this.salesInvoiceService.fetchServiceCommon(id).subscribe(
-      (res: HttpResponse<ISaleInvoiceCommonServiceCharge[]>) => {
-        if (res.body && res.body.length > 0) {
-          // Clear previous fetched items before adding new ones
-          this.fetchedServicesCommon = [];
-
-          res.body.forEach(item => {
-            this.fetchedServicesCommon.push({
-              itemname: item.name ?? '',
-
-              sellingprice: item.value ?? 0,
+  private servicecommonlines(ids: number[]): void {
+    if (!ids || ids.length === 0) return;
+    forkJoin(ids.map(id => this.salesInvoiceService.fetchServiceCommon(id))).subscribe(
+      responses => {
+        this.fetchedServicesCommon = [];
+        responses.forEach(res => {
+          if (res.body && res.body.length > 0) {
+            res.body.forEach((item: any) => {
+              this.fetchedServicesCommon.push({
+                itemcode: item.code ?? '',
+                itemname: item.name ?? '',
+                sellingprice: item.value ?? 0,
+              });
             });
-          });
-
-          // Log the complete array of fetched items
-          console.log('Fetched Itemssssscommon:', res.body);
-        } else {
-          console.log('No invoice lines found.');
-        }
+          }
+        });
+        this.fetchedServicesCommon = [...this.fetchedServicesCommon];
+        console.log('Fetched Itemssssscommon:', this.fetchedServicesCommon);
       },
       error => {
-        console.error('Error fetching invoice lines:', error);
+        console.error('Error fetching service common lines:', error);
       },
     );
   }
 
   fetchedServices: { itemname: string; sellingprice: number }[] = [];
 
-  private servicelines(id: number): void {
-    this.salesInvoiceService.fetchService(id).subscribe(
-      (res: HttpResponse<NewAutojobsalesinvoiceservicechargeline[]>) => {
-        if (res.body && res.body.length > 0) {
-          // Clear previous fetched items before adding new ones
-          this.fetchedServices = [];
-
-          res.body.forEach(item => {
-            this.fetchedServices.push({
-              itemname: item.servicename ?? '',
-
-              sellingprice: item.value ?? 0,
+  private servicelines(ids: number[]): void {
+    if (!ids || ids.length === 0) return;
+    forkJoin(ids.map(id => this.salesInvoiceService.fetchService(id))).subscribe(
+      responses => {
+        this.fetchedServices = [];
+        responses.forEach(res => {
+          if (res.body && res.body.length > 0) {
+            res.body.forEach((item: any) => {
+              this.fetchedServices.push({
+                itemname: item.servicename ?? '',
+                sellingprice: item.value ?? 0,
+              });
             });
-          });
-          console.log(this.fetchedServices);
-          // Log the complete array of fetched items
-          console.log('Fetched Itemssssssssssssssssss:', res.body);
-        } else {
-          console.log('No invoice lines found.');
-        }
+          }
+        });
+        this.fetchedServices = [...this.fetchedServices];
+        console.log('Fetched Itemssssssssssssssssss:', this.fetchedServices);
       },
       error => {
-        console.error('Error fetching invoice lines:', error);
+        console.error('Error fetching service lines:', error);
       },
     );
   }
 
-  fetchedItems: { itemname: string; quantity: number; sellingprice: number }[] = [];
+  fetchedItems: { itemcode: string; itemname: string; unitofmeasurement?: string; quantity: number; sellingprice: number }[] = [];
 
-  private invoicelines(id: number): void {
-    this.salesInvoiceService.fetchInvoiceLines(id).subscribe(
-      (res: HttpResponse<ISalesInvoiceLines[]>) => {
-        if (res.body && res.body.length > 0) {
-          console.log('counts', res.body);
-          // Clear previous fetched items before adding new ones
-          this.fetchedItems = [];
-
-          res.body.forEach(item => {
-            this.fetchedItems.push({
-              itemname: item.itemname ?? '',
-              quantity: item.quantity ?? 0,
-              sellingprice: item.sellingprice ?? 0,
+  private invoicelines(ids: number[]): void {
+    if (!ids || ids.length === 0) return;
+    forkJoin(ids.map(id => this.salesInvoiceService.fetchInvoiceLines(id))).subscribe(
+      responses => {
+        this.fetchedItems = [];
+        responses.forEach(res => {
+          if (res.body && res.body.length > 0) {
+            res.body.forEach((item: any) => {
+              this.fetchedItems.push({
+                itemcode: item.itemcode ?? '',
+                itemname: item.itemname ?? '',
+                unitofmeasurement: item.unitofmeasurement ?? '',
+                quantity: item.quantity ?? 0,
+                sellingprice: item.sellingprice ?? 0,
+              });
             });
-          });
-
-          // Log the complete array of fetched items
-          console.log('Fetched Items:', this.fetchedItems);
-        } else {
-          console.log('No invoice lines found.');
-        }
+          }
+        });
+        this.fetchedItems = [...this.fetchedItems];
+        console.log('Fetched Items:', this.fetchedItems);
       },
       error => {
         console.error('Error fetching invoice lines:', error);
@@ -362,7 +359,6 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.fetchaccountid(salesInvoiceDummy.customername);
       this.customername = salesInvoiceDummy.customername;
       this.customeraddress = salesInvoiceDummy.customeraddress;
-      this.vehicleno = salesInvoiceDummy.vehicleno;
       this.receiptdate = salesInvoiceDummy.receiptdate;
       this.term = salesInvoiceDummy.term;
       this.date = salesInvoiceDummy.date;
@@ -378,26 +374,77 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.createdby = salesInvoiceDummy.createdby;
       this.totalamount = salesInvoiceDummy.totalamount;
 
-      const customerNameValue = this.editForm.get('customername')?.value || '';
-      // Create a new object and assign customername to customerName
-      const transformedData = {
+      const transformedData: any = {
         id: null as unknown as number,
         customername: (salesInvoiceDummy as any).customername,
-        vehicleno: (salesInvoiceDummy as any).vehicleno,
+        vehicleno: '',
         customeraddress: (salesInvoiceDummy as any).customeraddress,
-
-        subtotal: Number((salesInvoiceDummy as any).subtotal) || 0, // Ensure it's a number
-        nettotal: Number((salesInvoiceDummy as any).nettotal) || 0, // Replace "8888" with a dynamic value
+        subtotal: Number((salesInvoiceDummy as any).subtotal) || 0,
+        nettotal: Number((salesInvoiceDummy as any).nettotal) || 0,
         totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,
         totaldiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
       };
 
-      this.updateForm(transformedData);
+      // Fetch vehicle number from the linked autocarejob via jobid
+      const jobId = (salesInvoiceDummy as any).jobid;
+      if (jobId != null && Number(jobId) > 0) {
+        this.autocarejobService.find(Number(jobId)).subscribe({
+          next: (jobRes: HttpResponse<IAutocarejob>) => {
+            const job = jobRes.body;
+            const vehicleNumber = job?.vehiclenumber ?? '';
+            transformedData.vehicleno = vehicleNumber;
+            this.vehicleno = vehicleNumber;
+            this.updateForm(transformedData);
+            console.log('Vehicle number fetched from autocarejob:', vehicleNumber);
+          },
+          error: () => {
+            this.updateForm(transformedData);
+          },
+        });
+
+        // Fetch all invoice IDs for this job to aggregate lines
+        this.autojobinvoice.query({ 'jobid.equals': Number(jobId), page: 0, size: 1000 }).subscribe({
+          next: (invoiceResponse: HttpResponse<IAutojobsinvoice[]>) => {
+            const invoices = invoiceResponse.body || [];
+            const invoiceIds = invoices.map(inv => inv.id).filter(invId => invId != null) as number[];
+            if (invoiceIds.length > 0) {
+              this.invoicelines(invoiceIds);
+              this.servicelines(invoiceIds);
+              this.servicecommonlines(invoiceIds);
+            } else {
+              this.invoicelines([id]);
+              this.servicelines([id]);
+              this.servicecommonlines([id]);
+            }
+          },
+          error: () => {
+            this.invoicelines([id]);
+            this.servicelines([id]);
+            this.servicecommonlines([id]);
+          },
+        });
+      } else {
+        this.updateForm(transformedData);
+        this.invoicelines([id]);
+        this.servicelines([id]);
+        this.servicecommonlines([id]);
+      }
+
       console.log('Transformed Data:', transformedData);
     });
   }
 
-  selectedItem: { code: string; name: string; availablequantity: number; lastsellingprice: number } | null = null;
+  selectedItem: {
+    id?: number | null;
+    code: string;
+    name: string;
+    description?: string | null;
+    unitofmeasurement?: string | null;
+    availablequantity: number;
+    lastcost?: number | null;
+    lastsellingprice: number;
+  } | null = null;
+  private selectedInventoryItem: IInventory | null = null;
 
   itemname: string = ''; // Variable to hold the selected item's name
   availablequantity: number = 0;
@@ -412,21 +459,27 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
     if (selectedItem) {
       console.log('Selected Item:', selectedItem);
+      this.selectedInventoryItem = selectedItem;
       this.itemname = selectedItem.name ?? ''; // Update itemName with the selected item's name or an empty string if undefined
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
       this.code = selectedItem.code ?? '';
     } else {
       console.warn('No matching item found for:', selectedCode);
+      this.selectedInventoryItem = null;
       this.itemname = ''; // Clear itemName if no match is found
     }
   }
   onAddItem(): void {
     // Store the selected item as an object
     this.selectedItem = {
+      id: this.selectedInventoryItem?.id ?? null,
       code: this.code,
       name: this.itemname,
+      description: this.selectedInventoryItem?.description ?? this.itemname,
+      unitofmeasurement: this.selectedInventoryItem?.unitofmeasurement ?? null,
       availablequantity: this.buyquantity,
+      lastcost: this.selectedInventoryItem?.lastcost ?? 0,
       lastsellingprice: this.lastsellingprice,
     };
 
@@ -440,6 +493,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.availablequantity = 0;
     this.lastsellingprice = 0;
     this.code = '';
+    this.selectedInventoryItem = null;
   }
 
   onItemCodeInput(event: Event, index: number): void {
