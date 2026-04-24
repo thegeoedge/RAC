@@ -180,6 +180,7 @@ public class SalesInvoiceLinesResource {
         columns.put("quantity", "quantity");
         columns.put("unitofmeasurement", "unitofmeasurement");
         columns.put("itemprice", "itemprice");
+        columns.put("sellingprice", "sellingprice");
         columns.put("linetotal", "linetotal");
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId(

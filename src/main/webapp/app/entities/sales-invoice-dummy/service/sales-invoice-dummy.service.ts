@@ -47,21 +47,20 @@ export class SalesInvoiceDummyService {
   );
 
   fetchService(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceId.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrli}/invoice/${id}`, { observe: 'response' });
   }
+
   fetchServiceCommon(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceId.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}/invoice/${id}`, { observe: 'response' });
   }
+
   fetchServiceCommondummy(id: number): Observable<HttpResponse<any>> {
     const options = createRequestOption({ 'invoiceid.equals': id });
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercomd}`, { params: options, observe: 'response' });
   }
 
   fetchInvoiceLines(id: number): Observable<HttpResponse<any>> {
-    const options = createRequestOption({ 'invoiceid.equals': id });
-    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}`, { params: options, observe: 'response' });
+    return this.http.get<any>(`${this.resourceInvoiceLinesUrl}/invoice/${id}`, { observe: 'response' });
   }
   create(salesInvoiceDummy: NewSalesInvoiceDummy): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(salesInvoiceDummy);
