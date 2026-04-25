@@ -40,21 +40,91 @@
     <span>Sales Invoices</span>
 
     <!-- Action Buttons -->
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2 ms-3" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span>Refresh List</span>
-      </button>
+    <!-- Search and Action Buttons -->
+    <div class="d-flex align-items-center justify-content-end flex-wrap gap-3 mt-2">
+      <!-- Search Column Checkboxes -->
+      <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.9rem; font-weight: normal">
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="searchCode" [checked]="searchByCode" (change)="toggleFilter('code')" />
+          <label class="form-check-label" for="searchCode">Code</label>
+        </div>
+        <div class="form-check mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="searchName"
+            [checked]="searchByCustomerName"
+            (change)="toggleFilter('name')"
+          />
+          <label class="form-check-label" for="searchName">Customer Name</label>
+        </div>
+        <div class="form-check mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="searchVehicle"
+            [checked]="searchByVehicleNo"
+            (change)="toggleFilter('vehicle')"
+          />
+          <label class="form-check-label" for="searchVehicle">Vehicle No</label>
+        </div>
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="searchDate" [checked]="searchByDateRange" (change)="toggleFilter('date')" />
+          <label class="form-check-label" for="searchDate">Date Range</label>
+        </div>
+      </div>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-salesinvoice"
-        [routerLink]="['/salesinvoice/new']"
-      >
-        <fa-icon icon="plus"></fa-icon>
-        <span>Create New Sales Invoice</span>
-      </button>
+      <!-- Date Range Inputs -->
+      <div class="d-flex align-items-center gap-2" *ngIf="searchByDateRange">
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="startDate"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="filterData()"
+          style="width: 130px"
+        />
+        <span class="text-muted">to</span>
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="endDate"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="filterData()"
+          style="width: 130px"
+        />
+      </div>
+
+      <!-- Search Input -->
+      <div class="flex-grow-0" style="min-width: 200px">
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          placeholder="Search..."
+          [(ngModel)]="searchQuery"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterData()"
+        />
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2">
+        <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading" title="Refresh List">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+          <span>Refresh List</span>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary btn-sm jh-create-entity create-salesinvoice"
+          [routerLink]="['/salesinvoice/new']"
+          title="Create New Sales Invoice"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span>New Sales Invoice</span>
+        </button>
+      </div>
     </div>
   </h2>
 
@@ -143,11 +213,21 @@
               <td>{{ salesinvoice.vehicleno }}</td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a [routerLink]="['/salesinvoice', salesinvoice.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                  <a
+                    [routerLink]="['/salesinvoice', salesinvoice.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                    title="View Details"
+                  >
                     <fa-icon icon="eye"></fa-icon>
                     <!-- <span class="d-none d-md-inline">View</span> -->
                   </a>
-                  <a [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a
+                    [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                    title="Edit Invoice"
+                  >
                     <fa-icon icon="pencil-alt"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Edit</span> -->
                   </a>
@@ -156,12 +236,19 @@
                     class="btn btn-secondary btn-sm"
                     data-cy="entityEditButton"
                     [queryParams]="{ id: salesinvoice.id, invoice: salesinvoice.invoicedate }"
+                    title="Create Dummy Invoice"
                   >
                     <fa-icon icon="book"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Dummy Invoice</span> -->
                   </a>
 
-                  <button type="submit" (click)="delete(salesinvoice)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button
+                    type="submit"
+                    (click)="delete(salesinvoice)"
+                    class="btn btn-danger btn-sm"
+                    data-cy="entityDeleteButton"
+                    title="Delete Invoice"
+                  >
                     <fa-icon icon="times"></fa-icon>
                     <!-- <span class="d-none d-md-inline">Delete</span> -->
                   </button>

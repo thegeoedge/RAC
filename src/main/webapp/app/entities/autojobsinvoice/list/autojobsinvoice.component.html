@@ -1,256 +1,182 @@
-<div>
+<style>
+  /* Responsive table styling */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Compact table styling */
+  .table-sm th,
+  .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Striped rows for better readability */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Button group styling */
+  .btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Ensure the table fits within the container */
+  .container-fluid {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  /* Add spacing between buttons */
+  .btn-group .btn {
+    margin-right: 0.25rem;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Page Heading -->
   <h2 id="page-heading" data-cy="AutojobsinvoiceHeading">
     <span>Autojobsinvoices</span>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
-        <span>Refresh list</span>
-      </button>
+    <!-- Search and Action Buttons -->
+    <div class="d-flex align-items-center justify-content-end flex-wrap gap-3 mt-2">
+      <!-- Search Column Checkboxes -->
+      <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.9rem; font-weight: normal">
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="searchCode" [checked]="searchByCode" (change)="toggleFilter('code')" />
+          <label class="form-check-label" for="searchCode">Code</label>
+        </div>
+        <div class="form-check mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="searchName"
+            [checked]="searchByCustomerName"
+            (change)="toggleFilter('name')"
+          />
+          <label class="form-check-label" for="searchName">Customer Name</label>
+        </div>
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="searchJob" [checked]="searchByJobId" (change)="toggleFilter('job')" />
+          <label class="form-check-label" for="searchJob">Job ID</label>
+        </div>
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="searchDate" [checked]="searchByDateRange" (change)="toggleFilter('date')" />
+          <label class="form-check-label" for="searchDate">Date Range</label>
+        </div>
+      </div>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-autojobsinvoice"
-        [routerLink]="['/autojobsinvoice/new']"
-      >
-        <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Autojobsinvoice</span>
-      </button>
+      <!-- Date Range Inputs -->
+      <div class="d-flex align-items-center gap-2" *ngIf="searchByDateRange">
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="startDate"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="filterData()"
+          style="width: 130px"
+        />
+        <span class="text-muted">to</span>
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="endDate"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="filterData()"
+          style="width: 130px"
+        />
+      </div>
+
+      <!-- Search Input -->
+      <div class="flex-grow-0" style="min-width: 200px">
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          placeholder="Search..."
+          [(ngModel)]="searchQuery"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterData()"
+        />
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2">
+        <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading" title="Refresh List">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+          <span>Refresh List</span>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary btn-sm jh-create-entity create-autojobsinvoice"
+          [routerLink]="['/autojobsinvoice/new']"
+          title="Create New Invoice"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span>New Invoice</span>
+        </button>
+      </div>
     </div>
   </h2>
 
+  <!-- Error and Alert Messages -->
   <jhi-alert-error></jhi-alert-error>
-
   <jhi-alert></jhi-alert>
 
-  <jhi-filter [filters]="filters"></jhi-filter>
-
+  <!-- No Results Message -->
   @if (autojobsinvoices?.length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span>No Autojobsinvoices found</span>
+      <span>No Autojobsinvoices Found</span>
     </div>
   }
 
+  <!-- Autojobsinvoices Table -->
   @if (autojobsinvoices && autojobsinvoices.length > 0) {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
+    <div class="table-responsive" id="entities">
+      <table class="table table-striped table-sm" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [sortState]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span>ID</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
             <th scope="col" jhiSortBy="code">
-              <div class="d-flex">
+              <div class="d-flex align-items-center">
                 <span>Code</span>
-
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="invoicedate">
-              <div class="d-flex">
-                <span>Invoicedate</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createddate">
-              <div class="d-flex">
-                <span>Createddate</span>
-
+              <div class="d-flex align-items-center">
+                <span>Invoice Date</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="jobid">
-              <div class="d-flex">
-                <span>Jobid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="quoteid">
-              <div class="d-flex">
-                <span>Quoteid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="orderid">
-              <div class="d-flex">
-                <span>Orderid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="delieverydate">
-              <div class="d-flex">
-                <span>Delieverydate</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autojobsrepid">
-              <div class="d-flex">
-                <span>Autojobsrepid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autojobsrepname">
-              <div class="d-flex">
-                <span>Autojobsrepname</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="delieverfrom">
-              <div class="d-flex">
-                <span>Delieverfrom</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="customerid">
-              <div class="d-flex">
-                <span>Customerid</span>
-
+              <div class="d-flex align-items-center">
+                <span>Job ID</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="customername">
-              <div class="d-flex">
-                <span>Customername</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="customeraddress">
-              <div class="d-flex">
-                <span>Customeraddress</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="deliveryaddress">
-              <div class="d-flex">
-                <span>Deliveryaddress</span>
-
+              <div class="d-flex align-items-center">
+                <span>Customer Name</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="subtotal">
-              <div class="d-flex">
-                <span>Subtotal</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="totaltax">
-              <div class="d-flex">
-                <span>Totaltax</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="totaldiscount">
-              <div class="d-flex">
-                <span>Totaldiscount</span>
-
+              <div class="d-flex align-items-center">
+                <span>Sub Total</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="nettotal">
-              <div class="d-flex">
-                <span>Nettotal</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="message">
-              <div class="d-flex">
-                <span>Message</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lmu">
-              <div class="d-flex">
-                <span>Lmu</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lmd">
-              <div class="d-flex">
-                <span>Lmd</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="paidamount">
-              <div class="d-flex">
-                <span>Paidamount</span>
-
+              <div class="d-flex align-items-center">
+                <span>Net Total</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="amountowing">
-              <div class="d-flex">
-                <span>Amountowing</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="isactive">
-              <div class="d-flex">
-                <span>Isactive</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="locationid">
-              <div class="d-flex">
-                <span>Locationid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="locationcode">
-              <div class="d-flex">
-                <span>Locationcode</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="referencecode">
-              <div class="d-flex">
-                <span>Referencecode</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdbyid">
-              <div class="d-flex">
-                <span>Createdbyid</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdbyname">
-              <div class="d-flex">
-                <span>Createdbyname</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="autocarecompanyid">
-              <div class="d-flex">
-                <span>Autocarecompanyid</span>
-
+              <div class="d-flex align-items-center">
+                <span>Amount Owing</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
@@ -260,70 +186,49 @@
         <tbody>
           @for (autojobsinvoice of autojobsinvoices; track trackId(autojobsinvoice)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'view']">{{ autojobsinvoice.id }}</a>
-              </td>
-              <td>{{ autojobsinvoice.code }}</td>
+              <td class="text-primary">{{ autojobsinvoice.code }}</td>
               <td>{{ autojobsinvoice.invoicedate | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.createddate | formatMediumDatetime }}</td>
               <td>{{ autojobsinvoice.jobid }}</td>
-              <td>{{ autojobsinvoice.quoteid }}</td>
-              <td>{{ autojobsinvoice.orderid }}</td>
-              <td>{{ autojobsinvoice.delieverydate | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.autojobsrepid }}</td>
-              <td>{{ autojobsinvoice.autojobsrepname }}</td>
-              <td>{{ autojobsinvoice.delieverfrom }}</td>
-              <td>{{ autojobsinvoice.customerid }}</td>
               <td>{{ autojobsinvoice.customername }}</td>
-              <td>{{ autojobsinvoice.customeraddress }}</td>
-              <td>{{ autojobsinvoice.deliveryaddress }}</td>
               <td>{{ autojobsinvoice.subtotal }}</td>
-              <td>{{ autojobsinvoice.totaltax }}</td>
-              <td>{{ autojobsinvoice.totaldiscount }}</td>
               <td>{{ autojobsinvoice.nettotal }}</td>
-              <td>{{ autojobsinvoice.message }}</td>
-              <td>{{ autojobsinvoice.lmu }}</td>
-              <td>{{ autojobsinvoice.lmd | formatMediumDatetime }}</td>
-              <td>{{ autojobsinvoice.paidamount }}</td>
               <td>{{ autojobsinvoice.amountowing }}</td>
-              <td>{{ autojobsinvoice.isactive }}</td>
-              <td>{{ autojobsinvoice.locationid }}</td>
-              <td>{{ autojobsinvoice.locationcode }}</td>
-              <td>{{ autojobsinvoice.referencecode }}</td>
-              <td>{{ autojobsinvoice.createdbyid }}</td>
-              <td>{{ autojobsinvoice.createdbyname }}</td>
-              <td>{{ autojobsinvoice.autocarecompanyid }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <a
                     [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'view']"
                     class="btn btn-info btn-sm"
                     data-cy="entityDetailsButton"
+                    title="View Details"
                   >
                     <fa-icon icon="eye"></fa-icon>
-                    <span class="d-none d-md-inline">View</span>
                   </a>
                   <a
                     [routerLink]="['/salesinvoice', 'new']"
                     class="btn btn-primary btn-sm"
                     data-cy="entityEditButton"
                     [queryParams]="{ id: autojobsinvoice.id }"
+                    title="Create Sales Invoice"
                   >
                     <fa-icon icon="book"></fa-icon>
-                    <span class="d-none d-md-inline">invoice</span>
                   </a>
                   <a
                     [routerLink]="['/autojobsinvoice', autojobsinvoice.id, 'edit']"
                     class="btn btn-primary btn-sm"
                     data-cy="entityEditButton"
+                    title="Edit Invoice"
                   >
                     <fa-icon icon="pencil-alt"></fa-icon>
-                    <span class="d-none d-md-inline">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(autojobsinvoice)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button
+                    type="submit"
+                    (click)="delete(autojobsinvoice)"
+                    class="btn btn-danger btn-sm"
+                    data-cy="entityDeleteButton"
+                    title="Delete Invoice"
+                  >
                     <fa-icon icon="times"></fa-icon>
-                    <span class="d-none d-md-inline">Delete</span>
                   </button>
                 </div>
               </td>
@@ -332,24 +237,19 @@
         </tbody>
       </table>
     </div>
-  }
-  @if (autojobsinvoices && autojobsinvoices.length > 0) {
-    <div>
-      <div class="d-flex justify-content-center">
-        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
-      </div>
 
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="totalItems"
-          [page]="page"
-          [pageSize]="itemsPerPage"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="navigateToPage($event)"
-        ></ngb-pagination>
-      </div>
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
     </div>
   }
 </div>

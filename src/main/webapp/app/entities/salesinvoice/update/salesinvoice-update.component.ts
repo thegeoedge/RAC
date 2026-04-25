@@ -96,6 +96,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   createdby: number = 0;
 
   newcode: string = '';
+  sourceInvoiceId: number | null = null;
 
   ngOnInit(): void {
     console.log('starttt');
@@ -110,9 +111,10 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
       if (sourceInvoiceId === null) {
         this.clearFetchedSourceData();
+        this.sourceInvoiceId = null;
         return;
       }
-
+      this.sourceInvoiceId = sourceInvoiceId;
       this.loadSalesInvoiceDummy(sourceInvoiceId);
     });
 
@@ -324,7 +326,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     );
   }
 
-  fetchedItems: { itemcode: string; itemname: string; unitofmeasurement?: string; quantity: number; sellingprice: number }[] = [];
+  fetchedItems: {
+    id?: number;
+    itemcode: string;
+    itemname: string;
+    unitofmeasurement?: string;
+    quantity: number;
+    sellingprice: number;
+    lineid?: number;
+  }[] = [];
 
   private invoicelines(ids: number[]): void {
     if (!ids || ids.length === 0) return;
@@ -335,11 +345,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
           if (res.body && res.body.length > 0) {
             res.body.forEach((item: any) => {
               this.fetchedItems.push({
+                id: item.id,
                 itemcode: item.itemcode ?? '',
                 itemname: item.itemname ?? '',
                 unitofmeasurement: item.unitofmeasurement ?? '',
                 quantity: item.quantity ?? 0,
                 sellingprice: item.sellingprice ?? 0,
+                lineid: item.lineid,
               });
             });
           }
@@ -456,6 +468,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     availablequantity: number;
     lastcost?: number | null;
     lastsellingprice: number;
+    isNew?: boolean;
   } | null = null;
   private selectedInventoryItem: IInventory | null = null;
 
@@ -494,6 +507,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       availablequantity: this.buyquantity,
       lastcost: this.selectedInventoryItem?.lastcost ?? 0,
       lastsellingprice: this.lastsellingprice,
+      isNew: true,
     };
 
     // Log the selected item to the console
@@ -506,6 +520,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.availablequantity = 0;
     this.lastsellingprice = 0;
     this.code = '';
+    this.buyquantity = 0;
     this.selectedInventoryItem = null;
   }
 

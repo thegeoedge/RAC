@@ -88,8 +88,6 @@ export class SaleInvoiceCommonServiceChargeDummyUpdateComponent implements OnIni
       if (saleInvoiceCommonServiceChargeDummies && saleInvoiceCommonServiceChargeDummies.length > 0) {
         this.saleInvoiceCommonServiceChargeDummies = saleInvoiceCommonServiceChargeDummies;
         this.updateForm(saleInvoiceCommonServiceChargeDummies);
-      } else {
-        this.addServiceChargeDummy(); // Add default row when no data is available
       }
     });
     this.fetchCommonServiceOptions();

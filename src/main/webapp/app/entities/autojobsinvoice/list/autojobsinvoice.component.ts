@@ -45,6 +45,13 @@ export class AutojobsinvoiceComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+  searchQuery = '';
+  searchByCode = true;
+  searchByCustomerName = false;
+  searchByJobId = false;
+  searchByDateRange = false;
+  startDate = '';
+  endDate = '';
 
   public router = inject(Router);
   protected autojobsinvoiceService = inject(AutojobsinvoiceService);
@@ -99,6 +106,30 @@ export class AutojobsinvoiceComponent implements OnInit {
     this.page = +(page ?? 1);
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
     this.filters.initializeFromParams(params);
+
+    // Read search params from route
+    this.searchQuery = params.get('code.contains') ?? params.get('customername.contains') ?? params.get('jobid.equals') ?? '';
+
+    if (params.get('code.contains')) {
+      this.toggleFilterState('code');
+    } else if (params.get('customername.contains')) {
+      this.toggleFilterState('name');
+    } else if (params.get('jobid.equals')) {
+      this.toggleFilterState('job');
+    }
+
+    if (params.get('invoicedate.greaterThanOrEqual') || params.get('invoicedate.lessThanOrEqual')) {
+      this.toggleFilterState('date');
+      this.startDate = params.get('invoicedate.greaterThanOrEqual')?.split('T')[0] ?? '';
+      this.endDate = params.get('invoicedate.lessThanOrEqual')?.split('T')[0] ?? '';
+    }
+  }
+
+  private toggleFilterState(filter: string): void {
+    this.searchByCode = filter === 'code';
+    this.searchByCustomerName = filter === 'name';
+    this.searchByJobId = filter === 'job';
+    this.searchByDateRange = filter === 'date';
   }
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
@@ -119,15 +150,34 @@ export class AutojobsinvoiceComponent implements OnInit {
     const { page, filters } = this;
 
     this.isLoading = true;
-    const pageToLoad: number = page;
     const queryObject: any = {
-      page: pageToLoad - 1,
+      page: page - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
     filters.filterOptions.forEach(filterOption => {
       queryObject[filterOption.name] = filterOption.values;
     });
+
+    if (this.searchQuery) {
+      if (this.searchByCode) {
+        queryObject['code.contains'] = this.searchQuery;
+      } else if (this.searchByCustomerName) {
+        queryObject['customername.contains'] = this.searchQuery;
+      } else if (this.searchByJobId) {
+        queryObject['jobid.equals'] = this.searchQuery;
+      }
+    }
+
+    if (this.searchByDateRange) {
+      if (this.startDate) {
+        queryObject['invoicedate.greaterThanOrEqual'] = this.startDate + 'T00:00:00Z';
+      }
+      if (this.endDate) {
+        queryObject['invoicedate.lessThanOrEqual'] = this.endDate + 'T23:59:59Z';
+      }
+    }
+
     return this.autojobsinvoiceService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
@@ -142,11 +192,40 @@ export class AutojobsinvoiceComponent implements OnInit {
       queryParamsObj[filterOption.nameAsQueryParam()] = filterOption.values;
     });
 
+    if (this.searchQuery) {
+      if (this.searchByCode) {
+        queryParamsObj['code.contains'] = this.searchQuery;
+      } else if (this.searchByCustomerName) {
+        queryParamsObj['customername.contains'] = this.searchQuery;
+      } else if (this.searchByJobId) {
+        queryParamsObj['jobid.equals'] = this.searchQuery;
+      }
+    }
+
+    if (this.searchByDateRange) {
+      if (this.startDate) {
+        queryParamsObj['invoicedate.greaterThanOrEqual'] = this.startDate + 'T00:00:00Z';
+      }
+      if (this.endDate) {
+        queryParamsObj['invoicedate.lessThanOrEqual'] = this.endDate + 'T23:59:59Z';
+      }
+    }
+
     this.ngZone.run(() => {
       this.router.navigate(['./'], {
         relativeTo: this.activatedRoute,
         queryParams: queryParamsObj,
       });
     });
+  }
+
+  toggleFilter(filter: string): void {
+    this.toggleFilterState(filter);
+    this.filterData();
+  }
+
+  filterData(): void {
+    this.page = 1;
+    this.handleNavigation(this.page, this.sortState(), this.filters.filterOptions);
   }
 }

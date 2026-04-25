@@ -209,7 +209,7 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
     );
   }
 
-  fetchedItems: { itemname: string; quantity: number; sellingprice: number }[] = [];
+  fetchedItems: { code: string; itemname: string; quantity: number; sellingprice: number }[] = [];
 
   private invoicelines(id: number): void {
     this.salesInvoiceDummyService.fetchInvoiceLines(id).subscribe(
@@ -220,6 +220,7 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
 
           res.body.forEach(item => {
             this.fetchedItems.push({
+              code: item.itemcode ?? '',
               itemname: item.itemname ?? '',
               quantity: item.quantity ?? 0,
               sellingprice: item.sellingprice ?? 0,

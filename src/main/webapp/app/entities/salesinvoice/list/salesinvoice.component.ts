@@ -42,6 +42,14 @@ export class SalesinvoiceComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+  searchQuery = '';
+  searchByCode = true;
+  searchByCustomerName = false;
+  searchByVehicleNo = false;
+  searchByDateRange = false;
+  startDate = '';
+  endDate = '';
+  originalSalesinvoices?: ISalesinvoice[];
 
   public router = inject(Router);
   protected salesinvoiceService = inject(SalesinvoiceService);
@@ -93,6 +101,30 @@ export class SalesinvoiceComponent implements OnInit {
     const page = params.get(PAGE_HEADER);
     this.page = +(page ?? 1);
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+
+    // Read search params from route
+    this.searchQuery = params.get('code.contains') ?? params.get('customername.contains') ?? params.get('vehicleno.contains') ?? '';
+
+    if (params.get('code.contains')) {
+      this.toggleFilterState('code');
+    } else if (params.get('customername.contains')) {
+      this.toggleFilterState('name');
+    } else if (params.get('vehicleno.contains')) {
+      this.toggleFilterState('vehicle');
+    }
+
+    if (params.get('invoicedate.greaterThanOrEqual') || params.get('invoicedate.lessThanOrEqual')) {
+      this.toggleFilterState('date');
+      this.startDate = params.get('invoicedate.greaterThanOrEqual')?.split('T')[0] ?? '';
+      this.endDate = params.get('invoicedate.lessThanOrEqual')?.split('T')[0] ?? '';
+    }
+  }
+
+  private toggleFilterState(filter: string): void {
+    this.searchByCode = filter === 'code';
+    this.searchByCustomerName = filter === 'name';
+    this.searchByVehicleNo = filter === 'vehicle';
+    this.searchByDateRange = filter === 'date';
   }
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
@@ -113,21 +145,59 @@ export class SalesinvoiceComponent implements OnInit {
     const { page } = this;
 
     this.isLoading = true;
-    const pageToLoad: number = page;
     const queryObject: any = {
-      page: pageToLoad - 1,
+      page: page - 1,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+
+    if (this.searchQuery) {
+      if (this.searchByCode) {
+        queryObject['code.contains'] = this.searchQuery;
+      } else if (this.searchByCustomerName) {
+        queryObject['customername.contains'] = this.searchQuery;
+      } else if (this.searchByVehicleNo) {
+        queryObject['vehicleno.contains'] = this.searchQuery;
+      }
+    }
+
+    if (this.searchByDateRange) {
+      if (this.startDate) {
+        queryObject['invoicedate.greaterThanOrEqual'] = this.startDate + 'T00:00:00Z';
+      }
+      if (this.endDate) {
+        queryObject['invoicedate.lessThanOrEqual'] = this.endDate + 'T23:59:59Z';
+      }
+    }
+
     return this.salesinvoiceService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
   protected handleNavigation(page: number, sortState: SortState): void {
-    const queryParamsObj = {
+    const queryParamsObj: any = {
       page,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(sortState),
     };
+
+    if (this.searchQuery) {
+      if (this.searchByCode) {
+        queryParamsObj['code.contains'] = this.searchQuery;
+      } else if (this.searchByCustomerName) {
+        queryParamsObj['customername.contains'] = this.searchQuery;
+      } else if (this.searchByVehicleNo) {
+        queryParamsObj['vehicleno.contains'] = this.searchQuery;
+      }
+    }
+
+    if (this.searchByDateRange) {
+      if (this.startDate) {
+        queryParamsObj['invoicedate.greaterThanOrEqual'] = this.startDate + 'T00:00:00Z';
+      }
+      if (this.endDate) {
+        queryParamsObj['invoicedate.lessThanOrEqual'] = this.endDate + 'T23:59:59Z';
+      }
+    }
 
     this.ngZone.run(() => {
       this.router.navigate(['./'], {
@@ -150,5 +220,15 @@ export class SalesinvoiceComponent implements OnInit {
         printWindow.print();
       };
     }
+  }
+
+  toggleFilter(filter: string): void {
+    this.toggleFilterState(filter);
+    this.filterData();
+  }
+
+  filterData(): void {
+    this.page = 1;
+    this.handleNavigation(this.page, this.sortState());
   }
 }

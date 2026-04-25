@@ -14,6 +14,8 @@ import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs';
 import CommonModule from 'app/shared/shared.module';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
+import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
+import { NewAutojobsinvoicelines } from 'app/entities/autojobsinvoicelines/autojobsinvoicelines.model';
 
 @Component({
   standalone: true,
@@ -33,6 +35,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   protected fb = inject(FormBuilder);
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
+  @Input() sourceInvoiceId: number | null = null;
+  protected autojobsinvoicelinesService = inject(AutojobsinvoicelinesService);
   // Use FormArray to handle multiple lines
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
@@ -74,6 +78,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
       discount: [Number(item.discount ?? 0)],
+      isNew: [item.isNew ?? false],
+      sourceLineId: [item.lineid ?? null],
     });
     console.log('New Item Addedaazzz:', newItem.value);
     console.log(this.selectedItem);
@@ -347,10 +353,41 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
     const saveObservables: Observable<HttpResponse<ISalesInvoiceLines>>[] = [];
 
+    // Calculate next lineid for AutoJobsInvoiceLines if we have a sourceInvoiceId
+    let nextAutoLineId = 1;
+    if (this.sourceInvoiceId) {
+      const existingLineIds = salesInvoiceLines.filter(l => (l as any).sourceLineId !== null).map(l => Number((l as any).sourceLineId));
+      if (existingLineIds.length > 0) {
+        nextAutoLineId = Math.max(...existingLineIds) + 1;
+      }
+    }
+
     salesInvoiceLines.forEach(line => {
-      // If the line doesn't have an ID, or if it belongs to a different invoice (aggregated data), create it as new
+      // If the line doesn't have an ID, or if it belongs to a different invoice (aggregated data), create it as new in SalesInvoiceLines
       if (line.id === null || line.id === undefined || line.invoiceid !== inid) {
         saveObservables.push(this.salesInvoiceLinesService.create({ ...line, id: null, invoiceid: inid }));
+
+        // ONLY save to AutoJobsInvoiceLines if it's TRULY a new item added on this page
+        if (this.sourceInvoiceId && (line as any).isNew) {
+          const autoLine: NewAutojobsinvoicelines = {
+            id: null,
+            invocieid: this.sourceInvoiceId, // Note the typo in model: 'invocieid'
+            lineid: nextAutoLineId++,
+            itemid: line.itemid,
+            itemcode: line.itemcode,
+            itemname: line.itemname,
+            description: line.description,
+            unitofmeasurement: line.unitofmeasurement,
+            quantity: line.quantity,
+            itemcost: line.itemcost,
+            itemprice: line.itemprice,
+            discount: line.discount,
+            tax: line.tax,
+            sellingprice: line.sellingprice,
+            linetotal: line.linetotal,
+          };
+          saveObservables.push(this.autojobsinvoicelinesService.create(autoLine) as any);
+        }
       } else {
         // If it's an existing line for THIS invoice, update it
         saveObservables.push(this.salesInvoiceLinesService.update(line));

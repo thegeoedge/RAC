@@ -123,7 +123,13 @@
               <div class="col-md-6">
                 <div class="mb-2">
                   <label class="form-label" for="field_buyQty">Buy Quantity</label>
-                  <input type="number" class="form-control form-control-sm" id="field_buyQty" (input)="onBuyQtyChange($event)" />
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="field_buyQty"
+                    [value]="buyquantity"
+                    (input)="onBuyQtyChange($event)"
+                  />
                 </div>
                 <div class="mb-2">
                   <label class="form-label me-2">Discount Option</label>
@@ -346,6 +352,7 @@
                 <jhi-sales-invoice-lines-update
                   [selectedItem]="selectedItem"
                   [fetchedItems]="fetchedItems"
+                  [sourceInvoiceId]="sourceInvoiceId"
                   (totalUpdated)="receiveTotal($event, 'child1')"
                 ></jhi-sales-invoice-lines-update>
               </div>
