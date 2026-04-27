@@ -136,6 +136,17 @@ public class AccountsService {
     }
 
     /**
+     * Update the balance of an account.
+     *
+     * @param id the id of the account.
+     * @param balance the new balance.
+     */
+    public void updateBalance(Long id, Float balance) {
+        LOG.debug("Request to update balance of Accounts : {}, {}", id, balance);
+        accountsRepository.updateBalance(id, balance);
+    }
+
+    /**
      * Delete the accounts by id.
      *
      * @param id the id of the entity.

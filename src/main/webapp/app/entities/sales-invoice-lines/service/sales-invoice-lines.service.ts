@@ -30,6 +30,28 @@ export class SalesInvoiceLinesService {
   protected http = inject(HttpClient);
   protected applicationConfigService = inject(ApplicationConfigService);
 
+  private totalinvoicelines: number = 0;
+  gettotalinvoicelines(): number {
+    return this.totalinvoicelines;
+  }
+  settotalinvoicelines(val: number): void {
+    this.totalinvoicelines = val;
+  }
+  private profit: number = 0;
+  getprofit(): number {
+    return this.profit;
+  }
+  setprofit(val: number): void {
+    this.profit = val;
+  }
+  private subId: string = '';
+  setSubId(id: string): void {
+    this.subId = id;
+  }
+  getSubId(): string {
+    return this.subId;
+  }
+
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/sales-invoice-lines');
 
   create(salesInvoiceLines: NewSalesInvoiceLines): Observable<EntityResponseType> {

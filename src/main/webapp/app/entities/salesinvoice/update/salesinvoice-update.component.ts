@@ -408,6 +408,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         nettotal: Number((salesInvoiceDummy as any).nettotal) || 0,
         totaltax: Number((salesInvoiceDummy as any).totaltax) || 0,
         totaldiscount: Number((salesInvoiceDummy as any).totaldiscount) || 0,
+        autocarejobid: (salesInvoiceDummy as any).jobid || null,
       };
 
       // Fetch vehicle number from the linked autocarejob via jobid
@@ -580,6 +581,16 @@ export class SalesinvoiceUpdateComponent implements OnInit {
           if (response.body) {
             console.log('Sales invoice created:', response.body.id);
             console.log('Full response body on creation:', response.body); // Log full response body on creation
+
+            const sharedSubId = window.crypto.randomUUID
+              ? window.crypto.randomUUID()
+              : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                  const r = (Math.random() * 16) | 0,
+                    v = c == 'x' ? r : (r & 0x3) | 0x8;
+                  return v.toString(16);
+                });
+            this.salesInvoiceLinesService.setSubId(sharedSubId);
+            this.salesInvoiceLinesUpdateComponent.transactionmodule(response.body.id);
 
             // Call save from the child components if available
             if (this.salesInvoiceLinesUpdateComponent) {

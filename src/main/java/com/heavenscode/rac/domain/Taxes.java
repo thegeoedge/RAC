@@ -196,7 +196,8 @@ public class Taxes implements Serializable {
         this.lmd = lmd;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -211,7 +212,8 @@ public class Taxes implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -219,17 +221,17 @@ public class Taxes implements Serializable {
     @Override
     public String toString() {
         return "Taxes{" +
-            "id=" + getId() +
-            ", code='" + getCode() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", effectivefrom='" + getEffectivefrom() + "'" +
-            ", effectiveto='" + getEffectiveto() + "'" +
-            ", percentage=" + getPercentage() +
-            ", fixedamount=" + getFixedamount() +
-            ", ismanual='" + getIsmanual() + "'" +
-            ", isactive='" + getIsactive() + "'" +
-            ", lmu=" + getLmu() +
-            ", lmd='" + getLmd() + "'" +
-            "}";
+                "id=" + getId() +
+                ", code='" + getCode() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", effectivefrom='" + getEffectivefrom() + "'" +
+                ", effectiveto='" + getEffectiveto() + "'" +
+                ", percentage=" + getPercentage() +
+                ", fixedamount=" + getFixedamount() +
+                ", ismanual='" + getIsmanual() + "'" +
+                ", isactive='" + getIsactive() + "'" +
+                ", lmu=" + getLmu() +
+                ", lmd='" + getLmd() + "'" +
+                "}";
     }
 }

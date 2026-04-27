@@ -186,6 +186,13 @@ public class AccountsResource {
         return ResponseUtil.wrapOrNotFound(accounts);
     }
 
+    @PatchMapping("/{id}/balance")
+    public ResponseEntity<Void> updateBalance(@PathVariable("id") Long id, @RequestBody Float balance) {
+        LOG.debug("REST request to update balance of Accounts : {}, {}", id, balance);
+        accountsService.updateBalance(id, balance);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * {@code DELETE  /accounts/:id} : delete the "id" accounts.
      *

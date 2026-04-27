@@ -17,6 +17,7 @@ import { toWords } from 'number-to-words';
 import { ReceiptService } from '../receipt/service/receipt.service';
 import dayjs from 'dayjs/esm';
 import { SalesinvoiceUpdateComponent } from '../salesinvoice/update/salesinvoice-update.component';
+import { AutocarejobService } from '../autocarejob/service/autocarejob.service';
 @Component({
   selector: 'app-receipt-modal',
   standalone: true,
@@ -56,8 +57,9 @@ export class ReceiptModalComponent implements OnChanges {
   protected receiptpaymentsdetailsService = inject(ReceiptpaymentsdetailsService);
   protected receiptpaymentsdetailsFormService = inject(ReceiptpaymentsdetailsFormService);
   protected banksService = inject(BanksService);
-  protected bankbranchService = inject(BankbranchService);
+  bankbranchService = inject(BankbranchService);
   reciptService = inject(ReceiptService);
+  autocarejobService = inject(AutocarejobService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ReceiptpaymentsdetailsFormGroup = this.receiptpaymentsdetailsFormService.createReceiptpaymentsdetailsFormGroup();
 
@@ -137,6 +139,32 @@ export class ReceiptModalComponent implements OnChanges {
     } else {
       this.salesinvoiceupdate.save();
       this.subscribeToSaveResponse(this.reciptService.create(this.receipt));
+    }
+  }
+
+  finishBilling(): void {
+    if (this.isSaving) return;
+
+    // 1. Mark job as closed
+    // Ensure we use the exact field name from the Form Service (autocarejobid)
+    const jobId = this.salesinvoiceupdate.editForm.get('autocarejobid')?.value;
+
+    console.log('Attempting to close job with ID:', jobId);
+
+    if (jobId) {
+      this.autocarejobService.partialUpdate({ id: jobId, isjobclose: true }).subscribe({
+        next: () => {
+          console.log('Job marked as closed successfully');
+          this.save();
+        },
+        error: err => {
+          console.error('Error marking job as closed:', err);
+          this.save(); // Try to save anyway
+        },
+      });
+    } else {
+      console.warn('No Job ID found in sales invoice form. Proceeding with save only.');
+      this.save();
     }
   }
 
@@ -220,7 +248,24 @@ export class ReceiptModalComponent implements OnChanges {
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    // Hide modal and remove backdrop to prevent screen lock (darker screen)
+    const modalElement = document.getElementById('exampleModal');
+    if (modalElement) {
+      modalElement.classList.remove('show');
+      modalElement.setAttribute('aria-hidden', 'true');
+      modalElement.style.display = 'none';
+    }
+
+    // Remove all backdrops and reset body classes
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // Brief delay to allow DOM updates before navigation
+    setTimeout(() => {
+      this.previousState();
+    }, 300);
   }
 
   protected onSaveError(): void {

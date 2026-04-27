@@ -11,11 +11,16 @@ import { ISalesInvoiceLines } from '../sales-invoice-lines.model';
 import { SalesInvoiceLinesService } from '../service/sales-invoice-lines.service';
 import { SalesInvoiceLinesFormGroup, SalesInvoiceLinesFormService } from './sales-invoice-lines-form.service';
 import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
-import dayjs from 'dayjs';
+import dayjs from 'dayjs/esm';
 import CommonModule from 'app/shared/shared.module';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { NewAutojobsinvoicelines } from 'app/entities/autojobsinvoicelines/autojobsinvoicelines.model';
+import { TransactionsService } from 'app/entities/transactions/service/transactions.service';
+import { AccountsService } from 'app/entities/accounts/service/accounts.service';
+import { CustomerService } from 'app/entities/customer/service/customer.service';
+import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvoice.service';
+import { NewTransactions } from 'app/entities/transactions/transactions.model';
 
 @Component({
   standalone: true,
@@ -37,6 +42,10 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   @Input() fetchedItems: any;
   @Input() sourceInvoiceId: number | null = null;
   protected autojobsinvoicelinesService = inject(AutojobsinvoicelinesService);
+  protected transactionsService = inject(TransactionsService);
+  protected accountsService = inject(AccountsService);
+  protected customerService = inject(CustomerService);
+  protected salesinvoiceService = inject(SalesinvoiceService);
   // Use FormArray to handle multiple lines
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
@@ -460,5 +469,172 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   removeInvoiceLine(index: number): void {
     this.salesInvoiceLinesDummyArray.removeAt(index);
     this.calculateTotal();
+  }
+
+  transactionmodule(inid: number): void {
+    this.salesinvoiceService.find(inid).subscribe(res => {
+      const invoice = res.body;
+      if (invoice) {
+        const total = this.salesInvoiceLinesDummyArray.controls
+          .map(control => control.get('linetotal')?.value || 0)
+          .reduce((acc, value) => acc + value, 0);
+        const totalCost = this.salesInvoiceLinesDummyArray.controls
+          .map(control => (control.get('itemcost')?.value || 0) * (control.get('quantity')?.value || 0))
+          .reduce((acc, val) => acc + val, 0);
+        const profit = total - totalCost;
+
+        this.salestransaction(invoice, total);
+        // closestockupdate is removed to avoid double-counting inventory costs
+        this.customermaintransactions(invoice, profit);
+        this.updatesalesincome(invoice, profit);
+        this.addtrasction(invoice, total);
+        this.inventorytransac(invoice);
+      }
+    });
+  }
+
+  private salestransaction(invoice: any, total: number): void {
+    const transaction: NewTransactions = {
+      id: null,
+      accountId: 41,
+      accountCode: '513',
+      debit: 0,
+      credit: total,
+      date: dayjs(),
+      refDoc: invoice.code,
+      refId: invoice.id,
+      subId: this.salesInvoiceLinesService.getSubId(),
+      source: 'Sales',
+      lmu: invoice.lmu,
+      lmd: dayjs(),
+    };
+    this.transactionsService.create(transaction).subscribe();
+
+    this.accountsService.find(41).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + total).subscribe();
+      }
+    });
+  }
+
+  private customermaintransactions(invoice: any, profit: number): void {
+    const transaction: NewTransactions = {
+      id: null,
+      accountId: 7,
+      accountCode: '116',
+      debit: 0,
+      credit: profit,
+      date: dayjs(),
+      refDoc: invoice.code,
+      refId: invoice.id,
+      subId: this.salesInvoiceLinesService.getSubId(),
+      source: 'Sales',
+      lmu: invoice.lmu,
+      lmd: dayjs(),
+    };
+    this.transactionsService.create(transaction).subscribe();
+
+    this.accountsService.find(7).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + profit).subscribe();
+      }
+    });
+  }
+
+  private updatesalesincome(invoice: any, profit: number): void {
+    this.salesInvoiceLinesService.setprofit(profit);
+
+    const transaction: NewTransactions = {
+      id: null,
+      accountId: 33,
+      accountCode: '42',
+      debit: profit,
+      credit: 0,
+      date: dayjs(),
+      refDoc: invoice.code,
+      refId: invoice.id,
+      subId: this.salesInvoiceLinesService.getSubId(),
+      source: 'Sales',
+      lmu: invoice.lmu,
+      lmd: dayjs(),
+    };
+    this.transactionsService.create(transaction).subscribe();
+
+    this.accountsService.find(33).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + profit).subscribe();
+      }
+    });
+  }
+
+  private addtrasction(invoice: any, total: number): void {
+    if (invoice.customerid) {
+      this.customerService.find(invoice.customerid).subscribe(res => {
+        const customer = res.body;
+        if (customer) {
+          this.salesinvoiceService.fetchReceiptAccountId(customer.fullname || '').subscribe(resAcc => {
+            const accounts = resAcc.body;
+            if (accounts && accounts.length > 0) {
+              const account = accounts[0];
+              const transaction: NewTransactions = {
+                id: null,
+                accountId: account.id,
+                accountCode: account.code,
+                debit: total,
+                credit: 0,
+                date: dayjs(),
+                refDoc: invoice.code,
+                refId: invoice.id,
+                subId: this.salesInvoiceLinesService.getSubId(),
+                source: 'Sales',
+                lmu: invoice.lmu,
+                lmd: dayjs(),
+              };
+              this.transactionsService.create(transaction).subscribe();
+
+              this.accountsService.updateBalance(account.id, (account.balance ?? 0) + total).subscribe();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  private inventorytransac(invoice: any): void {
+    this.salesInvoiceLinesDummyArray.controls.forEach(control => {
+      const line = (control as FormGroup).getRawValue();
+      const lineCost = (line.itemcost || 0) * (line.quantity || 0);
+
+      if (lineCost > 0) {
+        const transaction: NewTransactions = {
+          id: null,
+          accountId: 125, // Credit Stock
+          accountCode: '125',
+          debit: 0,
+          credit: lineCost,
+          date: dayjs(),
+          refDoc: invoice.code,
+          refId: invoice.id,
+          subId: this.salesInvoiceLinesService.getSubId(),
+          source: 'Inventory',
+          lmu: invoice.lmu,
+          lmd: dayjs(),
+        };
+        this.transactionsService.create(transaction).subscribe();
+
+        // Add matching Debit to CLSSTK to balance the inventory credit
+        const debitTransaction: NewTransactions = {
+          ...transaction,
+          accountId: 125,
+          accountCode: 'CLSSTK',
+          debit: lineCost,
+          credit: 0,
+        };
+        this.transactionsService.create(debitTransaction).subscribe();
+      }
+    });
   }
 }

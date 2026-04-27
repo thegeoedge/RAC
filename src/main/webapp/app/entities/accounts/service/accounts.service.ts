@@ -53,6 +53,10 @@ export class AccountsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  updateBalance(id: number, balance: number): Observable<HttpResponse<{}>> {
+    return this.http.patch(`${this.resourceUrl}/${id}/balance`, balance, { observe: 'response' });
+  }
+
   find(id: number): Observable<EntityResponseType> {
     return this.http
       .get<RestAccounts>(`${this.resourceUrl}/${id}`, { observe: 'response' })
