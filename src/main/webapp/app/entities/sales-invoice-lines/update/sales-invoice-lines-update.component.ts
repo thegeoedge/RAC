@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, forkJoin } from 'rxjs';
-import { debounceTime, finalize } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, debounceTime, finalize, tap } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,6 +21,10 @@ import { AccountsService } from 'app/entities/accounts/service/accounts.service'
 import { CustomerService } from 'app/entities/customer/service/customer.service';
 import { SalesinvoiceService } from 'app/entities/salesinvoice/service/salesinvoice.service';
 import { NewTransactions } from 'app/entities/transactions/transactions.model';
+import { BinCardService } from 'app/entities/bin-card/service/bin-card.service';
+import { IBinCard, NewBinCard } from 'app/entities/bin-card/bin-card.model';
+import { InventoryService } from 'app/entities/inventory/service/inventory.service';
+import { InventorybatchesService } from 'app/entities/inventorybatches/service/inventorybatches.service';
 
 @Component({
   standalone: true,
@@ -41,11 +45,17 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
   @Input() sourceInvoiceId: number | null = null;
+  @Input() nextvalue: any;
   protected autojobsinvoicelinesService = inject(AutojobsinvoicelinesService);
   protected transactionsService = inject(TransactionsService);
   protected accountsService = inject(AccountsService);
   protected customerService = inject(CustomerService);
   protected salesinvoiceService = inject(SalesinvoiceService);
+  protected binCardService = inject(BinCardService);
+  protected inventoryService = inject(InventoryService);
+  protected inventorybatchesService = inject(InventorybatchesService);
+  bincard: IBinCard[] = [];
+  private isBinCreated = false;
   // Use FormArray to handle multiple lines
   editForm: FormGroup = this.fb.group({
     salesInvoiceLines: this.fb.array([]), // Define a FormArray
@@ -64,18 +74,20 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       console.log('After Adding Item:', this.salesInvoiceLinesArray.controls);
     }
     if (changes['fetchedItems'] && this.fetchedItems) {
+      this.salesInvoiceLinesDummyArray.clear();
       // Loop through the fetchedItems array and add each item to the form array
       this.fetchedItems.forEach((item: any) => {
         this.addItemToFormArray(item);
       });
       console.log('Fetched Items on Change:', this.fetchedItems); // Log fetched items
     }
+    this.setvaluesbincar();
   }
 
   addItemToFormArray(item: any): void {
     const resolvedSellingPrice = Number(item.lastsellingprice ?? item.sellingprice ?? item.itemprice ?? 0);
     const newItem = this.fb.group({
-      itemid: [item.id ?? item.itemid ?? null],
+      itemid: [item.itemid ?? item.id ?? null],
       itemcode: [item.code || item.itemcode || ''], // Match template
       itemname: [item.name || item.itemname], // Match template
       description: [item.description ?? null],
@@ -475,92 +487,75 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     this.salesinvoiceService.find(inid).subscribe(res => {
       const invoice = res.body;
       if (invoice) {
-        const total = this.salesInvoiceLinesDummyArray.controls
-          .map(control => control.get('linetotal')?.value || 0)
-          .reduce((acc, value) => acc + value, 0);
-        const totalCost = this.salesInvoiceLinesDummyArray.controls
-          .map(control => (control.get('itemcost')?.value || 0) * (control.get('quantity')?.value || 0))
-          .reduce((acc, val) => acc + val, 0);
-        const profit = total - totalCost;
-
-        this.salestransaction(invoice, total);
-        // closestockupdate is removed to avoid double-counting inventory costs
-        this.customermaintransactions(invoice, profit);
-        this.updatesalesincome(invoice, profit);
-        this.addtrasction(invoice, total);
         this.inventorytransac(invoice);
+        this.createbin(invoice);
+        this.updatesalesincome(invoice);
+        this.addtrasction(invoice);
       }
     });
   }
 
-  private salestransaction(invoice: any, total: number): void {
-    const transaction: NewTransactions = {
-      id: null,
-      accountId: 41,
-      accountCode: '513',
-      debit: 0,
-      credit: total,
-      date: dayjs(),
-      refDoc: invoice.code,
-      refId: invoice.id,
-      subId: this.salesInvoiceLinesService.getSubId(),
-      source: 'Sales',
-      lmu: invoice.lmu,
-      lmd: dayjs(),
-    };
-    this.transactionsService.create(transaction).subscribe();
-
-    this.accountsService.find(41).subscribe(res => {
-      const account = res.body;
-      if (account) {
-        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + total).subscribe();
-      }
-    });
+  private inventorytransac(invoice: any): void {
+    // Logic moved to closingstocktransaction and salestransaction as per supervisor's instruction
+    this.closestockupdate(invoice);
   }
 
-  private customermaintransactions(invoice: any, profit: number): void {
-    const transaction: NewTransactions = {
+  updatesalesincome(invoice: any): void {
+    this.salesincometransactions(invoice);
+    this.salestransaction(invoice);
+  }
+
+  salesincometransactions(invoice: any): void {
+    let totalItemCostSales = 0;
+    let totalItemPriceSales = 0;
+    let totalServicePriceSales = 0;
+
+    this.salesInvoiceLinesDummyArray.controls.forEach(control => {
+      const line = (control as FormGroup).getRawValue();
+      const cost = (Number(line.itemcost) || 0) * (Number(line.quantity) || 0);
+      const price = Number(line.linetotal) || 0;
+
+      if ((Number(line.itemcost) || 0) > 0) {
+        totalItemCostSales += cost;
+        totalItemPriceSales += price;
+      } else {
+        totalServicePriceSales += price;
+      }
+    });
+
+    const profit = totalItemPriceSales - totalItemCostSales;
+
+    const transaction1: NewTransactions = {
       id: null,
-      accountId: 7,
-      accountCode: '116',
+      accountId: 33,
+      accountCode: '42',
       debit: 0,
       credit: profit,
       date: dayjs(),
       refDoc: invoice.code,
       refId: invoice.id,
       subId: this.salesInvoiceLinesService.getSubId(),
-      source: 'Sales',
+      source: 'Invoice-Item Profit',
       lmu: invoice.lmu,
       lmd: dayjs(),
     };
-    this.transactionsService.create(transaction).subscribe();
+    this.transactionsService.create(transaction1).subscribe();
 
-    this.accountsService.find(7).subscribe(res => {
-      const account = res.body;
-      if (account) {
-        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + profit).subscribe();
-      }
-    });
-  }
-
-  private updatesalesincome(invoice: any, profit: number): void {
-    this.salesInvoiceLinesService.setprofit(profit);
-
-    const transaction: NewTransactions = {
+    const transaction2: NewTransactions = {
       id: null,
-      accountId: 33,
-      accountCode: '42',
-      debit: profit,
-      credit: 0,
+      accountId: 32,
+      accountCode: '41',
+      debit: 0,
+      credit: totalServicePriceSales,
       date: dayjs(),
       refDoc: invoice.code,
       refId: invoice.id,
       subId: this.salesInvoiceLinesService.getSubId(),
-      source: 'Sales',
+      source: 'Invoice-Srv Profit',
       lmu: invoice.lmu,
       lmd: dayjs(),
     };
-    this.transactionsService.create(transaction).subscribe();
+    this.transactionsService.create(transaction2).subscribe();
 
     this.accountsService.find(33).subscribe(res => {
       const account = res.body;
@@ -568,9 +563,20 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         this.accountsService.updateBalance(account.id, (account.balance ?? 0) + profit).subscribe();
       }
     });
+
+    this.accountsService.find(32).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + totalServicePriceSales).subscribe();
+      }
+    });
   }
 
-  private addtrasction(invoice: any, total: number): void {
+  addtrasction(invoice: any): void {
+    const total = this.salesInvoiceLinesDummyArray.controls
+      .map(control => control.get('linetotal')?.value || 0)
+      .reduce((acc, value) => acc + value, 0);
+
     if (invoice.customerid) {
       this.customerService.find(invoice.customerid).subscribe(res => {
         const customer = res.body;
@@ -579,7 +585,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
             const accounts = resAcc.body;
             if (accounts && accounts.length > 0) {
               const account = accounts[0];
-              const transaction: NewTransactions = {
+              const transaction3: NewTransactions = {
                 id: null,
                 accountId: account.id,
                 accountCode: account.code,
@@ -589,12 +595,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
                 refDoc: invoice.code,
                 refId: invoice.id,
                 subId: this.salesInvoiceLinesService.getSubId(),
-                source: 'Sales',
+                source: 'Invoice',
                 lmu: invoice.lmu,
                 lmd: dayjs(),
               };
-              this.transactionsService.create(transaction).subscribe();
-
+              this.transactionsService.create(transaction3).subscribe();
               this.accountsService.updateBalance(account.id, (account.balance ?? 0) + total).subscribe();
             }
           });
@@ -603,38 +608,156 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     }
   }
 
-  private inventorytransac(invoice: any): void {
-    this.salesInvoiceLinesDummyArray.controls.forEach(control => {
-      const line = (control as FormGroup).getRawValue();
-      const lineCost = (line.itemcost || 0) * (line.quantity || 0);
+  closestockupdate(invoice: any): void {
+    const totalCost = this.salesInvoiceLinesDummyArray.controls
+      .map(control => (control.get('itemcost')?.value || 0) * (control.get('quantity')?.value || 0))
+      .reduce((acc, val) => acc + val, 0);
 
-      if (lineCost > 0) {
-        const transaction: NewTransactions = {
-          id: null,
-          accountId: 125, // Credit Stock
-          accountCode: '125',
-          debit: 0,
-          credit: lineCost,
-          date: dayjs(),
-          refDoc: invoice.code,
-          refId: invoice.id,
-          subId: this.salesInvoiceLinesService.getSubId(),
-          source: 'Inventory',
-          lmu: invoice.lmu,
-          lmd: dayjs(),
-        };
-        this.transactionsService.create(transaction).subscribe();
+    if (totalCost > 0) {
+      this.closingstocktransaction(invoice, totalCost);
+    }
+  }
 
-        // Add matching Debit to CLSSTK to balance the inventory credit
-        const debitTransaction: NewTransactions = {
-          ...transaction,
-          accountId: 125,
-          accountCode: 'CLSSTK',
-          debit: lineCost,
-          credit: 0,
-        };
-        this.transactionsService.create(debitTransaction).subscribe();
+  closingstocktransaction(invoice: any, amount: number): void {
+    //wwww Credit = totalCostForItems,
+    const transaction4: NewTransactions = {
+      id: null,
+      accountId: 125,
+      accountCode: 'CLSSTK',
+      debit: 0,
+      credit: amount,
+      date: dayjs(),
+      refDoc: invoice.code,
+      refId: invoice.id,
+      subId: this.salesInvoiceLinesService.getSubId(),
+      source: 'Finish Goods Transfer',
+      lmu: invoice.lmu,
+      lmd: dayjs(),
+    };
+    this.transactionsService.create(transaction4).subscribe();
+
+    this.accountsService.find(125).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) - amount).subscribe();
       }
+    });
+  }
+
+  private salestransaction(invoice: any): void {
+    const totalCost = this.salesInvoiceLinesDummyArray.controls
+      .map(control => (control.get('itemcost')?.value || 0) * (control.get('quantity')?.value || 0))
+      .reduce((acc, val) => acc + val, 0);
+
+    if (totalCost > 0) {
+      const transaction5: NewTransactions = {
+        id: null,
+        accountId: 41,
+        accountCode: '513',
+        debit: totalCost,
+        credit: 0,
+        date: dayjs(),
+        refDoc: invoice.code,
+        refId: invoice.id,
+        subId: this.salesInvoiceLinesService.getSubId(),
+        source: 'Invoice',
+        lmu: invoice.lmu,
+        lmd: dayjs(),
+      };
+      this.transactionsService.create(transaction5).subscribe();
+
+      this.accountsService.find(41).subscribe(res => {
+        const account = res.body;
+        if (account) {
+          this.accountsService.updateBalance(account.id, (account.balance ?? 0) + totalCost).subscribe();
+        }
+      });
+    }
+  }
+
+  setvaluesbincar(): void {
+    this.bincard = this.salesInvoiceLinesDummyArray.value.map((item: any) => ({
+      itemID: item.itemid,
+      itemCode: item.itemcode,
+      qtyIn: 0,
+      qtyOut: item.quantity,
+      reference: 'Sales Invoice',
+      price: item.sellingprice,
+      locationID: 1,
+      lMD: dayjs(),
+      recordDate: dayjs(),
+      batchId: item.itemid,
+      referenceCode: this.nextvalue,
+    }));
+
+    console.log('Updated bincard:', this.bincard);
+  }
+
+  private createbin(invoice: any): void {
+    if (this.isBinCreated) {
+      console.warn('Bin records already created for this session.');
+      return;
+    }
+    if (!this.bincard || this.bincard.length === 0) {
+      console.warn('No bin records to create.');
+      return;
+    }
+    this.isBinCreated = true;
+
+    this.bincard.forEach(bin => {
+      // 1. Fetch real Inventory ID and opening balance by itemCode to ensure correct mapping
+      this.inventoryService.query({ 'code.equals': bin.itemCode }).subscribe({
+        next: invRes => {
+          const inventory = invRes.body?.[0];
+          if (inventory) {
+            const realItemID = inventory.id;
+            const openingBalance = inventory.availablequantity ?? 0;
+            const newInventoryQty = openingBalance - (bin.qtyOut ?? 0);
+
+            // Update main inventory table
+            this.inventoryService.partialUpdate({ id: realItemID, availablequantity: newInventoryQty }).subscribe();
+
+            // 2. Fetch the first active Batch ID for this item (FIFO)
+            this.inventorybatchesService.query({ 'itemid.equals': realItemID, 'quantity.greaterThan': 0, sort: ['id,asc'] }).subscribe({
+              next: batchRes => {
+                const batch = batchRes.body?.[0];
+                const realBatchId = batch ? batch.id : realItemID; // Fallback to itemID if no batch found
+
+                // Update batch quantity if a batch was found
+                if (batch) {
+                  const newBatchQty = (batch.quantity ?? 0) - (bin.qtyOut ?? 0);
+                  this.inventorybatchesService.partialUpdate({ id: batch.id, quantity: newBatchQty }).subscribe();
+                }
+
+                // 3. Construct and create the BinCard record
+                const finalBin: NewBinCard = {
+                  ...bin,
+                  id: null,
+                  itemID: realItemID,
+                  batchId: realBatchId,
+                  opening: openingBalance,
+                  referenceCode: invoice.code,
+                  recordDate: dayjs(),
+                  txDate: dayjs(),
+                  lMD: dayjs(),
+                  referenceDoc: 'Sales Invoice',
+                  lMU: invoice.lmu,
+                } as NewBinCard;
+
+                this.binCardService.create(finalBin).subscribe({
+                  next: () =>
+                    console.log(`BinCard successfully created for ${bin.itemCode} (Item ID: ${realItemID}, Batch ID: ${realBatchId})`),
+                  error: err => console.error(`Failed to create BinCard for ${bin.itemCode}:`, err),
+                });
+              },
+              error: err => console.error(`Error fetching batches for item ${bin.itemCode}:`, err),
+            });
+          } else {
+            console.warn(`No inventory record found for item code: ${bin.itemCode}`);
+          }
+        },
+        error: err => console.error(`Error fetching inventory for item code ${bin.itemCode}:`, err),
+      });
     });
   }
 }

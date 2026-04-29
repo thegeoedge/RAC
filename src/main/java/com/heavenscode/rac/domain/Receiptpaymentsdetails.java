@@ -3,11 +3,13 @@ package com.heavenscode.rac.domain;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * A Receiptpaymentsdetails.
  */
 @Entity
+@IdClass(ReceiptpaymentsdetailsId.class)
 @Table(name = "receiptpaymentsdetails")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Receiptpaymentsdetails implements Serializable {
@@ -15,12 +17,12 @@ public class Receiptpaymentsdetails implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
+    @Id
     @Column(name = "lineid")
-    private Integer lineid;
+    private Long lineid;
 
     @Column(name = "paymentamount")
     private Float paymentamount;
@@ -65,7 +67,7 @@ public class Receiptpaymentsdetails implements Serializable {
     private String otherdetails;
 
     @Column(name = "lmu")
-    private String lmu;
+    private Long lmu;
 
     @Column(name = "lmd")
     private Instant lmd;
@@ -135,29 +137,29 @@ public class Receiptpaymentsdetails implements Serializable {
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    public Integer getId() {
+    public Long getId() {
         return this.id;
     }
 
-    public Receiptpaymentsdetails id(Integer id) {
+    public Receiptpaymentsdetails id(Long id) {
         this.setId(id);
         return this;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getLineid() {
+    public Long getLineid() {
         return this.lineid;
     }
 
-    public Receiptpaymentsdetails lineid(Integer lineid) {
+    public Receiptpaymentsdetails lineid(Long lineid) {
         this.setLineid(lineid);
         return this;
     }
 
-    public void setLineid(Integer lineid) {
+    public void setLineid(Long lineid) {
         this.lineid = lineid;
     }
 
@@ -343,16 +345,16 @@ public class Receiptpaymentsdetails implements Serializable {
         this.otherdetails = otherdetails;
     }
 
-    public String getLmu() {
+    public Long getLmu() {
         return this.lmu;
     }
 
-    public Receiptpaymentsdetails lmu(String lmu) {
+    public Receiptpaymentsdetails lmu(Long lmu) {
         this.setLmu(lmu);
         return this;
     }
 
-    public void setLmu(String lmu) {
+    public void setLmu(Long lmu) {
         this.lmu = lmu;
     }
 
@@ -652,13 +654,13 @@ public class Receiptpaymentsdetails implements Serializable {
         if (!(o instanceof Receiptpaymentsdetails)) {
             return false;
         }
-        return getId() != null && getId().equals(((Receiptpaymentsdetails) o).getId());
+        Receiptpaymentsdetails that = (Receiptpaymentsdetails) o;
+        return Objects.equals(id, that.id) && Objects.equals(lineid, that.lineid);
     }
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
+        return Objects.hash(id, lineid);
     }
 
     // prettier-ignore

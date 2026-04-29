@@ -1,6 +1,7 @@
 package com.heavenscode.rac.repository;
 
 import com.heavenscode.rac.domain.Receiptpaymentsdetails;
+import com.heavenscode.rac.domain.ReceiptpaymentsdetailsId;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ReceiptpaymentsdetailsRepository extends JpaRepository<Receiptpaymentsdetails, Integer> {}
+public interface ReceiptpaymentsdetailsRepository extends JpaRepository<Receiptpaymentsdetails, ReceiptpaymentsdetailsId> {}

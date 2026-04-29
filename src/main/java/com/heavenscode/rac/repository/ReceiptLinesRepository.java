@@ -1,6 +1,7 @@
 package com.heavenscode.rac.repository;
 
 import com.heavenscode.rac.domain.ReceiptLines;
+import com.heavenscode.rac.domain.ReceiptLinesId;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ReceiptLinesRepository extends JpaRepository<ReceiptLines, Long>, JpaSpecificationExecutor<ReceiptLines> {}
+public interface ReceiptLinesRepository extends JpaRepository<ReceiptLines, ReceiptLinesId>, JpaSpecificationExecutor<ReceiptLines> {}

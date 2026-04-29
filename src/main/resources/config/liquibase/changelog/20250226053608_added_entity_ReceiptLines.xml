@@ -10,7 +10,7 @@
         Added the entity ReceiptLines.
     -->
     <changeSet id="20250226053608-1" author="jhipster">
-        <createTable tableName="receipt_lines">
+        <createTable tableName="receiptlines">
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -49,7 +49,7 @@
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="receipt_lines" columnName="lmd" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="receiptlines" columnName="lmd" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -66,7 +66,7 @@
         <loadData
                   file="config/liquibase/fake-data/receipt_lines.csv"
                   separator=";"
-                  tableName="receipt_lines"
+                  tableName="receiptlines"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="lineid" type="numeric"/>

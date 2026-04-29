@@ -94,6 +94,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   isactive: boolean = true;
   deposited: boolean = true;
   createdby: number = 0;
+  accountId: number = 0;
+  accountCode: string = '';
 
   newcode: string = '';
   sourceInvoiceId: number | null = null;
@@ -169,8 +171,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
           // Grab the balance (or default to 0 if null)
           const amountOwing = customerAccount.balance || 0;
+          this.accountId = customerAccount.id || 0;
+          this.accountCode = customerAccount.code || '';
 
           console.log(`Loaded Amount Owing for ${name} from Accounts:`, amountOwing);
+          console.log(`Loaded Account ID: ${this.accountId}, Account Code: ${this.accountCode}`);
 
           // We no longer patch this to the form because we are taking it from AutoJobsInvoice
         }
@@ -328,6 +333,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   fetchedItems: {
     id?: number;
+    itemid?: number;
     itemcode: string;
     itemname: string;
     unitofmeasurement?: string;
@@ -346,6 +352,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
             res.body.forEach((item: any) => {
               this.fetchedItems.push({
                 id: item.id,
+                itemid: item.itemid,
                 itemcode: item.itemcode ?? '',
                 itemname: item.itemname ?? '',
                 unitofmeasurement: item.unitofmeasurement ?? '',
@@ -571,7 +578,21 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
     } else {
       this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
+
+      // Update Autocarejob status
+      const jobId = this.editForm.get('autocarejobid')?.value;
+      if (jobId) {
+        this.autocarejobService.partialUpdate({ id: jobId, isjobclose: true, isjobinvoiced: true }).subscribe();
+      }
     }
+  }
+
+  incrementId(id: string): string {
+    const match = id.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) return id;
+    const prefix = match[1];
+    const number = parseInt(match[2], 10) + 1;
+    return `${prefix}${number}`;
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISalesinvoice>>): void {

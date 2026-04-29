@@ -4,18 +4,22 @@
     margin: 0;
     padding: 0;
   }
+
   .full-width-form .container {
     max-width: 100%;
     padding: 0;
   }
+
   .full-width-form .row {
     margin: 0;
   }
+
   .full-width-form .col-md-4,
   .full-width-form .col-md-6,
   .full-width-form .col-12 {
     padding: 10px;
   }
+
   html,
   body {
     margin: 0;
@@ -278,7 +282,6 @@
               [totalamount]="totalamount"
               [receiptpaymentsdetails]="selectedReceipt"
               [customername]="customername"
-              [totalamount]="totalamount"
               [customeraddress]="customeraddress"
               [vehicleno]="vehicleno"
               [receiptdate]="receiptdate"
@@ -294,6 +297,9 @@
               [isactive]="isactive"
               [deposited]="deposited"
               [newcode]="newcode"
+              [accountId]="accountId"
+              [accountCode]="accountCode"
+              [invoicecode]="editForm.get('code')?.value ?? null"
             ></app-receipt-modal>
           </div>
         </div>
@@ -353,6 +359,7 @@
                   [selectedItem]="selectedItem"
                   [fetchedItems]="fetchedItems"
                   [sourceInvoiceId]="sourceInvoiceId"
+                  [nextvalue]="newcode"
                   (totalUpdated)="receiveTotal($event, 'child1')"
                 ></jhi-sales-invoice-lines-update>
               </div>

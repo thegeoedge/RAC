@@ -1,6 +1,7 @@
 package com.heavenscode.rac.service;
 
 import com.heavenscode.rac.domain.ReceiptLines;
+import com.heavenscode.rac.domain.ReceiptLinesId;
 import com.heavenscode.rac.repository.ReceiptLinesRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class ReceiptLinesService {
         LOG.debug("Request to partially update ReceiptLines : {}", receiptLines);
 
         return receiptLinesRepository
-            .findById(receiptLines.getId())
+            .findById(new ReceiptLinesId(receiptLines.getId(), receiptLines.getLineid()))
             .map(existingReceiptLines -> {
                 if (receiptLines.getLineid() != null) {
                     existingReceiptLines.setLineid(receiptLines.getLineid());
@@ -103,9 +104,9 @@ public class ReceiptLinesService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<ReceiptLines> findOne(Long id) {
-        LOG.debug("Request to get ReceiptLines : {}", id);
-        return receiptLinesRepository.findById(id);
+    public Optional<ReceiptLines> findOne(Long id, Long lineid) {
+        LOG.debug("Request to get ReceiptLines : {}, {}", id, lineid);
+        return receiptLinesRepository.findById(new ReceiptLinesId(id, lineid));
     }
 
     /**
@@ -113,8 +114,8 @@ public class ReceiptLinesService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
-        LOG.debug("Request to delete ReceiptLines : {}", id);
-        receiptLinesRepository.deleteById(id);
+    public void delete(Long id, Long lineid) {
+        LOG.debug("Request to delete ReceiptLines : {}, {}", id, lineid);
+        receiptLinesRepository.deleteById(new ReceiptLinesId(id, lineid));
     }
 }

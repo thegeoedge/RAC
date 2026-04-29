@@ -1,6 +1,7 @@
 package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.ReceiptLines;
+import com.heavenscode.rac.domain.ReceiptLinesId;
 import com.heavenscode.rac.repository.ReceiptLinesRepository;
 import com.heavenscode.rac.service.ReceiptLinesQueryService;
 import com.heavenscode.rac.service.ReceiptLinesService;
@@ -63,10 +64,8 @@ public class ReceiptLinesResource {
      */
     @PostMapping("")
     public ResponseEntity<ReceiptLines> createReceiptLines(@RequestBody ReceiptLines receiptLines) throws URISyntaxException {
-        LOG.debug("REST request to save ReceiptLines : {}", receiptLines);
-        if (receiptLines.getId() != null) {
-            throw new BadRequestAlertException("A new receiptLines cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+        LOG.info("REST request to save ReceiptLines : {}", receiptLines);
+        // id + lineid form a composite key; id comes from the parent receipt, not auto-generated
         receiptLines = receiptLinesService.save(receiptLines);
         return ResponseEntity.created(new URI("/api/receipt-lines/" + receiptLines.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, receiptLines.getId().toString()))
@@ -96,7 +95,7 @@ public class ReceiptLinesResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!receiptLinesRepository.existsById(id)) {
+        if (!receiptLinesRepository.existsById(new ReceiptLinesId(id, receiptLines.getLineid()))) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -130,7 +129,7 @@ public class ReceiptLinesResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!receiptLinesRepository.existsById(id)) {
+        if (!receiptLinesRepository.existsById(new ReceiptLinesId(id, receiptLines.getLineid()))) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -179,10 +178,10 @@ public class ReceiptLinesResource {
      * @param id the id of the receiptLines to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the receiptLines, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<ReceiptLines> getReceiptLines(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get ReceiptLines : {}", id);
-        Optional<ReceiptLines> receiptLines = receiptLinesService.findOne(id);
+    @GetMapping("/{id}/{lineid}")
+    public ResponseEntity<ReceiptLines> getReceiptLines(@PathVariable("id") Long id, @PathVariable("lineid") Long lineid) {
+        LOG.debug("REST request to get ReceiptLines : {}, {}", id, lineid);
+        Optional<ReceiptLines> receiptLines = receiptLinesService.findOne(id, lineid);
         return ResponseUtil.wrapOrNotFound(receiptLines);
     }
 
@@ -192,12 +191,12 @@ public class ReceiptLinesResource {
      * @param id the id of the receiptLines to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReceiptLines(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete ReceiptLines : {}", id);
-        receiptLinesService.delete(id);
+    @DeleteMapping("/{id}/{lineid}")
+    public ResponseEntity<Void> deleteReceiptLines(@PathVariable("id") Long id, @PathVariable("lineid") Long lineid) {
+        LOG.debug("REST request to delete ReceiptLines : {}, {}", id, lineid);
+        receiptLinesService.delete(id, lineid);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString() + "-" + lineid.toString()))
             .build();
     }
 }

@@ -3,22 +3,24 @@ package com.heavenscode.rac.domain;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * A ReceiptLines.
  */
 @Entity
-@Table(name = "receipt_lines")
+@IdClass(ReceiptLinesId.class)
+@Table(name = "receiptlines")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ReceiptLines implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // or SEQUENCE depending on your DB
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Id
     @Column(name = "lineid")
     private Long lineid;
 
@@ -210,7 +212,8 @@ public class ReceiptLines implements Serializable {
         this.accountid = accountid;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -220,31 +223,31 @@ public class ReceiptLines implements Serializable {
         if (!(o instanceof ReceiptLines)) {
             return false;
         }
-        return getId() != null && getId().equals(((ReceiptLines) o).getId());
+        ReceiptLines that = (ReceiptLines) o;
+        return Objects.equals(id, that.id) && Objects.equals(lineid, that.lineid);
     }
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
+        return Objects.hash(id, lineid);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "ReceiptLines{" +
-            "id=" + getId() +
-            ", lineid=" + getLineid() +
-            ", invoicecode='" + getInvoicecode() + "'" +
-            ", invoicetype='" + getInvoicetype() + "'" +
-            ", originalamount=" + getOriginalamount() +
-            ", amountowing=" + getAmountowing() +
-            ", discountavailable=" + getDiscountavailable() +
-            ", discounttaken=" + getDiscounttaken() +
-            ", amountreceived=" + getAmountreceived() +
-            ", lmu=" + getLmu() +
-            ", lmd='" + getLmd() + "'" +
-            ", accountid=" + getAccountid() +
-            "}";
+                "id=" + getId() +
+                ", lineid=" + getLineid() +
+                ", invoicecode='" + getInvoicecode() + "'" +
+                ", invoicetype='" + getInvoicetype() + "'" +
+                ", originalamount=" + getOriginalamount() +
+                ", amountowing=" + getAmountowing() +
+                ", discountavailable=" + getDiscountavailable() +
+                ", discounttaken=" + getDiscounttaken() +
+                ", amountreceived=" + getAmountreceived() +
+                ", lmu=" + getLmu() +
+                ", lmd='" + getLmd() + "'" +
+                ", accountid=" + getAccountid() +
+                "}";
     }
 }

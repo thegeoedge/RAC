@@ -1,6 +1,7 @@
 package com.heavenscode.rac.web.rest;
 
 import com.heavenscode.rac.domain.Receiptpaymentsdetails;
+import com.heavenscode.rac.domain.ReceiptpaymentsdetailsId;
 import com.heavenscode.rac.repository.ReceiptpaymentsdetailsRepository;
 import com.heavenscode.rac.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -53,10 +54,7 @@ public class ReceiptpaymentsdetailsResource {
     @PostMapping("")
     public ResponseEntity<Receiptpaymentsdetails> createReceiptpaymentsdetails(@RequestBody Receiptpaymentsdetails receiptpaymentsdetails)
         throws URISyntaxException {
-        LOG.debug("REST request to save Receiptpaymentsdetails : {}", receiptpaymentsdetails);
-        if (receiptpaymentsdetails.getId() != null) {
-            throw new BadRequestAlertException("A new receiptpaymentsdetails cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+        LOG.info("REST request to save Receiptpaymentsdetails : {}", receiptpaymentsdetails);
         receiptpaymentsdetails = receiptpaymentsdetailsRepository.save(receiptpaymentsdetails);
         return ResponseEntity.created(new URI("/api/receiptpaymentsdetails/" + receiptpaymentsdetails.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, receiptpaymentsdetails.getId().toString()))
@@ -75,7 +73,7 @@ public class ReceiptpaymentsdetailsResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Receiptpaymentsdetails> updateReceiptpaymentsdetails(
-        @PathVariable(value = "id", required = false) final Integer id,
+        @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Receiptpaymentsdetails receiptpaymentsdetails
     ) throws URISyntaxException {
         LOG.debug("REST request to update Receiptpaymentsdetails : {}, {}", id, receiptpaymentsdetails);
@@ -86,7 +84,7 @@ public class ReceiptpaymentsdetailsResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!receiptpaymentsdetailsRepository.existsById(id)) {
+        if (!receiptpaymentsdetailsRepository.existsById(new ReceiptpaymentsdetailsId(id, receiptpaymentsdetails.getLineid()))) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -109,7 +107,7 @@ public class ReceiptpaymentsdetailsResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Receiptpaymentsdetails> partialUpdateReceiptpaymentsdetails(
-        @PathVariable(value = "id", required = false) final Integer id,
+        @PathVariable(value = "id", required = false) final Long id,
         @RequestBody Receiptpaymentsdetails receiptpaymentsdetails
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Receiptpaymentsdetails partially : {}, {}", id, receiptpaymentsdetails);
@@ -120,12 +118,12 @@ public class ReceiptpaymentsdetailsResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!receiptpaymentsdetailsRepository.existsById(id)) {
+        if (!receiptpaymentsdetailsRepository.existsById(new ReceiptpaymentsdetailsId(id, receiptpaymentsdetails.getLineid()))) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         Optional<Receiptpaymentsdetails> result = receiptpaymentsdetailsRepository
-            .findById(receiptpaymentsdetails.getId())
+            .findById(new ReceiptpaymentsdetailsId(receiptpaymentsdetails.getId(), receiptpaymentsdetails.getLineid()))
             .map(existingReceiptpaymentsdetails -> {
                 if (receiptpaymentsdetails.getLineid() != null) {
                     existingReceiptpaymentsdetails.setLineid(receiptpaymentsdetails.getLineid());
@@ -274,10 +272,15 @@ public class ReceiptpaymentsdetailsResource {
      * @param id the id of the receiptpaymentsdetails to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the receiptpaymentsdetails, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Receiptpaymentsdetails> getReceiptpaymentsdetails(@PathVariable("id") Integer id) {
-        LOG.debug("REST request to get Receiptpaymentsdetails : {}", id);
-        Optional<Receiptpaymentsdetails> receiptpaymentsdetails = receiptpaymentsdetailsRepository.findById(id);
+    @GetMapping("/{id}/{lineid}")
+    public ResponseEntity<Receiptpaymentsdetails> getReceiptpaymentsdetails(
+        @PathVariable("id") Long id,
+        @PathVariable("lineid") Long lineid
+    ) {
+        LOG.debug("REST request to get Receiptpaymentsdetails : {}, {}", id, lineid);
+        Optional<Receiptpaymentsdetails> receiptpaymentsdetails = receiptpaymentsdetailsRepository.findById(
+            new ReceiptpaymentsdetailsId(id, lineid)
+        );
         return ResponseUtil.wrapOrNotFound(receiptpaymentsdetails);
     }
 
@@ -287,12 +290,12 @@ public class ReceiptpaymentsdetailsResource {
      * @param id the id of the receiptpaymentsdetails to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReceiptpaymentsdetails(@PathVariable("id") Integer id) {
-        LOG.debug("REST request to delete Receiptpaymentsdetails : {}", id);
-        receiptpaymentsdetailsRepository.deleteById(id);
+    @DeleteMapping("/{id}/{lineid}")
+    public ResponseEntity<Void> deleteReceiptpaymentsdetails(@PathVariable("id") Long id, @PathVariable("lineid") Long lineid) {
+        LOG.debug("REST request to delete Receiptpaymentsdetails : {}, {}", id, lineid);
+        receiptpaymentsdetailsRepository.deleteById(new ReceiptpaymentsdetailsId(id, lineid));
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString() + "-" + lineid.toString()))
             .build();
     }
 }
