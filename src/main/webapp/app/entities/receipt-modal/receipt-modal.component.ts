@@ -454,7 +454,10 @@ export class ReceiptModalComponent implements OnChanges {
       this.receipt.lmd = dayjs();
       this.receipt.customername = this.customername ?? '';
       this.receipt.totalamount = this.totalamount;
-      this.receipt.totalamountinword = this.totalamountinword ?? '';
+
+      // Calculate amount in words if not already set or to ensure it's current
+      const words = toWords(this.totalamount).replace(/,/g, '').replace(/and/g, 'and');
+      this.receipt.totalamountinword = words + ' Rupees Only';
 
       this.subscribeToSaveResponseWithCallback(this.reciptService.create(this.receipt as any), (receiptId: number) => {
         const paymentAmount = this.cash || this.totalamount || 0;
