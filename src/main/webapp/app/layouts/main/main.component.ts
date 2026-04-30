@@ -40,4 +40,13 @@ export default class MainComponent implements OnInit {
     // try to log in automatically
     this.accountService.identity().subscribe();
   }
+
+  isSidebarHidden(): boolean {
+    const url = this.router.url;
+    if (url === '/login') {
+      return true;
+    }
+    const isHome = url === '/' || url === '' || url === '/#';
+    return isHome && !this.accountService.isAuthenticated();
+  }
 }

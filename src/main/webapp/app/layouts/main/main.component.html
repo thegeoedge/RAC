@@ -1,9 +1,11 @@
 <div class="d-flex vh-100">
-  <jhi-sidebar class="sidebar"></jhi-sidebar>
+  @if (!isSidebarHidden()) {
+    <jhi-sidebar class="sidebar"></jhi-sidebar>
+  }
 
   <div class="flex-grow-1 content-container">
     <div class="" style="margin-right: 0px">
-      <div class="card jh-card">
+      <div class="card jh-card border-0">
         <router-outlet></router-outlet>
       </div>
       <jhi-footer></jhi-footer>
