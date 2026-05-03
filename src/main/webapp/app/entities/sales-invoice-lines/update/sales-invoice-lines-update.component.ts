@@ -46,6 +46,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   @Input() fetchedItems: any;
   @Input() sourceInvoiceId: number | null = null;
   @Input() nextvalue: any;
+  @Input() serviceChargeTotal: number = 0;
+  @Input() commonServiceChargeTotal: number = 0;
   protected autojobsinvoicelinesService = inject(AutojobsinvoicelinesService);
   protected transactionsService = inject(TransactionsService);
   protected accountsService = inject(AccountsService);
@@ -483,11 +485,18 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     this.calculateTotal();
   }
 
+  /** Returns current local time as a Dayjs that serializes to local time (not UTC) */
+  private localNow(): dayjs.Dayjs {
+    return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+  }
+
   transactionmodule(inid: number): void {
     this.salesinvoiceService.find(inid).subscribe(res => {
       const invoice = res.body;
       if (invoice) {
         this.inventorytransac(invoice);
+        this.inventoryLineCreditTransactions(invoice);
+        this.serviceChargeDebitTransaction(invoice);
         this.createbin(invoice);
         this.updatesalesincome(invoice);
         this.addtrasction(invoice);
@@ -508,7 +517,6 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   salesincometransactions(invoice: any): void {
     let totalItemCostSales = 0;
     let totalItemPriceSales = 0;
-    let totalServicePriceSales = 0;
 
     this.salesInvoiceLinesDummyArray.controls.forEach(control => {
       const line = (control as FormGroup).getRawValue();
@@ -518,44 +526,27 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       if ((Number(line.itemcost) || 0) > 0) {
         totalItemCostSales += cost;
         totalItemPriceSales += price;
-      } else {
-        totalServicePriceSales += price;
       }
     });
 
     const profit = totalItemPriceSales - totalItemCostSales;
 
+    // 1612047 – Item Sales Profit account DEBIT
     const transaction1: NewTransactions = {
       id: null,
       accountId: 33,
       accountCode: '42',
-      debit: 0,
-      credit: profit,
-      date: dayjs(),
+      debit: profit,
+      credit: 0,
+      date: this.localNow(),
       refDoc: invoice.code,
       refId: invoice.id,
       subId: this.salesInvoiceLinesService.getSubId(),
       source: 'Invoice-Item Profit',
       lmu: invoice.lmu,
-      lmd: dayjs(),
+      lmd: this.localNow(),
     };
     this.transactionsService.create(transaction1).subscribe();
-
-    const transaction2: NewTransactions = {
-      id: null,
-      accountId: 32,
-      accountCode: '41',
-      debit: 0,
-      credit: totalServicePriceSales,
-      date: dayjs(),
-      refDoc: invoice.code,
-      refId: invoice.id,
-      subId: this.salesInvoiceLinesService.getSubId(),
-      source: 'Invoice-Srv Profit',
-      lmu: invoice.lmu,
-      lmd: dayjs(),
-    };
-    this.transactionsService.create(transaction2).subscribe();
 
     this.accountsService.find(33).subscribe(res => {
       const account = res.body;
@@ -563,19 +554,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         this.accountsService.updateBalance(account.id, (account.balance ?? 0) + profit).subscribe();
       }
     });
-
-    this.accountsService.find(32).subscribe(res => {
-      const account = res.body;
-      if (account) {
-        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + totalServicePriceSales).subscribe();
-      }
-    });
   }
 
   addtrasction(invoice: any): void {
-    const total = this.salesInvoiceLinesDummyArray.controls
-      .map(control => control.get('linetotal')?.value || 0)
-      .reduce((acc, value) => acc + value, 0);
+    // 1612042 – Customer AR account DEBIT → use invoice.nettotal (includes items + all service charges)
+    const netTotal = Number(invoice.nettotal) || Number(invoice.subtotal) || 0;
 
     if (invoice.customerid) {
       this.customerService.find(invoice.customerid).subscribe(res => {
@@ -589,18 +572,18 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
                 id: null,
                 accountId: account.id,
                 accountCode: account.code,
-                debit: total,
+                debit: netTotal,
                 credit: 0,
-                date: dayjs(),
+                date: this.localNow(),
                 refDoc: invoice.code,
                 refId: invoice.id,
                 subId: this.salesInvoiceLinesService.getSubId(),
                 source: 'Invoice',
                 lmu: invoice.lmu,
-                lmd: dayjs(),
+                lmd: this.localNow(),
               };
               this.transactionsService.create(transaction3).subscribe();
-              this.accountsService.updateBalance(account.id, (account.balance ?? 0) + total).subscribe();
+              this.accountsService.updateBalance(account.id, (account.balance ?? 0) + netTotal).subscribe();
             }
           });
         }
@@ -608,31 +591,111 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     }
   }
 
+  /** 1612043–N: One Credit per line item — credits the item's own inventory account */
+  private inventoryLineCreditTransactions(invoice: any): void {
+    this.salesInvoiceLinesDummyArray.controls.forEach(control => {
+      const line = (control as FormGroup).getRawValue();
+      const lineTotal = Number(line.linetotal) || 0;
+      const itemId = Number(line.itemid) || 0;
+
+      if (itemId <= 0 || lineTotal <= 0) return;
+
+      // Fetch the inventory record to get its accountId
+      this.inventoryService.query({ 'id.equals': itemId }).subscribe({
+        next: invRes => {
+          const inventory = invRes.body?.[0];
+          if (!inventory) return;
+
+          const invAccountId = (inventory as any).accountId ?? (inventory as any).accountid ?? null;
+          if (!invAccountId) {
+            console.warn(`No accountId on inventory record for itemId ${itemId}`);
+            return;
+          }
+
+          const invCredit: NewTransactions = {
+            id: null,
+            accountId: invAccountId,
+            accountCode: (inventory as any).accountCode ?? (inventory as any).accountcode ?? '',
+            debit: 0,
+            credit: lineTotal,
+            date: this.localNow(),
+            refDoc: invoice.code,
+            refId: invoice.id,
+            subId: this.salesInvoiceLinesService.getSubId(),
+            // source: `Invoice-Inv-${line.itemcode ?? itemId}`,
+            source: 'Inventory',
+            lmu: invoice.lmu,
+            lmd: this.localNow(),
+          };
+          this.transactionsService.create(invCredit).subscribe();
+
+          // Adjust inventory account balance
+          this.accountsService.find(invAccountId).subscribe(accRes => {
+            const acc = accRes.body;
+            if (acc) {
+              this.accountsService.updateBalance(acc.id, (acc.balance ?? 0) - lineTotal).subscribe();
+            }
+          });
+        },
+        error: err => console.error(`Error fetching inventory for itemId ${itemId}:`, err),
+      });
+    });
+  }
+
+  /** 1612045: Service Charge account DEBIT — total of all service charges on this invoice */
+  private serviceChargeDebitTransaction(invoice: any): void {
+    const svcTotal = (this.serviceChargeTotal || 0) + (this.commonServiceChargeTotal || 0);
+    if (svcTotal <= 0) return;
+
+    const svcDebit: NewTransactions = {
+      id: null,
+      accountId: 32,
+      accountCode: '41',
+      debit: svcTotal,
+      credit: 0,
+      date: this.localNow(),
+      refDoc: invoice.code,
+      refId: invoice.id,
+      subId: this.salesInvoiceLinesService.getSubId(),
+      source: 'Invoice-Service Charge',
+      lmu: invoice.lmu,
+      lmd: this.localNow(),
+    };
+    this.transactionsService.create(svcDebit).subscribe();
+
+    this.accountsService.find(32).subscribe(res => {
+      const account = res.body;
+      if (account) {
+        this.accountsService.updateBalance(account.id, (account.balance ?? 0) + svcTotal).subscribe();
+      }
+    });
+  }
+
   closestockupdate(invoice: any): void {
-    const totalCost = this.salesInvoiceLinesDummyArray.controls
-      .map(control => (control.get('itemcost')?.value || 0) * (control.get('quantity')?.value || 0))
+    const totalAmount = this.salesInvoiceLinesDummyArray.controls
+      .map(control => control.get('linetotal')?.value || 0)
       .reduce((acc, val) => acc + val, 0);
 
-    if (totalCost > 0) {
-      this.closingstocktransaction(invoice, totalCost);
+    if (totalAmount > 0) {
+      this.closingstocktransaction(invoice, totalAmount);
     }
   }
 
   closingstocktransaction(invoice: any, amount: number): void {
-    //wwww Credit = totalCostForItems,
+    // 1612046 – Closing Stock (CLSSTK) account DEBIT
     const transaction4: NewTransactions = {
       id: null,
       accountId: 125,
       accountCode: 'CLSSTK',
-      debit: 0,
-      credit: amount,
-      date: dayjs(),
+      debit: amount,
+      credit: 0,
+      date: this.localNow(),
       refDoc: invoice.code,
       refId: invoice.id,
       subId: this.salesInvoiceLinesService.getSubId(),
       source: 'Finish Goods Transfer',
       lmu: invoice.lmu,
-      lmd: dayjs(),
+      lmd: this.localNow(),
     };
     this.transactionsService.create(transaction4).subscribe();
 
@@ -656,13 +719,13 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
         accountCode: '513',
         debit: totalCost,
         credit: 0,
-        date: dayjs(),
+        date: this.localNow(),
         refDoc: invoice.code,
         refId: invoice.id,
         subId: this.salesInvoiceLinesService.getSubId(),
         source: 'Invoice',
         lmu: invoice.lmu,
-        lmd: dayjs(),
+        lmd: this.localNow(),
       };
       this.transactionsService.create(transaction5).subscribe();
 
@@ -684,8 +747,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       reference: 'Sales Invoice',
       price: item.sellingprice,
       locationID: 1,
-      lMD: dayjs(),
-      recordDate: dayjs(),
+      lMD: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
+      recordDate: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
       batchId: item.itemid,
       referenceCode: this.nextvalue,
     }));
@@ -737,9 +800,9 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
                   batchId: realBatchId,
                   opening: openingBalance,
                   referenceCode: invoice.code,
-                  recordDate: dayjs(),
-                  txDate: dayjs(),
-                  lMD: dayjs(),
+                  recordDate: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
+                  txDate: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
+                  lMD: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
                   referenceDoc: 'Sales Invoice',
                   lMU: invoice.lmu,
                 } as NewBinCard;

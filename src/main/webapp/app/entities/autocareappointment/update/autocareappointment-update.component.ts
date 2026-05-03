@@ -297,11 +297,11 @@ export class AutocareappointmentUpdateComponent implements OnInit {
     this.isSaving = true;
     const autocareappointment = this.autocareappointmentFormService.getAutocareappointment(this.editForm);
     if (autocareappointment.id !== null) {
-      autocareappointment.lmd = dayjs();
+      autocareappointment.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
       this.subscribeToSaveResponse(this.autocareappointmentService.update(autocareappointment));
     } else {
-      autocareappointment.addeddate = dayjs();
-      autocareappointment.lmd = dayjs();
+      autocareappointment.addeddate = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+      autocareappointment.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
       this.subscribeToSaveResponse(this.autocareappointmentService.create(autocareappointment));
     }
   }

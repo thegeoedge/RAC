@@ -339,6 +339,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     unitofmeasurement?: string;
     quantity: number;
     sellingprice: number;
+    itemcost?: number;
     lineid?: number;
   }[] = [];
 
@@ -358,6 +359,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
                 unitofmeasurement: item.unitofmeasurement ?? '',
                 quantity: item.quantity ?? 0,
                 sellingprice: item.sellingprice ?? 0,
+                itemcost: item.itemcost ?? item.lastcost ?? 0,
                 lineid: item.lineid,
               });
             });

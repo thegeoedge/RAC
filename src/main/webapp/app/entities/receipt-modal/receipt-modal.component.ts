@@ -103,6 +103,11 @@ export class ReceiptModalComponent implements OnChanges {
     window.history.back();
   }
 
+  /** Returns current local time as a Dayjs that serializes to local time (not UTC) */
+  private localNow(): dayjs.Dayjs {
+    return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+  }
+
   loadBanks(): void {
     this.banksService.query({ size: 1000 }).subscribe((res: HttpResponse<IBanks[]>) => {
       this.banks = res.body || [];
@@ -112,16 +117,18 @@ export class ReceiptModalComponent implements OnChanges {
   accountsId: number = 0;
 
   fetchacc(): void {
-    this.customeraccid.query({ 'id.equals': this.customerid }).subscribe((res: HttpResponse<any[]>) => {
-      const accounts = res.body || [];
-      const selectedAccount = accounts.length > 0 ? accounts[0] : null;
-      if (selectedAccount) {
-        this.accountCode = selectedAccount.accountcode;
-        this.transaction.accountCode = selectedAccount.accountcode;
-        this.transaction.accountId = selectedAccount.accountid;
-        this.accountsId = selectedAccount.id;
-      }
-    });
+    if (this.customername) {
+      this.salesInvoiceService.fetchReceiptAccountId(this.customername).subscribe(resAcc => {
+        const accounts = resAcc.body;
+        if (accounts && accounts.length > 0) {
+          const account = accounts[0];
+          this.accountCode = account.code;
+          this.transaction.accountCode = account.code;
+          this.transaction.accountId = account.id;
+          this.accountsId = account.id;
+        }
+      });
+    }
   }
 
   paymentType: string = '';
@@ -150,14 +157,14 @@ export class ReceiptModalComponent implements OnChanges {
   account = {
     id: null,
     code: '',
-    date: dayjs(),
+    date: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     name: '',
     description: '',
     type: 0,
     parent: 0,
     balance: 0,
     lmu: 0,
-    lmd: dayjs(),
+    lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     hasbatches: null as boolean | null,
     accountvalue: 0,
     accountlevel: 0,
@@ -177,7 +184,7 @@ export class ReceiptModalComponent implements OnChanges {
     accountCode: '',
     debit: 0,
     credit: 0,
-    date: dayjs(),
+    date: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     refDoc: '',
     refId: 0,
     subId: '',
@@ -185,7 +192,7 @@ export class ReceiptModalComponent implements OnChanges {
     paymentTermId: 0,
     paymentTermName: '',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
   };
 
   reciptnocustransaction = {
@@ -194,27 +201,39 @@ export class ReceiptModalComponent implements OnChanges {
     accountCode: '',
     debit: 0,
     credit: 0,
-    date: dayjs(),
+    date: this.localNow(),
     refDoc: '',
     refId: 0,
     subId: '',
-    source: 'Recipt',
+    source: 'Receipt',
     paymentTermId: 0,
     paymentTermName: '',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: this.localNow(),
   };
 
-  reciptnocustransactions(recid: number, reccode: String, subid: string, termid: number, termname: string): void {
+  reciptnocustransactions(recid: number, reccode: String, subid: string, termid: number, termname: string, paymentAmount: number): void {
     this.reciptnocustransaction.refId = recid;
     this.reciptnocustransaction.subId = subid;
     this.reciptnocustransaction.refDoc = reccode ? reccode.toString() : '';
-    this.reciptnocustransaction.debit = this.totalamount;
+    this.reciptnocustransaction.debit = 0;
+    this.reciptnocustransaction.credit = paymentAmount;
     this.reciptnocustransaction.paymentTermId = termid;
     this.reciptnocustransaction.paymentTermName = termname;
-    this.reciptnocustransaction.accountId = this.accountId;
-    this.reciptnocustransaction.accountCode = this.accountCode;
-    this.transtactions.create(this.reciptnocustransaction as any).subscribe();
+
+    const custName = this.customername || 'CASH';
+    this.salesInvoiceService.fetchReceiptAccountId(custName).subscribe(resAcc => {
+      const accounts = resAcc.body;
+      if (accounts && accounts.length > 0) {
+        const account = accounts[0];
+        this.reciptnocustransaction.accountId = account.id;
+        this.reciptnocustransaction.accountCode = account.code;
+      } else {
+        this.reciptnocustransaction.accountId = this.transaction.accountId;
+        this.reciptnocustransaction.accountCode = this.transaction.accountCode;
+      }
+      this.transtactions.create(this.reciptnocustransaction as any).subscribe();
+    });
   }
 
   reciptnocustomerupdate(accountid: number): void {
@@ -237,25 +256,26 @@ export class ReceiptModalComponent implements OnChanges {
     accountCode: '42',
     debit: 0,
     credit: 0,
-    date: dayjs(),
+    date: this.localNow(),
     refDoc: '',
     refId: 0,
     subId: '',
-    source: 'Receipt-Trade Receivables',
+    source: 'Receipt',
     paymentTermId: 0,
     paymentTermName: '',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: this.localNow(),
   };
 
   receiptmainacctransactions(recid: number, reccode: String, subid: string, totalrecived: number): void {
-    this.receipttransaction.refId = recid;
-    this.receipttransaction.subId = subid;
-    this.receipttransaction.refDoc = reccode ? reccode.toString() : '';
-    this.receipttransaction.debit = totalrecived;
-    this.receipttransaction.accountId = this.accountId;
-    this.receipttransaction.accountCode = this.accountCode;
-    this.transtactions.create(this.receipttransaction as any).subscribe();
+    this.receiptmainacctransaction.refId = recid;
+    this.receiptmainacctransaction.subId = subid;
+    this.receiptmainacctransaction.refDoc = reccode ? reccode.toString() : '';
+    this.receiptmainacctransaction.debit = totalrecived;
+    this.receiptmainacctransaction.credit = 0;
+    this.receiptmainacctransaction.accountId = this.accountId;
+    this.receiptmainacctransaction.accountCode = this.accountCode;
+    this.transtactions.create(this.receiptmainacctransaction as any).subscribe();
   }
 
   receipttransaction = {
@@ -264,25 +284,42 @@ export class ReceiptModalComponent implements OnChanges {
     accountCode: '42',
     debit: 0,
     credit: 0,
-    date: dayjs(),
+    date: this.localNow(),
     refDoc: '',
     refId: 0,
     subId: '',
-    source: 'Recipt',
+    source: 'Receipt',
     paymentTermId: 0,
     paymentTermName: '',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: this.localNow(),
   };
 
-  receipttransactions(recid: number, reccode: String, subid: string, termid: number, termname: string): void {
+  receipttransactions(recid: number, reccode: String, subid: string, termid: number, termname: string, paymentAmount: number): void {
     this.receipttransaction.refId = recid;
     this.receipttransaction.subId = subid;
     this.receipttransaction.refDoc = reccode ? reccode.toString() : '';
-    this.receipttransaction.credit = this.totalamount;
-    this.receipttransaction.accountId = this.accountId;
-    this.receipttransaction.accountCode = this.accountCode;
-    this.transtactions.create(this.receipttransaction as any).subscribe();
+    this.receipttransaction.debit = 0;
+    this.receipttransaction.credit = paymentAmount;
+
+    if (this.customername) {
+      this.salesInvoiceService.fetchReceiptAccountId(this.customername).subscribe(resAcc => {
+        const accounts = resAcc.body;
+        if (accounts && accounts.length > 0) {
+          const account = accounts[0];
+          this.receipttransaction.accountId = account.id;
+          this.receipttransaction.accountCode = account.code;
+        } else {
+          this.receipttransaction.accountId = this.transaction.accountId;
+          this.receipttransaction.accountCode = this.transaction.accountCode;
+        }
+        this.transtactions.create(this.receipttransaction as any).subscribe();
+      });
+    } else {
+      this.receipttransaction.accountId = this.transaction.accountId;
+      this.receipttransaction.accountCode = this.transaction.accountCode;
+      this.transtactions.create(this.receipttransaction as any).subscribe();
+    }
   }
 
   updaterecipttransactionwithcustomer(): void {
@@ -356,19 +393,19 @@ export class ReceiptModalComponent implements OnChanges {
   }
   receipt = {
     code: 'string',
-    receiptdate: dayjs(),
+    receiptdate: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     customername: 'string',
     customeraddress: 'string',
     totalamount: 0,
     totalamountinword: 'string',
     comments: 'string',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     termid: 0,
     term: 'string',
-    date: dayjs(),
+    date: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     amount: 0,
-    checkdate: dayjs(),
+    checkdate: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     checkno: 'string',
     bank: 'string',
     customerid: 0,
@@ -390,7 +427,7 @@ export class ReceiptModalComponent implements OnChanges {
     discounttaken: 0,
     amountreceived: 0,
     lmu: 0,
-    lmd: dayjs(),
+    lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     accountid: 0,
   };
 
@@ -412,7 +449,7 @@ export class ReceiptModalComponent implements OnChanges {
     reference: '',
     otherdetails: '',
     lmu: 0,
-    lmd: dayjs(),
+    lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
     termid: 0,
     termname: '',
     accountno: '',
@@ -451,7 +488,7 @@ export class ReceiptModalComponent implements OnChanges {
 
     if (this.receipt) {
       this.receipt.lmu = finalUserId;
-      this.receipt.lmd = dayjs();
+      this.receipt.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
       this.receipt.customername = this.customername ?? '';
       this.receipt.totalamount = this.totalamount;
 
@@ -474,7 +511,7 @@ export class ReceiptModalComponent implements OnChanges {
           discounttaken: 0,
           amountreceived: paymentAmount || 0,
           lmu: finalUserId,
-          lmd: dayjs(),
+          lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
           accountid: safeAccountId,
         };
         console.log('ReceiptLines Payload:', receiptLinePayload);
@@ -489,7 +526,7 @@ export class ReceiptModalComponent implements OnChanges {
           paymentamount: paymentAmount || 0,
           totalreceiptamount: this.totalamount || 0,
           lmu: finalUserId,
-          lmd: dayjs(),
+          lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
           termid: this.receipt.termid || 0,
           termname: this.method || '',
           accountid: safeAccountId,
@@ -535,10 +572,10 @@ export class ReceiptModalComponent implements OnChanges {
 
         if (this.customername != 'CASH') {
           this.updaterecipttransactionwithcustomer();
-          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method);
+          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, paymentAmount);
         } else {
           this.reciptnocustomerupdate(this.accountId);
-          this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method);
+          this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, paymentAmount);
         }
 
         this.updatecustomermain(paymentAmount);
@@ -580,10 +617,10 @@ export class ReceiptModalComponent implements OnChanges {
     this.receipt.customeraddress = this.customeraddress ?? '';
     this.receipt.comments = this.comments ?? '';
 
-    this.receipt.date = this.date ? dayjs(this.date.toISOString()) : dayjs();
+    this.receipt.date = this.date ? dayjs(this.date.toISOString()) : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
 
     this.receipt.amount = this.amount ?? 0;
-    this.receipt.checkdate = this.checkdate ? dayjs(this.checkdate.toISOString()) : dayjs();
+    this.receipt.checkdate = this.checkdate ? dayjs(this.checkdate.toISOString()) : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
     this.receipt.checkno = this.checkno ?? '';
     this.receipt.bank = this.bank ?? '';
     this.receipt.customerid = this.customerid ?? 0;
@@ -592,7 +629,9 @@ export class ReceiptModalComponent implements OnChanges {
     this.receipt.createdby = this.createdby ?? 0;
     this.receipt.totalamountinword = this.totalamountinword ?? '';
     this.receipt.code = this.newcode ?? '';
-    this.receipt.receiptdate = this.receiptdate ? dayjs(this.receiptdate.toISOString()) : dayjs();
+    this.receipt.receiptdate = this.receiptdate
+      ? dayjs(this.receiptdate.toISOString())
+      : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
     this.receipt.vehicleno = this.vehicleno ?? '';
 
     // Logging all values

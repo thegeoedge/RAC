@@ -158,6 +158,16 @@ export class AutocarejobInstructionComponent implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AutocarejobFormGroup = this.autocarejobFormService.createAutocarejobFormGroup();
 
+  /** Returns current local time offset so it serializes as local time instead of UTC */
+  private localNow(): dayjs.Dayjs {
+    return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+  }
+
+  /** Offsets a parsed date so it serializes as local time instead of UTC */
+  private localDate(val: any): dayjs.Dayjs {
+    return val ? dayjs(val).add(-new Date().getTimezoneOffset(), 'minute') : this.localNow();
+  }
+
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ autocarejob }) => {
       this.autocarejob = autocarejob;
@@ -179,7 +189,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   setAutoNextServiceDate(): void {
-    const futureDate = dayjs().add(6, 'month').format('YYYY-MM-DD'); // Add 6 months to today
+    const futureDate = dayjs().add(-new Date().getTimezoneOffset(), 'minute').add(6, 'month').format('YYYY-MM-DD'); // Add 6 months to today
     this.editForm.patchValue({ nextservicedate: dayjs(futureDate) }); // Update form
     this.cdr.detectChanges(); // Ensure UI updates
   }
@@ -854,22 +864,22 @@ export class AutocarejobInstructionComponent implements OnInit {
       code: item.itemcode,
       batchid: 0,
       batchcode: '',
-      txdate: dayjs(),
-      manufacturedate: dayjs(),
-      expireddate: dayjs(),
+      txdate: this.localNow(),
+      manufacturedate: this.localNow(),
+      expireddate: this.localNow(),
       qty: item.quantity ?? 1,
       cost: item.itemcost ?? 0,
       price: item.itemprice ?? item.sellingprice ?? 0,
       notes: item.description ?? '',
       lmu: item.lmu ?? 0,
-      lmd: item.lmd ? dayjs(item.lmd) : dayjs(),
+      lmd: item.lmd ? this.localDate(item.lmd) : this.localNow(),
       nbt: item.nbt ?? false,
       vat: item.vat ?? false,
       discount: item.discount ?? 0,
       total: item.linetotal ?? 0,
       issued: false,
       issuedby: 0,
-      issueddatetime: dayjs(),
+      issueddatetime: this.localNow(),
       addedbyid: 0,
       canceloptid: 0,
       cancelopt: '',
@@ -1126,12 +1136,12 @@ export class AutocarejobInstructionComponent implements OnInit {
       vehiclebrand: vehicleBrand ?? '',
       vehiclemodel: vehicleModel ?? '',
       mileage: String(formRaw.millage ?? ''),
-      addeddate: dayjs(),
+      addeddate: this.localNow(),
       iscalltocustomer: formRaw.updatetocustomer ?? false,
       remarks: null,
       calldate: null,
       lmu: 0,
-      lmd: dayjs(),
+      lmd: this.localNow(),
     };
   }
 
@@ -1298,7 +1308,7 @@ export class AutocarejobInstructionComponent implements OnInit {
               const itemWithDayjsLmd = {
                 ...item,
                 id: null,
-                lmd: dayjs(item.lmd),
+                lmd: this.localDate(item.lmd),
               };
 
               this.jobinvoicelines.create(itemWithDayjsLmd).subscribe({
@@ -1489,10 +1499,10 @@ export class AutocarejobInstructionComponent implements OnInit {
               vehiclebrand: brand || existingHeader.vehiclebrand || '',
               vehiclemodel: model || existingHeader.vehiclemodel || '',
               mileage: String(formRaw.millage ?? existingHeader.mileage ?? ''),
-              addeddate: existingHeader.addeddate ?? dayjs(),
+              addeddate: existingHeader.addeddate ?? this.localNow(),
               iscalltocustomer: formRaw.updatetocustomer ?? false,
               lmu: 0,
-              lmd: dayjs(),
+              lmd: this.localNow(),
             };
             this.workshopvehicleworkService.update(updatedHeader).subscribe({
               next: () => this.persistWorkshopDetailRows(existingHeader.id, desiredRows),
