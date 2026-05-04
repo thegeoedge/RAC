@@ -60,6 +60,9 @@ export class ReceiptModalComponent implements OnChanges {
   isSaving = false;
   field_input1: string = 'field_input1'; // Define this property here00
   selectedOption: number = 0;
+  cashAmountStr: string = '0.00';
+  chequeAmountStr: string = '0.00';
+  chequeAmount: number = 0;
   banks: IBanks[] = [];
   bankbranch: IBankbranch[] = [];
 
@@ -374,16 +377,72 @@ export class ReceiptModalComponent implements OnChanges {
 
   cash: number = 0;
   balance: number = 0;
-  onItemCodeInput(event: Event): void {
-    const inputElement = <HTMLInputElement>event.target;
-    const value = inputElement.value;
-    console.log(`Input value: ${value}`);
-    this.cash = parseFloat(value);
-    console.log('Cash:', this.cash);
 
-    console.log('Total Amount:', this.totalamount);
+  onCashInput(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    let value = inputElement.value;
+
+    // Only allow numbers and one decimal point
+    value = value.replace(/[^0-9.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    inputElement.value = value;
+    this.cashAmountStr = value;
+
+    this.cash = parseFloat(value) || 0;
     this.balance = this.totalamount - this.cash;
-    console.log('Balance:', this.balance);
+  }
+
+  onCashBlur(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    let val = parseFloat(inputElement.value);
+    if (isNaN(val)) val = 0;
+    this.cashAmountStr = val.toFixed(2);
+    inputElement.value = this.cashAmountStr;
+    this.cash = val;
+    this.balance = this.totalamount - this.cash;
+  }
+
+  onCashFocus(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    if (parseFloat(inputElement.value) === 0) {
+      this.cashAmountStr = '';
+      inputElement.value = '';
+    }
+  }
+
+  onChequeInput(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    let value = inputElement.value;
+
+    // Only allow numbers and one decimal point
+    value = value.replace(/[^0-9.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    inputElement.value = value;
+    this.chequeAmountStr = value;
+    this.chequeAmount = parseFloat(value) || 0;
+  }
+
+  onChequeBlur(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    let val = parseFloat(inputElement.value);
+    if (isNaN(val)) val = 0;
+    this.chequeAmountStr = val.toFixed(2);
+    inputElement.value = this.chequeAmountStr;
+    this.chequeAmount = val;
+  }
+
+  onChequeFocus(event: Event): void {
+    const inputElement = <HTMLInputElement>event.target;
+    if (parseFloat(inputElement.value) === 0) {
+      this.chequeAmountStr = '';
+      inputElement.value = '';
+    }
   }
 
   loadBankBranch(): void {
@@ -497,7 +556,7 @@ export class ReceiptModalComponent implements OnChanges {
       this.receipt.totalamountinword = words + ' Rupees Only';
 
       this.subscribeToSaveResponseWithCallback(this.reciptService.create(this.receipt as any), (receiptId: number) => {
-        const paymentAmount = this.cash || this.totalamount || 0;
+        const paymentAmount = this.method === 'Cheque' ? this.chequeAmount || 0 : this.cash || this.totalamount || 0;
         const safeAccountId = this.accountId && !isNaN(Number(this.accountId)) ? Number(this.accountId) : 0;
 
         const receiptLinePayload: any = {
@@ -506,10 +565,10 @@ export class ReceiptModalComponent implements OnChanges {
           invoicecode: this.invoicecode ?? '',
           invoicetype: 'Sales Invoice',
           originalamount: this.totalamount || 0,
-          amountowing: (this.totalamount || 0) - (paymentAmount || 0),
+          amountowing: this.method === 'Cash' ? 0 : (this.totalamount || 0) - (paymentAmount || 0),
           discountavailable: 0,
           discounttaken: 0,
-          amountreceived: paymentAmount || 0,
+          amountreceived: this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
           lmu: finalUserId,
           lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
           accountid: safeAccountId,
@@ -523,7 +582,7 @@ export class ReceiptModalComponent implements OnChanges {
         const receiptPaymentsPayload: any = {
           id: receiptId,
           lineid: 1,
-          paymentamount: paymentAmount || 0,
+          paymentamount: this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
           totalreceiptamount: this.totalamount || 0,
           lmu: finalUserId,
           lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
@@ -570,16 +629,18 @@ export class ReceiptModalComponent implements OnChanges {
 
         this.subid = crypto.randomUUID();
 
+        const transactionAmount = this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0;
+
         if (this.customername != 'CASH') {
           this.updaterecipttransactionwithcustomer();
-          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, paymentAmount);
+          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
         } else {
           this.reciptnocustomerupdate(this.accountId);
-          this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, paymentAmount);
+          this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
         }
 
-        this.updatecustomermain(paymentAmount);
-        this.receiptmainacctransactions(receiptId, this.receipt.code, this.subid, paymentAmount);
+        this.updatecustomermain(transactionAmount);
+        this.receiptmainacctransactions(receiptId, this.receipt.code, this.subid, transactionAmount);
       });
     } else {
       this.isSaving = true;

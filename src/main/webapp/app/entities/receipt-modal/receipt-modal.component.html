@@ -50,17 +50,28 @@
                     <label class="form-label" for="{{ field_input1 }}">Cash</label>
                     <input
                       type="text"
-                      class="form-control"
+                      class="form-control text-end"
                       name="inputA"
                       [id]="field_input1"
                       data-cy="inputA"
-                      (input)="onItemCodeInput($event)"
+                      [value]="cashAmountStr"
+                      (input)="onCashInput($event)"
+                      (blur)="onCashBlur($event)"
+                      (focus)="onCashFocus($event)"
                     />
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label" for="field_input2">Balance</label>
-                    <input type="text" class="form-control" name="inputB" id="field_input2" data-cy="inputB" [value]="balance" />
+                    <input
+                      type="text"
+                      class="form-control text-end"
+                      name="inputB"
+                      id="field_input2"
+                      data-cy="inputB"
+                      [value]="balance | number: '1.2-2'"
+                      readonly
+                    />
                   </div>
                 </div>
 
@@ -81,7 +92,15 @@
 
                   <div class="mb-3">
                     <label class="form-label" for="amount">Amount <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="amount" />
+                    <input
+                      type="text"
+                      class="form-control text-end"
+                      id="amount"
+                      [value]="chequeAmountStr"
+                      (input)="onChequeInput($event)"
+                      (blur)="onChequeBlur($event)"
+                      (focus)="onChequeFocus($event)"
+                    />
                   </div>
 
                   <div class="mb-3">
