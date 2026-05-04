@@ -169,35 +169,39 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="row align-items-center border p-3">
-                    <div class="mb-3 col-6">
-                      <label class="form-label" for="field_millage">Millage</label>
-                      <input
-                        type="number"
-                        class="form-control form-control-sm"
-                        name="millage"
-                        id="field_millage"
-                        data-cy="millage"
-                        formControlName="millage"
-                        (input)="onMillageChange($event)"
-                      />
-                    </div>
+                  <div class="col-12 mb-3">
+                    <div class="border p-3">
+                      <div class="row align-items-center">
+                        <div class="col-6">
+                          <label class="form-label" for="field_millage">Millage</label>
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            name="millage"
+                            id="field_millage"
+                            data-cy="millage"
+                            formControlName="millage"
+                            (input)="onMillageChange($event)"
+                          />
+                        </div>
 
-                    <div class="mb-3 col-6">
-                      <label class="form-label" for="field_nextservicedate">Next Service Date</label>
-                      <div class="input-group">
-                        <input
-                          id="field_nextservicedate"
-                          type="text"
-                          class="form-control form-control-sm"
-                          name="nextservicedate"
-                          ngbDatepicker
-                          #nextservicedateDp="ngbDatepicker"
-                          formControlName="nextservicedate"
-                        />
-                        <button type="button" class="btn btn-secondary" (click)="nextservicedateDp.toggle()">
-                          <fa-icon icon="calendar-alt"></fa-icon>
-                        </button>
+                        <div class="col-6">
+                          <label class="form-label" for="field_nextservicedate">Next Service Date</label>
+                          <div class="input-group">
+                            <input
+                              id="field_nextservicedate"
+                              type="text"
+                              class="form-control form-control-sm"
+                              name="nextservicedate"
+                              ngbDatepicker
+                              #nextservicedateDp="ngbDatepicker"
+                              formControlName="nextservicedate"
+                            />
+                            <button type="button" class="btn btn-secondary" (click)="nextservicedateDp.toggle()">
+                              <fa-icon icon="calendar-alt"></fa-icon>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

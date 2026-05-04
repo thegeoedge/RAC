@@ -42,6 +42,12 @@ export class VoucherUpdateComponent implements OnInit {
   editForm: VoucherFormGroup = this.voucherFormService.createVoucherFormGroup();
 
   ngOnInit(): void {
+    this.editForm.patchValue({
+      lmu: 1,
+      createdBy: 1,
+      termId: 1,
+      term: 'Cash',
+    });
     this.activatedRoute.data.subscribe(({ voucher }) => {
       this.voucher = voucher;
 
@@ -101,6 +107,7 @@ export class VoucherUpdateComponent implements OnInit {
           const number = parseInt(match[2], 10) + 1; // Increment numeric part
 
           this.voucherCode = `${prefix}${number}`; // Set the new code to voucherCode
+          this.editForm.patchValue({ code: this.voucherCode });
           console.log('New Voucher Code:', this.voucherCode);
         } else {
           console.warn('Invalid voucher code format:', lastCode);
@@ -157,6 +164,10 @@ export class VoucherUpdateComponent implements OnInit {
         this.editForm.patchValue({
           totalAmount: (salesInvoiceDummy as ISalesInvoiceDummy).dummyCommission ?? null,
           comments: 'Dummy commision payment - ' + (salesInvoiceDummy as ISalesInvoiceDummy).code,
+          lmu: (salesInvoiceDummy as ISalesInvoiceDummy).lmu ?? 1,
+          createdBy: (salesInvoiceDummy as ISalesInvoiceDummy).createdById ?? 1,
+          termId: 1,
+          term: 'Cash',
         });
 
         this.code = (salesInvoiceDummy as ISalesInvoiceDummy).code ?? '';

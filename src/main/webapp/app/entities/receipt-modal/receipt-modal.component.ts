@@ -541,6 +541,23 @@ export class ReceiptModalComponent implements OnChanges {
 
   save(): void {
     this.isSaving = true;
+
+    let currentPaidAmount = 0;
+    if (this.method === 'Cheque') {
+      currentPaidAmount = this.chequeAmount || 0;
+    } else if (this.method === 'Cash') {
+      currentPaidAmount = this.cash || this.totalamount || 0;
+    } else if (this.method === 'Credit') {
+      currentPaidAmount = 0;
+    } else {
+      currentPaidAmount = this.totalamount || 0;
+    }
+
+    this.salesinvoiceupdate.editForm.patchValue({
+      paidamount: currentPaidAmount,
+      paymenttype: this.method,
+    });
+
     const storedUserId = localStorage.getItem('empId');
     const userIdNumber = storedUserId ? parseInt(storedUserId, 10) : 0;
     const finalUserId = isNaN(userIdNumber) ? 0 : userIdNumber;
@@ -730,6 +747,11 @@ export class ReceiptModalComponent implements OnChanges {
     this.accountmethod(paymentMethod);
     this.receipt.term = paymentMethod;
     this.receipt.termid = termid;
+
+    // Sync with main SalesInvoice form
+    this.salesinvoiceupdate.editForm.patchValue({
+      paymenttype: paymentMethod,
+    });
 
     console.log('totalamount:', this.totalamount);
 

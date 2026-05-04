@@ -7,6 +7,8 @@ import { debounceTime } from 'rxjs/operators';
 
 import SharedModule from 'app/shared/shared.module';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import dayjs from 'dayjs/esm';
+import { AccountService } from 'app/core/auth/account.service';
 
 import { ISalesInvoiceLines } from 'app/entities/sales-invoice-lines/sales-invoice-lines.model';
 import { ISaleInvoiceCommonServiceCharge } from 'app/entities/sale-invoice-common-service-charge/sale-invoice-common-service-charge.model';
@@ -65,6 +67,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected activatedRoute = inject(ActivatedRoute);
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   protected autocarejobService = inject(AutocarejobService);
+  protected accountService = inject(AccountService);
 
   filteredItems: IInventory[][] = [];
   ISalesInvoiceLines: ISalesInvoiceLines[] = [];
@@ -211,23 +214,23 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   calculateDiscount(): void {
     console.log('Form Values:', this.editForm.value); // Debug the entire form
 
-    const subTotal = Number(this.editForm.get('subTotal')?.value) || 0;
+    const subtotal = Number(this.editForm.get('subtotal')?.value) || 0;
     const valueDiscount = this.discountValue;
 
     console.log('Selected Discount Option:', this.discountOption); // Log the selected option
-    console.log('Sub Total:', subTotal);
+    console.log('Sub Total:', subtotal);
     console.log('Discount Value:', valueDiscount);
 
     let totalDiscount = 0;
 
     if (this.discountOption === 'percentage') {
-      totalDiscount = (subTotal * Number(valueDiscount)) / 100;
+      totalDiscount = (subtotal * Number(valueDiscount)) / 100;
     } else if (this.discountOption === 'value') {
       totalDiscount = valueDiscount;
     }
 
-    totalDiscount = Math.min(totalDiscount, subTotal);
-    const netTotal = subTotal - totalDiscount;
+    totalDiscount = Math.min(totalDiscount, subtotal);
+    const netTotal = subtotal - totalDiscount;
 
     console.log('Total Discount:', totalDiscount);
     console.log('Net Total:', netTotal);
@@ -574,18 +577,48 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   save(): void {
+    this.calculateDiscount();
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
     if (salesinvoice.id !== null) {
       this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
     } else {
-      this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
+      salesinvoice.locationid = 0;
+      const now = dayjs();
+      salesinvoice.invoicedate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
+      salesinvoice.createddate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
+      salesinvoice.delieverydate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
+      salesinvoice.isactive = true;
+      salesinvoice.nbtamount = 0;
+      salesinvoice.vatamount = 0;
+      salesinvoice.invcanceldate = null;
+      salesinvoice.advancepayment = 0;
 
-      // Update Autocarejob status
-      const jobId = this.editForm.get('autocarejobid')?.value;
-      if (jobId) {
-        this.autocarejobService.partialUpdate({ id: jobId, isjobclose: true, isjobinvoiced: true }).subscribe();
+      const nettotal = salesinvoice.nettotal ?? 0;
+      const paidamount = salesinvoice.paidamount ?? 0;
+      const pendingamount = nettotal - paidamount;
+
+      if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
+        salesinvoice.pendingamount = 0;
+        salesinvoice.amountowing = 0;
+      } else {
+        salesinvoice.pendingamount = pendingamount;
+        salesinvoice.amountowing = pendingamount;
       }
+
+      this.accountService.identity().subscribe(account => {
+        if (account) {
+          salesinvoice.createdbyid = account.id;
+          salesinvoice.createdbyname = account.firstName;
+        }
+        this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
+
+        // Update Autocarejob status
+        const jobId = this.editForm.get('autocarejobid')?.value;
+        if (jobId) {
+          this.autocarejobService.partialUpdate({ id: jobId, isjobclose: true, isjobinvoiced: true }).subscribe();
+        }
+      });
     }
   }
 
