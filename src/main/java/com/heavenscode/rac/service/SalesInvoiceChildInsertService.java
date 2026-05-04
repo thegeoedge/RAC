@@ -112,6 +112,54 @@ public class SalesInvoiceChildInsertService {
         }
     }
 
+    private void hydrateCommonServiceChargeDetails(SaleInvoiceCommonServiceCharge entity) {
+        if (entity.getOptionId() == null || entity.getOptionId() <= 0) {
+            return;
+        }
+        if (entity.getDiscount() == null) {
+            entity.setDiscount(0.0f);
+        }
+        // If we already have both, no need to hydrate
+        if (entity.getMainId() != null && entity.getCode() != null && !entity.getCode().isBlank()) {
+            return;
+        }
+
+        try {
+            String optionTable = resolveQualifiedTableName("commonserviceoption");
+            Map<String, String> columns = getActualColumns(optionTable);
+            String mainIdColumn = firstAvailableColumn(columns, "mainid", "main_id");
+            String codeColumn = firstAvailableColumn(columns, "code");
+
+            if (mainIdColumn == null && codeColumn == null) {
+                return;
+            }
+
+            List<Map<String, Object>> detailsList = jdbcTemplate.queryForList(
+                "SELECT " +
+                (mainIdColumn != null ? bracket(mainIdColumn) : "NULL") +
+                " as mainid, " +
+                (codeColumn != null ? bracket(codeColumn) : "NULL") +
+                " as code " +
+                " FROM " +
+                optionTable +
+                " WHERE id = ?",
+                entity.getOptionId()
+            );
+
+            if (!detailsList.isEmpty()) {
+                Map<String, Object> details = detailsList.get(0);
+                if (entity.getMainId() == null && details.get("mainid") != null) {
+                    entity.setMainId(((Number) details.get("mainid")).intValue());
+                }
+                if ((entity.getCode() == null || entity.getCode().isBlank()) && details.get("code") != null) {
+                    entity.setCode(details.get("code").toString());
+                }
+            }
+        } catch (Exception ex) {
+            LOG.warn("Unable to resolve mainId and code for optionId '{}'", entity.getOptionId(), ex);
+        }
+    }
+
     private void hydrateItemIdFromItemCode(SalesInvoiceLines entity) {
         if (entity.getItemid() != null) {
             return;
@@ -210,8 +258,58 @@ public class SalesInvoiceChildInsertService {
         return null;
     }
 
+    private void hydrateServiceChargeLineDetails(SalesInvoiceServiceChargeLine entity) {
+        if (entity.getOptionId() == null || entity.getOptionId() <= 0) {
+            return;
+        }
+
+        // Handle Discount NULL
+        if (entity.getDiscount() == null) {
+            entity.setDiscount(0.0f);
+        }
+
+        try {
+            String optionTable = resolveQualifiedTableName("billingserviceoption");
+            Map<String, String> columns = getActualColumns(optionTable);
+            String descColumn = firstAvailableColumn(columns, "servicediscription", "service_description", "description");
+            String priceColumn = firstAvailableColumn(columns, "price", "value", "serviceprice", "service_price");
+
+            if (descColumn == null && priceColumn == null) {
+                return;
+            }
+
+            List<Map<String, Object>> detailsList = jdbcTemplate.queryForList(
+                "SELECT " +
+                (descColumn != null ? bracket(descColumn) : "NULL") +
+                " as description, " +
+                (priceColumn != null ? bracket(priceColumn) : "NULL") +
+                " as price " +
+                " FROM " +
+                optionTable +
+                " WHERE id = ?",
+                entity.getOptionId()
+            );
+
+            if (!detailsList.isEmpty()) {
+                Map<String, Object> details = detailsList.get(0);
+                if (entity.getServiceDescription() == null || entity.getServiceDescription().isBlank()) {
+                    if (details.get("description") != null) {
+                        entity.setServiceDescription(details.get("description").toString());
+                    }
+                }
+                // Set ServicePrice to original price from master if found
+                if (details.get("price") != null) {
+                    entity.setServicePrice(((Number) details.get("price")).floatValue());
+                }
+            }
+        } catch (Exception ex) {
+            LOG.warn("Unable to resolve details for optionId '{}' in billingserviceoption", entity.getOptionId(), ex);
+        }
+    }
+
     public SalesInvoiceServiceChargeLine insertServiceChargeLine(SalesInvoiceServiceChargeLine entity) {
         try {
+            hydrateServiceChargeLineDetails(entity);
             String tableName = resolveQualifiedTableName("salesinvoiceservicechargeline");
             GeneratedKey generatedKey = insertWithDetectedKey(
                 tableName,
@@ -259,6 +357,7 @@ public class SalesInvoiceChildInsertService {
 
     public SaleInvoiceCommonServiceCharge insertCommonServiceCharge(SaleInvoiceCommonServiceCharge entity) {
         try {
+            hydrateCommonServiceChargeDetails(entity);
             String tableName = resolveQualifiedTableName("saleinvoicecommonservicecharge");
             GeneratedKey generatedKey = insertWithDetectedKey(
                 tableName,

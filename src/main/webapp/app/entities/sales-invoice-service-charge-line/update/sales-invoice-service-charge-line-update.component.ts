@@ -63,6 +63,10 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       serviceName: [item.itemname],
       value: [item.sellingprice],
       isCustomerService: [false],
+      optionId: [item.optionId || 0],
+      serviceDescription: [item.serviceDescription || ''],
+      discount: [item.discount || 0],
+      servicePrice: [item.servicePrice || 0],
     });
 
     // Add the new form group to the form array
@@ -194,7 +198,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
           // Update first row if it exists
           const firstRow = this.serviceChargeLinesArray.controls[0];
           firstRow.get('serviceName')?.setValue(service.servicename);
-          firstRow.get('iqd')?.setValue(service.id);
+          firstRow.get('optionId')?.setValue(service.id);
           firstRow.get('value')?.setValue(fetchedValue);
         } else {
           // Add new row with fetched value
@@ -203,7 +207,9 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
               serviceName: [service.servicename],
               value: [fetchedValue], // Set fetched value
               isCustomerService: [false],
-              id: [service.id],
+              optionId: [service.id],
+              discount: [0],
+              servicePrice: [0],
             }),
           );
         }
@@ -293,9 +299,8 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
       salesInvoiceLineGroup.patchValue({
         serviceDescription: selectedItem.servicediscription,
-        name: selectedItem.servicename,
-
-        // Add any other fields you want to update with the selected item's details
+        serviceName: selectedItem.servicename,
+        optionId: selectedItem.id,
       });
       console.log(salesInvoiceLineGroup.value);
     } else {
@@ -316,7 +321,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       ...line,
       invoiceId: inid, // Assign invoice ID
       lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: index + 1,
+      optionId: line.optionId || index + 1,
     }));
 
     console.log('Modified sales invoice lines:', serviceChargeLines);

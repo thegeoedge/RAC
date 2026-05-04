@@ -179,9 +179,13 @@ public class SaleInvoiceCommonServiceChargeResource {
     public ResponseEntity<List<Map<String, Object>>> getCommonChargesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
         LOG.debug("REST request to get SaleInvoiceCommonServiceCharge by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("id", "id");
         columns.put("name", "name");
         columns.put("description", "description");
         columns.put("value", "value");
+        columns.put("optionid", "optionid");
+        columns.put("mainid", "mainid");
+        columns.put("code", "code");
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId("saleinvoicecommonservicecharge", "invoiceid", columns, invoiceId)
         );

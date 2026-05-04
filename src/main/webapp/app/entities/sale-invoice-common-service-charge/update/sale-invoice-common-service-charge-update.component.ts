@@ -63,11 +63,14 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   addItemToFormArray(item: any): void {
     // Create a new form group for the item
     const newItem = this.fb.group({
+      id: [item.id],
       name: [item.itemname],
       value: [item.sellingprice],
       isCustomerService: [false],
       description: [item.itemname],
-      code: [item.itemcode],
+      code: [item.itemcode || item.code],
+      optionId: [item.optionId],
+      mainId: [item.mainId],
     });
 
     // Add the new form group to the form array
@@ -119,11 +122,12 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       // Create the form group for the selected option
       const formGroup = new FormGroup({
         id: new FormControl(option.id),
+        optionId: new FormControl(option.id),
         description: new FormControl(option.description),
         name: new FormControl(option.name),
         value: new FormControl(option.value),
-        mainid: new FormControl(option.mainid),
-        code: new FormControl(''),
+        mainId: new FormControl(option.mainid),
+        code: new FormControl(option.code),
       });
 
       // Check if this is the first row being added
@@ -139,10 +143,12 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
           // Replace the default row with the first selected value
           firstRow.patchValue({
             id: option.id,
+            optionId: option.id,
             description: option.description,
             name: option.name,
             value: option.value,
-            mainid: option.mainid,
+            mainId: option.mainid,
+            code: option.code,
           });
         } else {
           // If there is no default row, simply push to the array
@@ -241,7 +247,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       ...line,
       invoiceId: inid, // Assign invoice ID
       lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: index + 1, // Default option ID
+      optionId: line.optionId || line.id || index + 1,
+      mainId: line.mainId || line.mainid,
     }));
 
     console.log('Modified sales invoice lines:', serviceCharges);

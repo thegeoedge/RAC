@@ -270,7 +270,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     });
   }
 
-  fetchedServicesCommon: { itemcode: string; itemname: string; sellingprice: number }[] = [];
+  fetchedServicesCommon: {
+    id?: number;
+    itemcode: string;
+    itemname: string;
+    sellingprice: number;
+    optionId?: number;
+    mainId?: number;
+    code?: string;
+  }[] = [];
 
   private toValidId(value: unknown): number | null {
     const numericValue = Number(value);
@@ -292,9 +300,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
           if (res.body && res.body.length > 0) {
             res.body.forEach((item: any) => {
               this.fetchedServicesCommon.push({
+                id: item.id,
                 itemcode: item.code ?? '',
                 itemname: item.name ?? '',
                 sellingprice: item.value ?? 0,
+                optionId: item.optionid,
+                mainId: item.mainid,
+                code: item.code,
               });
             });
           }
@@ -308,7 +320,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     );
   }
 
-  fetchedServices: { itemname: string; sellingprice: number }[] = [];
+  fetchedServices: {
+    itemname: string;
+    sellingprice: number;
+    optionId?: number;
+    serviceDescription?: string;
+    discount?: number;
+    servicePrice?: number;
+  }[] = [];
 
   private servicelines(ids: number[]): void {
     if (!ids || ids.length === 0) return;
@@ -321,6 +340,10 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               this.fetchedServices.push({
                 itemname: item.servicename ?? '',
                 sellingprice: item.value ?? 0,
+                optionId: item.optionid,
+                serviceDescription: item.servicediscription,
+                discount: item.discount,
+                servicePrice: item.serviceprice,
               });
             });
           }

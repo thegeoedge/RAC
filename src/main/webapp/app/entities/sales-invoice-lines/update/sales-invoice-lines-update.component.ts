@@ -744,7 +744,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       itemCode: item.itemcode,
       qtyIn: 0,
       qtyOut: item.quantity,
-      reference: 'Sales Invoice',
+      reference: 'SalesInvoice',
       price: item.sellingprice,
       locationID: 1,
       lMD: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
