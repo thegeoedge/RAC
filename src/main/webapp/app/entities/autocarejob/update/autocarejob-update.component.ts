@@ -3,7 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import dayjs from 'dayjs'; // Import Dayjs
+import dayjs from 'dayjs/esm'; // Import Dayjs
 import SharedModule from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AutocarejobInstructionComponent } from './autocarejob-instruction.component';

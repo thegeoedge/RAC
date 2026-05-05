@@ -9,6 +9,7 @@ import { sortStateSignal, SortDirective, SortByDirective, type SortState, SortSe
 import { DurationPipe, FormatMediumDatetimePipe, FormatMediumDatePipe } from 'app/shared/date';
 import { ItemCountComponent } from 'app/shared/pagination';
 import { FormsModule } from '@angular/forms';
+import dayjs from 'dayjs/esm';
 
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
@@ -84,7 +85,7 @@ export class AutocareopenjobComponent implements OnInit {
     this.queryBackend().subscribe({
       next: (res: EntityArrayResponseType) => {
         this.onResponseSuccess(res);
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        const today = dayjs().format('YYYY-MM-DD'); // Get today's date in local YYYY-MM-DD format
 
         this.autocarejobs = this.autocarejobs?.filter(
           job => !job.isjobclose && job.jobdate?.format('YYYY-MM-DD') === today, // Only show open jobs for today
@@ -98,7 +99,7 @@ export class AutocareopenjobComponent implements OnInit {
   filterJobs(): void {
     if (!this.autocarejobs) return;
 
-    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const today = dayjs().format('YYYY-MM-DD'); // Get today's date in local YYYY-MM-DD format
 
     this.filteredAutocarejobs = this.autocarejobs.filter(
       job =>

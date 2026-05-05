@@ -71,6 +71,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       code: [item.itemcode || item.code],
       optionId: [item.optionId],
       mainId: [item.mainId],
+      servicePrice: [item.servicePrice || item.sellingprice || 0],
+      discount: [item.discount || 0],
     });
 
     // Add the new form group to the form array
@@ -128,6 +130,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         value: new FormControl(option.value),
         mainId: new FormControl(option.mainid),
         code: new FormControl(option.code),
+        servicePrice: new FormControl(option.value),
+        discount: new FormControl(0),
       });
 
       // Check if this is the first row being added
@@ -149,6 +153,8 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
             value: option.value,
             mainId: option.mainid,
             code: option.code,
+            servicePrice: option.value,
+            discount: 0,
           });
         } else {
           // If there is no default row, simply push to the array
@@ -247,7 +253,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       ...line,
       invoiceId: inid, // Assign invoice ID
       lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: line.optionId || line.id || index + 1,
+      optionId: line.optionId || 0,
       mainId: line.mainId || line.mainid,
     }));
 

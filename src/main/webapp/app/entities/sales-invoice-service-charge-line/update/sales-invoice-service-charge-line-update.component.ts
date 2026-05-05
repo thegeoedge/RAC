@@ -66,7 +66,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       optionId: [item.optionId || 0],
       serviceDescription: [item.serviceDescription || ''],
       discount: [item.discount || 0],
-      servicePrice: [item.servicePrice || 0],
+      servicePrice: [item.servicePrice || item.sellingprice || 0],
     });
 
     // Add the new form group to the form array
@@ -200,6 +200,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
           firstRow.get('serviceName')?.setValue(service.servicename);
           firstRow.get('optionId')?.setValue(service.id);
           firstRow.get('value')?.setValue(fetchedValue);
+          firstRow.get('servicePrice')?.setValue(fetchedValue);
         } else {
           // Add new row with fetched value
           this.serviceChargeLinesArray.push(
@@ -209,7 +210,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
               isCustomerService: [false],
               optionId: [service.id],
               discount: [0],
-              servicePrice: [0],
+              servicePrice: [fetchedValue],
             }),
           );
         }
@@ -321,7 +322,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       ...line,
       invoiceId: inid, // Assign invoice ID
       lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: line.optionId || index + 1,
+      optionId: line.optionId,
     }));
 
     console.log('Modified sales invoice lines:', serviceChargeLines);

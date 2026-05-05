@@ -129,8 +129,9 @@ public class SalesInvoiceChildInsertService {
             Map<String, String> columns = getActualColumns(optionTable);
             String mainIdColumn = firstAvailableColumn(columns, "mainid", "main_id");
             String codeColumn = firstAvailableColumn(columns, "code");
+            String priceColumn = firstAvailableColumn(columns, "value", "price");
 
-            if (mainIdColumn == null && codeColumn == null) {
+            if (mainIdColumn == null && codeColumn == null && priceColumn == null) {
                 return;
             }
 
@@ -139,7 +140,9 @@ public class SalesInvoiceChildInsertService {
                 (mainIdColumn != null ? bracket(mainIdColumn) : "NULL") +
                 " as mainid, " +
                 (codeColumn != null ? bracket(codeColumn) : "NULL") +
-                " as code " +
+                " as code, " +
+                (priceColumn != null ? bracket(priceColumn) : "NULL") +
+                " as price " +
                 " FROM " +
                 optionTable +
                 " WHERE id = ?",
@@ -153,6 +156,9 @@ public class SalesInvoiceChildInsertService {
                 }
                 if ((entity.getCode() == null || entity.getCode().isBlank()) && details.get("code") != null) {
                     entity.setCode(details.get("code").toString());
+                }
+                if (details.get("price") != null) {
+                    entity.setServicePrice(((Number) details.get("price")).floatValue());
                 }
             }
         } catch (Exception ex) {
@@ -259,6 +265,22 @@ public class SalesInvoiceChildInsertService {
     }
 
     private void hydrateServiceChargeLineDetails(SalesInvoiceServiceChargeLine entity) {
+        // If optionId is missing or looks like a placeholder (index-based), try to resolve it via serviceName
+        if (entity.getServiceName() != null && !entity.getServiceName().isBlank()) {
+            try {
+                String optionTable = resolveQualifiedTableName("billingserviceoption");
+                List<Map<String, Object>> idList = jdbcTemplate.queryForList(
+                    "SELECT id FROM " + optionTable + " WHERE servicename = ?",
+                    entity.getServiceName()
+                );
+                if (!idList.isEmpty()) {
+                    entity.setOptionId(((Number) idList.get(0).get("id")).intValue());
+                }
+            } catch (Exception ex) {
+                LOG.warn("Unable to resolve optionId for serviceName '{}'", entity.getServiceName(), ex);
+            }
+        }
+
         if (entity.getOptionId() == null || entity.getOptionId() <= 0) {
             return;
         }
