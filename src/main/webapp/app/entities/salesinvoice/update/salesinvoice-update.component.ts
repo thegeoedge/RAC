@@ -239,6 +239,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       totaldiscount: Number(totalDiscount.toFixed(2)),
       nettotal: Number(netTotal.toFixed(2)),
     });
+    this.totalamount = Number(netTotal.toFixed(2));
   }
 
   onDiscountOptionChange(option: string): void {
@@ -603,6 +604,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.calculateDiscount();
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
+
+    if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
+      const nettotal = salesinvoice.nettotal ?? 0;
+      const paidamount = salesinvoice.paidamount ?? 0;
+      if (paidamount > nettotal) {
+        salesinvoice.paidamount = nettotal;
+      }
+    }
+
     if (salesinvoice.id !== null) {
       this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
     } else {

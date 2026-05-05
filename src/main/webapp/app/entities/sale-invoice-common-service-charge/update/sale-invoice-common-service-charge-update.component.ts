@@ -12,7 +12,6 @@ import {
   SaleInvoiceCommonServiceChargeFormGroup,
   SaleInvoiceCommonServiceChargeFormService,
 } from './sale-invoice-common-service-charge-form.service';
-import { IServicesubcategory } from 'app/entities/servicesubcategory/servicesubcategory.model';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 
@@ -25,7 +24,7 @@ import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
 export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   isSaving = false;
   saleInvoiceCommonServiceCharge: ISaleInvoiceCommonServiceCharge[] = [];
-  filteredItems: IServicesubcategory[][] = [];
+  filteredItems: ICommonserviceoption[][] = [];
   showCodeField: boolean = true;
   protected saleInvoiceCommonServiceChargeService = inject(SaleInvoiceCommonServiceChargeService);
   protected saleInvoiceCommonServiceChargeFormService = inject(SaleInvoiceCommonServiceChargeFormService);
@@ -63,14 +62,14 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   addItemToFormArray(item: any): void {
     // Create a new form group for the item
     const newItem = this.fb.group({
-      id: [item.id],
+      id: [null],
       name: [item.itemname],
       value: [item.sellingprice],
       isCustomerService: [false],
       description: [item.itemname],
       code: [item.itemcode || item.code],
-      optionId: [item.optionId],
-      mainId: [item.mainId],
+      optionId: [item.optionId ?? null],
+      mainId: [item.mainId ?? null],
       servicePrice: [item.servicePrice || item.sellingprice || 0],
       discount: [item.discount || 0],
     });
@@ -123,7 +122,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       this.totalfetch += option.value ?? 0;
       // Create the form group for the selected option
       const formGroup = new FormGroup({
-        id: new FormControl(option.id),
+        id: new FormControl(null),
         optionId: new FormControl(option.id),
         description: new FormControl(option.description),
         name: new FormControl(option.name),
@@ -146,7 +145,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         if (!firstRow.get('id')?.value) {
           // Replace the default row with the first selected value
           firstRow.patchValue({
-            id: option.id,
+            id: null,
             optionId: option.id,
             description: option.description,
             name: option.name,
@@ -165,7 +164,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       // Remove the option if unchecked from the serviceChargeDummies FormArray
       const index = this.serviceChargesArray.controls.findIndex(control => {
         const group = control as FormGroup;
-        return group.get('id')?.value === option.id;
+        return group.get('optionId')?.value === option.id;
       });
 
       if (index !== -1) {
@@ -193,9 +192,11 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       salesInvoiceLineGroup.patchValue({
         description: selectedItem.description,
         name: selectedItem.name,
-
-        mainid: selectedItem.mainid,
-        // Add any other fields you want to update with the selected item's details
+        optionId: selectedItem.id,
+        mainId: selectedItem.mainid,
+        code: selectedItem.code,
+        value: selectedItem.value,
+        servicePrice: selectedItem.value,
       });
       console.log(salesInvoiceLineGroup.value);
     } else {
@@ -227,7 +228,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       .getElementsByUserInputCode() // Call the service to fetch items
       .pipe(debounceTime(300)) // Debounce to avoid frequent calls
       .subscribe({
-        next: (response: HttpResponse<IServicesubcategory[]>) => {
+        next: (response: HttpResponse<ICommonserviceoption[]>) => {
           const items = response.body || [];
 
           // Log the response body items received
@@ -249,13 +250,16 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   save(inid: number): void {
     this.isSaving = true;
 
-    const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => ({
-      ...line,
-      invoiceId: inid, // Assign invoice ID
-      lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: line.optionId || 0,
-      mainId: line.mainId || line.mainid,
-    }));
+    const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => {
+      const resolvedOption = this.resolveCommonServiceOption(line);
+
+      return {
+        ...line,
+        ...resolvedOption,
+        invoiceId: inid, // Assign invoice ID
+        lineId: index + 1, // Ensure unique line ID for this invoice
+      };
+    });
 
     console.log('Modified sales invoice lines:', serviceCharges);
 
@@ -314,5 +318,25 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     saleInvoiceCommonServiceCharges.forEach(dummy => {
       this.serviceChargesArray.push(this.saleInvoiceCommonServiceChargeFormService.createSaleInvoiceCommonServiceChargeFormGroup(dummy));
     });
+  }
+
+  private resolveCommonServiceOption(line: any): Partial<ISaleInvoiceCommonServiceCharge> {
+    const normalizedOptionId = Number(line.optionId) > 0 ? Number(line.optionId) : null;
+    const normalizedMainId = Number(line.mainId) > 0 ? Number(line.mainId) : null;
+    const normalizedCode = typeof line.code === 'string' && line.code.trim() !== '' ? line.code : null;
+    const selectedOption = this.commonServiceOptions.find(
+      option =>
+        option.id === normalizedOptionId ||
+        (typeof line.name === 'string' &&
+          typeof option.name === 'string' &&
+          option.name.trim().toLowerCase() === line.name.trim().toLowerCase()),
+    );
+
+    return {
+      optionId: normalizedOptionId ?? selectedOption?.id ?? 0,
+      mainId: normalizedMainId ?? selectedOption?.mainid ?? null,
+      code: normalizedCode ?? selectedOption?.code ?? null,
+      servicePrice: line.servicePrice ?? selectedOption?.value ?? line.value ?? 0,
+    };
   }
 }

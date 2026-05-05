@@ -547,6 +547,9 @@ export class ReceiptModalComponent implements OnChanges {
       currentPaidAmount = this.chequeAmount || 0;
     } else if (this.method === 'Cash') {
       currentPaidAmount = this.cash || this.totalamount || 0;
+      if (currentPaidAmount > this.totalamount) {
+        currentPaidAmount = this.totalamount;
+      }
     } else if (this.method === 'Credit') {
       currentPaidAmount = 0;
     } else {
