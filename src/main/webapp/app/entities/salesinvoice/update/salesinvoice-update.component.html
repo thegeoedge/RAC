@@ -137,16 +137,36 @@
                 </div>
                 <div class="mb-2">
                   <label class="form-label me-2">Discount Option</label>
-                  <div>
-                    <input type="radio" name="itemDiscountOption" id="itemPercentage" value="percentage" />
+                  <div class="d-flex gap-2">
+                    <input
+                      type="radio"
+                      name="itemDiscountOption"
+                      id="itemPercentage"
+                      value="percentage"
+                      [(ngModel)]="itemDiscountOption"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
                     <label for="itemPercentage">%</label>
-                    <input type="radio" name="itemDiscountOption" id="itemValue" value="value" />
+                    <input
+                      type="radio"
+                      name="itemDiscountOption"
+                      id="itemValue"
+                      value="value"
+                      [(ngModel)]="itemDiscountOption"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
                     <label for="itemValue">Value</label>
                   </div>
                 </div>
                 <div class="mb-2">
                   <label class="form-label" for="field_itemDiscount">Discount</label>
-                  <input type="number" class="form-control form-control-sm" id="field_itemDiscount" />
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="field_itemDiscount"
+                    [(ngModel)]="itemDiscountValue"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
                 </div>
               </div>
             </div>

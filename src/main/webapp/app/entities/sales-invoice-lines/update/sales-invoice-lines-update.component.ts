@@ -114,27 +114,31 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   listenToQuantityAndPriceChanges(formGroup: FormGroup): void {
     const quantityControl = formGroup.get('quantity');
     const sellingPriceControl = formGroup.get('sellingprice');
+    const discountControl = formGroup.get('discount');
 
     // Use debounceTime to avoid too frequent updates (e.g., wait 300ms after the user stops typing)
     quantityControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
     sellingPriceControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
+    discountControl?.valueChanges.pipe(debounceTime(300)).subscribe(() => this.updateLineTotal(formGroup));
 
     // Also update lineTotal when the form is initialized
     this.updateLineTotal(formGroup);
   }
   updateLineTotal(formGroup: FormGroup): void {
-    const quantity = formGroup.get('quantity')?.value;
-    const sellingPrice = formGroup.get('sellingprice')?.value;
+    const quantity = Number(formGroup.get('quantity')?.value || 0);
+    const sellingPrice = Number(formGroup.get('sellingprice')?.value || 0);
+    const discount = Number(formGroup.get('discount')?.value || 0);
     const lineTotalControl = formGroup.get('linetotal');
 
-    // Calculate line total: quantity * sellingPrice
-    const lineTotal = quantity * sellingPrice;
+    // Calculate line total: (quantity * sellingPrice) - discount
+    const lineTotal = quantity * sellingPrice - discount;
     lineTotalControl?.setValue(lineTotal, { emitEvent: false }); // Set the value without emitting the event to avoid infinite loop
 
     // Calculate the total of all lineTotals in the form array
     const total = this.salesInvoiceLinesDummyArray.controls
-      .map(control => control.get('linetotal')?.value || lineTotal)
-      .reduce((acc, value) => acc + value, lineTotal);
+      .map(control => Number(control.get('linetotal')?.value || 0))
+      .reduce((acc, value) => acc + value, 0);
+
     console.log('Totallll:', total);
     // Emit the updated total of all lineTotals
     this.totalUpdated.emit(total);
@@ -263,22 +267,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   onQuantityChange(index: number): void {
     const salesInvoiceLineGroup = this.salesInvoiceLinesDummyArray.at(index) as FormGroup;
-
-    const quantity = salesInvoiceLineGroup.get('quantity')?.value || 0;
-    const itemPrice = salesInvoiceLineGroup.get('sellingPrice')?.value || 0; // Fixed price per unit
-
-    // Ensure quantity is never negative
-    const validQuantity = Math.max(0, quantity);
-
-    // Calculate selling price
-    const newSellingPrice = validQuantity * itemPrice;
-
-    // Update selling price in the form
-    salesInvoiceLineGroup.patchValue({ linetotal: newSellingPrice });
-    const lineTotal = salesInvoiceLineGroup.get('linetotal')?.value;
-    console.log('Line Totarrrrrrrrrl:', lineTotal);
-    // Emit the updated lineTotal value
-    this.totalUpdated.emit(lineTotal);
+    this.updateLineTotal(salesInvoiceLineGroup);
   }
   onItemNameInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement

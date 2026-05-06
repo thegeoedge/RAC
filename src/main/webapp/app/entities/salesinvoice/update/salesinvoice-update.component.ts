@@ -78,6 +78,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   editForm: SalesinvoiceFormGroup = this.salesinvoiceFormService.createSalesinvoiceFormGroup();
   discountOption: string = 'percentage'; // Default value
   discountValue: number = 0;
+  itemDiscountOption: string = 'percentage';
+  itemDiscountValue: number = 0;
   subTotal: number = 0;
   totalamount: number = 0;
   i: number = 0;
@@ -505,6 +507,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     availablequantity: number;
     lastcost?: number | null;
     lastsellingprice: number;
+    discount?: number;
     isNew?: boolean;
   } | null = null;
   private selectedInventoryItem: IInventory | null = null;
@@ -534,6 +537,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     }
   }
   onAddItem(): void {
+    let itemDiscount = 0;
+    if (this.itemDiscountOption === 'percentage') {
+      itemDiscount = (this.lastsellingprice * this.buyquantity * this.itemDiscountValue) / 100;
+    } else {
+      itemDiscount = this.itemDiscountValue;
+    }
+
     // Store the selected item as an object
     this.selectedItem = {
       id: this.selectedInventoryItem?.id ?? null,
@@ -544,6 +554,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       availablequantity: this.buyquantity,
       lastcost: this.selectedInventoryItem?.lastcost ?? 0,
       lastsellingprice: this.lastsellingprice,
+      discount: itemDiscount,
       isNew: true,
     };
 
@@ -558,6 +569,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.lastsellingprice = 0;
     this.code = '';
     this.buyquantity = 0;
+    this.itemDiscountValue = 0;
     this.selectedInventoryItem = null;
   }
 
