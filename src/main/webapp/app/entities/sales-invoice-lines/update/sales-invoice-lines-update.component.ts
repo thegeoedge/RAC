@@ -130,8 +130,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     const discount = Number(formGroup.get('discount')?.value || 0);
     const lineTotalControl = formGroup.get('linetotal');
 
-    // Calculate line total: (quantity * sellingPrice) - discount
-    const lineTotal = quantity * sellingPrice - discount;
+    // Calculate line total: (sellingPrice - discount) * quantity
+    const lineTotal = (sellingPrice - discount) * quantity;
     lineTotalControl?.setValue(lineTotal, { emitEvent: false }); // Set the value without emitting the event to avoid infinite loop
 
     // Calculate the total of all lineTotals in the form array

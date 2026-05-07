@@ -537,9 +537,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     }
   }
   onAddItem(): void {
+    if (this.availablequantity <= 0) {
+      alert('Available Quantity for this item is 0. Cannot add to list.');
+      return;
+    }
+
     let itemDiscount = 0;
     if (this.itemDiscountOption === 'percentage') {
-      itemDiscount = (this.lastsellingprice * this.buyquantity * this.itemDiscountValue) / 100;
+      itemDiscount = (this.lastsellingprice * this.itemDiscountValue) / 100;
     } else {
       itemDiscount = this.itemDiscountValue;
     }

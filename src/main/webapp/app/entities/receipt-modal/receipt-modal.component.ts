@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, inject, input } from '@angular/core';
+import { Router } from '@angular/router';
 import { ReceiptpaymentsdetailsService } from '../receiptpaymentsdetails/service/receiptpaymentsdetails.service';
 import {
   ReceiptpaymentsdetailsFormService,
@@ -81,6 +82,7 @@ export class ReceiptModalComponent implements OnChanges {
   acc = inject(AccountsService);
   salesInvoiceService = inject(SalesinvoiceService);
   invoicelines = inject(SalesInvoiceLinesService);
+  router = inject(Router);
 
   nextvalue: string = '';
   newnextvalue: string = '';
@@ -781,7 +783,7 @@ export class ReceiptModalComponent implements OnChanges {
 
     // Brief delay to allow DOM updates before navigation
     setTimeout(() => {
-      this.previousState();
+      this.router.navigate(['/autocarejob/autocareopenjob']);
     }, 300);
   }
 
