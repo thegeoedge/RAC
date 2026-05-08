@@ -13,7 +13,7 @@ import { SalesInvoiceLinesDummyService } from '../service/sales-invoice-lines-du
 import { SalesInvoiceLinesDummyFormService } from './sales-invoice-lines-dummy-form.service';
 import CommonModule from 'app/shared/shared.module';
 
-@Component({ 
+@Component({
   standalone: true,
   selector: 'jhi-sales-invoice-lines-dummy-update',
   templateUrl: './sales-invoice-lines-dummy-update.component.html',
@@ -22,6 +22,7 @@ import CommonModule from 'app/shared/shared.module';
 export class SalesInvoiceLinesDummyUpdateComponent implements OnInit {
   isSaving = false;
   @Output() totalUpdated = new EventEmitter<number>();
+  @Input() readonly = false;
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
   salesInvoiceLinesDummy: ISalesInvoiceLinesDummy[] = [];

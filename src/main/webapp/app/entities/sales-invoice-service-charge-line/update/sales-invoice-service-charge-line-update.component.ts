@@ -43,8 +43,22 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   });
 
   typeid: number = 0;
-  totalfetch: number = 0;
   vehicletypes: IVehicletype[] = [];
+  searchTerm: string = '';
+
+  get flattenedBillingOptions(): any[] {
+    return this.allBillingServiceOptions.reduce((acc, val) => acc.concat(val), []);
+  }
+
+  get filteredBillingOptions(): any[] {
+    const flattened = this.flattenedBillingOptions;
+    if (!this.searchTerm) {
+      return flattened;
+    }
+    const lowerTerm = this.searchTerm.toLowerCase();
+    return flattened.filter(option => option.servicename?.toLowerCase().includes(lowerTerm));
+  }
+
   get serviceChargeLinesArray(): FormArray {
     return this.editForm.get('serviceChargeLines') as FormArray;
   }
@@ -165,81 +179,77 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     });
   }
 
-  addToTable() {
-    if (this.selectedServices.length === 0) {
-      return; // No selected services, nothing to add
-    }
-
-    const existingRows = this.serviceChargeLinesArray.controls.length;
-    console.log('typeid:', this.typeid);
-
-    // Temporary map to store responses
-    const serviceResponses = new Map<number, any>();
-
-    // Iterate over selected services
-    let completedRequests = 0; // Track completed API requests
-    let totalFetchedValue = 0;
-    this.selectedServices.forEach((service, index) => {
-      console.log('Selected service ID:', service.id);
-
-      console.log(`Sending API request to fetch billing values with params: service.id=${service.id}, typeid=${this.typeid}`);
-
-      this.salesInvoiceServiceChargeLineService.biliingvalues(service.id, this.typeid).subscribe(response => {
-        console.log('API Response:', response);
-
-        const billingValues = response.body;
-        const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
-        totalFetchedValue += fetchedValue ?? 0; // Assuming the response contains the data in 'body'
-        console.log('Billing values:', billingValues);
-
-        serviceResponses.set(service.id, billingValues && billingValues.length > 0 ? billingValues[0].value : '');
-
-        if (index === 0 && existingRows > 0) {
-          // Update first row if it exists
-          const firstRow = this.serviceChargeLinesArray.controls[0];
-          firstRow.get('serviceName')?.setValue(service.servicename);
-          firstRow.get('optionId')?.setValue(service.id);
-          firstRow.get('value')?.setValue(fetchedValue);
-          firstRow.get('servicePrice')?.setValue(fetchedValue);
-        } else {
-          // Add new row with fetched value
-          this.serviceChargeLinesArray.push(
-            this.fb.group({
-              serviceName: [service.servicename],
-              value: [fetchedValue], // Set fetched value
-              isCustomerService: [false],
-              optionId: [service.id],
-              discount: [0],
-              servicePrice: [fetchedValue],
-            }),
-          );
-        }
-        completedRequests++;
-        this.totalfetch = totalFetchedValue;
-        console.log('Current total fetched value:', this.totalfetch);
-
-        this.calculateTotal(this.totalfetch);
-      });
-    });
-
-    // Reset selected services after processing
-    // Reset selected services after processing
-    this.selectedServices = [];
-  }
-
   selectedServices: { id: number; servicename: string }[] = [];
 
   onCheckboxChange(event: any, servicename: string, id: number) {
     if (event.target.checked) {
-      // Add the service with its id to the selected services list
-      this.selectedServices.push({ id, servicename });
+      // Add logic
+      console.log(`Fetching billing values for service ${id} and type ${this.typeid}`);
+      this.salesInvoiceServiceChargeLineService.biliingvalues(id, this.typeid).subscribe({
+        next: response => {
+          const billingValues = response.body;
+          const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
+
+          const formGroup = this.fb.group({
+            serviceName: [servicename],
+            value: [fetchedValue],
+            isCustomerService: [false],
+            optionId: [id],
+            discount: [0],
+            servicePrice: [fetchedValue],
+          });
+
+          // Check if we can reuse an empty row
+          const emptyRowIndex = this.serviceChargeLinesArray.controls.findIndex(control => {
+            const group = control as FormGroup;
+            return !group.get('id')?.value && !group.get('optionId')?.value && !group.get('serviceName')?.value;
+          });
+
+          if (emptyRowIndex !== -1) {
+            (this.serviceChargeLinesArray.at(emptyRowIndex) as FormGroup).patchValue({
+              serviceName: servicename,
+              value: fetchedValue,
+              optionId: id,
+              servicePrice: fetchedValue,
+            });
+            this.totalvalue(this.serviceChargeLinesArray.at(emptyRowIndex) as FormGroup);
+          } else {
+            this.serviceChargeLinesArray.push(formGroup);
+            this.totalvalue(formGroup);
+          }
+
+          if (!this.selectedServices.some(s => s.id === id)) {
+            this.selectedServices.push({ id, servicename });
+          }
+        },
+        error: err => console.error('Error fetching billing values', err),
+      });
     } else {
-      // Remove the service with its id from the selected services list
+      // Remove logic
+      const index = this.serviceChargeLinesArray.controls.findIndex(control => {
+        const group = control as FormGroup;
+        return group.get('optionId')?.value === id;
+      });
+
+      if (index !== -1) {
+        this.serviceChargeLinesArray.removeAt(index);
+        this.updateLineTotal();
+      }
+
       this.selectedServices = this.selectedServices.filter(service => service.id !== id);
     }
+  }
 
-    // Log selected services to the console
-    console.log('Selected Services:', this.selectedServices);
+  isSelected(id: number): boolean {
+    return this.serviceChargeLinesArray.controls.some(control => {
+      const group = control as FormGroup;
+      return group.get('optionId')?.value === id;
+    });
+  }
+
+  toggleService(option: any): void {
+    const alreadySelected = this.isSelected(option.id);
+    this.onCheckboxChange({ target: { checked: !alreadySelected } } as any, option.servicename, option.id);
   }
 
   onDropdownChan1ge(event: Event): number {
@@ -304,15 +314,10 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
         optionId: selectedItem.id,
       });
       console.log(salesInvoiceLineGroup.value);
+      this.totalvalue(salesInvoiceLineGroup);
     } else {
       console.log('Item not found for code:', selectedItemCode);
     }
-  }
-
-  calculateTotal(total: number): void {
-    console.log('Total Value:', total); // Log the correct total value
-    this.totalUpdated.emit(total); // Emit total to parent
-    // Small delay to allow UI updates
   }
 
   save(inid: number): void {

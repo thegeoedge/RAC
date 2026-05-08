@@ -47,7 +47,7 @@ export class SalesInvoiceServiceChargeLineDummyService {
       observe: 'response',
     });
   }
-  getElementsByUserInputCode(userInputCode: string): Observable<EntityArrayResponseType> {
+  getElementsByUserInputCode(userInputCode: string): Observable<HttpResponse<IBillingserviceoption[]>> {
     const url = this.applicationConfigService.getEndpointFor(
       `/api/billingserviceoptions?servicename.contains=${userInputCode}&page=0&size=20`,
     );
@@ -60,7 +60,7 @@ export class SalesInvoiceServiceChargeLineDummyService {
       );
   }
 
-  getElementsByID(typeid: number): Observable<EntityArrayResponseType> {
+  getElementsByID(typeid: number): Observable<HttpResponse<IBillingserviceoptionvalues[]>> {
     const url = this.applicationConfigService.getEndpointFor(
       `/api/billingserviceoptionvalues?vehicletypeid.equals=${typeid}&page=0&size=20`,
     );
@@ -72,7 +72,7 @@ export class SalesInvoiceServiceChargeLineDummyService {
         ),
       );
   }
-  getbillingid(id: number): Observable<EntityArrayResponseType> {
+  getbillingid(id: number): Observable<HttpResponse<IBillingserviceoption[]>> {
     const url = this.applicationConfigService.getEndpointFor(`/api/billingserviceoptions/${id}`);
     return this.http.get<IBillingserviceoption[]>(url, { observe: 'response' }).pipe(
       map((res: HttpResponse<IBillingserviceoption[]>) => {
@@ -89,7 +89,7 @@ export class SalesInvoiceServiceChargeLineDummyService {
       }),
     );
   }
-  biliingvalues(serviceid: number, typeid: number): Observable<EntityArrayResponseType> {
+  biliingvalues(serviceid: number, typeid: number): Observable<HttpResponse<IBillingserviceoptionvalues[]>> {
     const url = this.applicationConfigService.getEndpointFor(
       `/api/billingserviceoptionvalues?billingserviceoptionid.equals=${serviceid}&vehicletypeid.equals=${typeid}&page=0&size=20`,
     );

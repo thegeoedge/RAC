@@ -106,10 +106,9 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     });
     console.log('New Item Addedaazzz:', newItem.value);
     console.log(this.selectedItem);
+    this.salesInvoiceLinesDummyArray.push(newItem);
     // Calculate lineTotal dynamically when quantity or sellingPrice changes
     this.listenToQuantityAndPriceChanges(newItem);
-
-    this.salesInvoiceLinesDummyArray.push(newItem);
   }
   listenToQuantityAndPriceChanges(formGroup: FormGroup): void {
     const quantityControl = formGroup.get('quantity');

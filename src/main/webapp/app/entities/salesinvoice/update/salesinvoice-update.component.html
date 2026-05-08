@@ -54,7 +54,16 @@
                 name="customername"
                 id="field_customername"
                 formControlName="customername"
+                list="customernameList"
+                (input)="onCustomerSearch($event)"
+                (change)="onCustomerSelect($event)"
+                autocomplete="off"
               />
+              <datalist id="customernameList">
+                <option *ngFor="let customer of filteredCustomers" [value]="customer.fullname || customer.businessname">
+                  {{ customer.residenceaddress || customer.businessaddress }}
+                </option>
+              </datalist>
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_amountOwing">Amount Owing</label>
@@ -71,7 +80,38 @@
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_vehicleNo">Vehicle No</label>
-              <input type="text" class="form-control form-control-sm" name="vehicleno" id="field_vehicleno" formControlName="vehicleno" />
+              @if (showVehicleDropdown) {
+                <select
+                  class="form-control form-control-sm"
+                  name="vehicleno"
+                  id="field_vehicleno"
+                  formControlName="vehicleno"
+                  (change)="onVehicleSelect($event)"
+                >
+                  <option [value]="null" disabled selected>Select Vehicle</option>
+                  <option *ngFor="let vehicle of filteredVehicles" [value]="vehicle.vehiclenumber">
+                    {{ vehicle.vehiclenumber }}
+                  </option>
+                </select>
+              } @else {
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  name="vehicleno"
+                  id="field_vehicleno"
+                  formControlName="vehicleno"
+                  list="vehiclenoList"
+                  (input)="onVehicleSearch($event)"
+                  (change)="onVehicleSelect($event)"
+                  autocomplete="off"
+                />
+                <datalist id="vehiclenoList">
+                  <option *ngFor="let vehicle of filteredVehicles" [value]="vehicle.vehiclenumber">
+                    {{ vehicle.customername || (vehicle.makename ? vehicle.makename + ' ' + vehicle.model : '') }}
+                    {{ vehicle.conformdate ? '(' + (vehicle.conformdate | date) + ')' : '' }}
+                  </option>
+                </datalist>
+              }
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_invoicedate">Invoice Date</label>
@@ -405,7 +445,7 @@
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_locationID">Location ID</label>
-      <input type="number" class="form-control" name="locationID" id="field_locationID" data-cy="locationID" formControlName="locationID" />
+      <input type="number" class="form-control" name="locationID" id="field_locationID" data-cy="locationid" formControlName="locationid" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
@@ -415,8 +455,8 @@
         class="form-control"
         name="originalInvoiceId"
         id="field_originalInvoiceId"
-        data-cy="originalInvoiceId"
-        formControlName="originalInvoiceId"
+        data-cy="dummybillid"
+        formControlName="dummybillid"
       />
     </div>
 
@@ -441,14 +481,13 @@
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
-      >
       <label class="form-label" for="field_quoteID">Quote ID</label>
-      <input type="number" class="form-control" name="quoteID" id="field_quoteID" data-cy="quoteID" formControlName="quoteID" />
+      <input type="number" class="form-control" name="quoteID" id="field_quoteID" data-cy="quoteid" formControlName="quoteid" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_orderID">Order ID</label>
-      <input type="number" class="form-control" name="orderID" id="field_orderID" data-cy="orderID" formControlName="orderID" />
+      <input type="number" class="form-control" name="orderID" id="field_orderID" data-cy="orderid" formControlName="orderid" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
@@ -456,11 +495,11 @@
       <div class="d-flex">
         <input
           id="field_deliveryDate"
-          data-cy="deliveryDate"
+          data-cy="delieverydate"
           type="datetime-local"
           class="form-control"
           name="deliveryDate"
-          formControlName="deliveryDate"
+          formControlName="delieverydate"
           placeholder="YYYY-MM-DD HH:mm"
         />
       </div>
@@ -468,7 +507,7 @@
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_salesRepID">Sales Rep ID</label>
-      <input type="number" class="form-control" name="salesRepID" id="field_salesRepID" data-cy="salesRepID" formControlName="salesRepID" />
+      <input type="number" class="form-control" name="salesRepID" id="field_salesRepID" data-cy="salesrepid" formControlName="salesrepid" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
@@ -478,8 +517,8 @@
         class="form-control"
         name="salesRepName"
         id="field_salesRepName"
-        data-cy="salesRepName"
-        formControlName="salesRepName"
+        data-cy="salesrepname"
+        formControlName="salesrepname"
       />
     </div>
 
@@ -490,14 +529,14 @@
         class="form-control"
         name="deliverFrom"
         id="field_deliverFrom"
-        data-cy="deliverFrom"
-        formControlName="deliverFrom"
+        data-cy="delieverfrom"
+        formControlName="delieverfrom"
       />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_customerID">Customer ID</label>
-      <input type="number" class="form-control" name="customerID" id="field_customerID" data-cy="customerID" formControlName="customerID" />
+      <input type="number" class="form-control" name="customerID" id="field_customerID" data-cy="customerid" formControlName="customerid" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
@@ -507,8 +546,8 @@
         class="form-control"
         name="customerAddress"
         id="field_customerAddress"
-        data-cy="customerAddress"
-        formControlName="customerAddress"
+        data-cy="customeraddress"
+        formControlName="customeraddress"
       />
     </div>
 
@@ -519,8 +558,8 @@
         class="form-control"
         name="deliveryAddress"
         id="field_deliveryAddress"
-        data-cy="deliveryAddress"
-        formControlName="deliveryAddress"
+        data-cy="deliveryaddress"
+        formControlName="deliveryaddress"
       />
     </div>
 
@@ -551,12 +590,12 @@
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_paidAmount">Paid Amount</label>
-      <input type="number" class="form-control" name="paidAmount" id="field_paidAmount" data-cy="paidAmount" formControlName="paidAmount" />
+      <input type="number" class="form-control" name="paidAmount" id="field_paidAmount" data-cy="paidamount" formControlName="paidamount" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
       <label class="form-label" for="field_isActive">Is Active</label>
-      <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isActive" formControlName="isActive" />
+      <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isactive" formControlName="isactive" />
     </div>
 
     <div class="mb-3" *ngIf="showCodeField">
@@ -566,8 +605,8 @@
         class="form-control"
         name="locationCode"
         id="field_locationCode"
-        data-cy="locationCode"
-        formControlName="locationCode"
+        data-cy="locationcode"
+        formControlName="locationcode"
       />
     </div>
 
@@ -578,8 +617,8 @@
         class="form-control"
         name="referenceCode"
         id="field_referenceCode"
-        data-cy="referenceCode"
-        formControlName="referenceCode"
+        data-cy="referencecode"
+        formControlName="referencecode"
       />
     </div>
 
@@ -590,8 +629,8 @@
         class="form-control"
         name="createdById"
         id="field_createdById"
-        data-cy="createdById"
-        formControlName="createdById"
+        data-cy="createdbyid"
+        formControlName="createdbyid"
       />
     </div>
 
@@ -602,8 +641,8 @@
         class="form-control"
         name="createdByName"
         id="field_createdByName"
-        data-cy="createdByName"
-        formControlName="createdByName"
+        data-cy="createdbyname"
+        formControlName="createdbyname"
       />
     </div>
 
@@ -614,8 +653,8 @@
         class="form-control"
         name="autoCareCharges"
         id="field_autoCareCharges"
-        data-cy="autoCareCharges"
-        formControlName="autoCareCharges"
+        data-cy="autocarecharges"
+        formControlName="autocarecharges"
       />
     </div>
 
@@ -638,8 +677,8 @@
         class="form-control"
         name="dummyCommission"
         id="field_dummyCommission"
-        data-cy="dummyCommission"
-        formControlName="dummyCommission"
+        data-cy="dummycommision"
+        formControlName="dummycommision"
       />
     </div>
 
@@ -682,8 +721,8 @@
         class="form-control"
         name="originalInvoiceCode"
         id="field_originalInvoiceCode"
-        data-cy="originalInvoiceCode"
-        formControlName="originalInvoiceCode"
+        data-cy="discountcode"
+        formControlName="discountcode"
       />
     </div>
 

@@ -42,7 +42,7 @@ export class SaleInvoiceCommonServiceChargeDummyService {
       observe: 'response',
     });
   }
-  getElementsByUserInputCode(): Observable<EntityArrayResponseType> {
+  getElementsByUserInputCode(): Observable<HttpResponse<ICommonserviceoption[]>> {
     const url = this.applicationConfigService.getEndpointFor(`/api/commonserviceoptions?page=0&size=20`);
     return this.http
       .get<ICommonserviceoption[]>(url, { observe: 'response' })

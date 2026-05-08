@@ -57,9 +57,7 @@ export class SalesInvoiceServiceChargeLineService {
   }
 
   getElementsByID(typeid: number): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(
-      `/api/billingserviceoptionvalues?vehicletypeid.equals=${typeid}&page=0&size=20`,
-    );
+    const url = this.applicationConfigService.getEndpointFor(`/api/billingserviceoptionvalues/vehicle-type/${typeid}`);
     return this.http
       .get<IBillingserviceoptionvalues[]>(url, { observe: 'response' })
       .pipe(
@@ -87,16 +85,16 @@ export class SalesInvoiceServiceChargeLineService {
     );
   }
   biliingvalues(serviceid: number, typeid: number): Observable<EntityArrayResponseType> {
-    const url = this.applicationConfigService.getEndpointFor(
-      `/api/billingserviceoptionvalues?billingserviceoptionid.equals=${serviceid}&vehicletypeid.equals=${typeid}&page=0&size=20`,
+    const url = this.applicationConfigService.getEndpointFor(`/api/billingserviceoptionvalues/vehicle-type/${typeid}`);
+    return this.http.get<IBillingserviceoptionvalues[]>(url, { observe: 'response' }).pipe(
+      map((res: HttpResponse<IBillingserviceoptionvalues[]>) => {
+        const filteredBody = (res.body || []).filter(item => item.billingserviceoptionid === serviceid);
+        return res.clone({ body: filteredBody });
+      }),
+      map((res: HttpResponse<IBillingserviceoptionvalues[]>) =>
+        this.convertResponseArrayFromServe(res as HttpResponse<RestBillingserviceoptionvalues[]>),
+      ),
     );
-    return this.http
-      .get<IBillingserviceoptionvalues[]>(url, { observe: 'response' })
-      .pipe(
-        map((res: HttpResponse<IBillingserviceoptionvalues[]>) =>
-          this.convertResponseArrayFromServe(res as HttpResponse<RestBillingserviceoptionvalues[]>),
-        ),
-      );
   }
 
   update(salesInvoiceServiceChargeLine: ISalesInvoiceServiceChargeLine): Observable<EntityResponseType> {

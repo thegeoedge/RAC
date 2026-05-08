@@ -53,8 +53,10 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
   discountValue: number = 0;
   editForm: SalesInvoiceDummyFormGroup = this.salesInvoiceDummyFormService.createSalesInvoiceDummyFormGroup();
   i: number = 0;
+  readonly = false;
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
+      this.readonly = params['view'] === 'true';
       const id = params['id'];
       if (id) {
         this.loadSalesInvoiceDummy(id);
@@ -151,7 +153,7 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
     });
   }
 
-  fetchedServicesCommon: { itemname: string; sellingprice: number }[] = [];
+  fetchedServicesCommon: { itemname: string; sellingprice: number; id: number }[] = [];
 
   private servicecommonlines(id: number): void {
     this.salesInvoiceDummyService.fetchServiceCommon(id).subscribe(
@@ -163,8 +165,8 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
           res.body.forEach(item => {
             this.fetchedServicesCommon.push({
               itemname: item.name ?? '',
-
               sellingprice: item.value ?? 0,
+              id: item.optionId ?? 0,
             });
           });
 
@@ -180,7 +182,7 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
     );
   }
 
-  fetchedServices: { itemname: string; sellingprice: number }[] = [];
+  fetchedServices: { itemname: string; sellingprice: number; id: number }[] = [];
 
   private servicelines(id: number): void {
     this.salesInvoiceDummyService.fetchService(id).subscribe(
@@ -192,8 +194,8 @@ export class SalesInvoiceDummyUpdateComponent implements OnInit {
           res.body.forEach(item => {
             this.fetchedServices.push({
               itemname: item.serviceName ?? '',
-
               sellingprice: item.value ?? 0,
+              id: item.optionId ?? 0,
             });
           });
 

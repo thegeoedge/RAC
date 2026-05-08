@@ -25,6 +25,7 @@ import { SalesInvoiceServiceChargeLineDummyFormService } from './sales-invoice-s
 })
 export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit {
   isSaving = false;
+  @Input() readonly = false;
   showCodeField: boolean = true;
   salesInvoiceServiceChargeLines: ISalesInvoiceServiceChargeLineDummy[] = [];
   filteredItems: IBillingserviceoption[][] = [];
@@ -55,14 +56,17 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
   }
 
   addItemToFormArray(item: any): void {
-    // Create a new form group for the item
     const newItem = this.fb.group({
       serviceName: [item.itemname],
       value: [item.sellingprice],
       isCustomerService: [false],
+      id: [item.id],
     });
 
-    // Add the new form group to the form array
+    if (item.id) {
+      this.selectedServices.push({ id: item.id, servicename: item.itemname });
+    }
+
     this.serviceChargeLinesArray.push(newItem);
     this.totalvalue(newItem);
   }
@@ -102,60 +106,76 @@ export class SalesInvoiceServiceChargeLineDummyUpdateComponent implements OnInit
       console.log('Loaded Vehicle Types:', this.vehicletypes); // Display the loaded vehicle types in the console
     });
   }
-  allBillingServiceOptions: any[] = [];
+
+  allBillingServiceOptions: IBillingserviceoption[][] = [];
+  searchTerm: string = '';
+
+  get flattenedBillingOptions(): IBillingserviceoption[] {
+    return this.allBillingServiceOptions.reduce((acc: IBillingserviceoption[], val: IBillingserviceoption[]) => acc.concat(val), []);
+  }
+
+  get filteredBillingOptions(): IBillingserviceoption[] {
+    return this.flattenedBillingOptions.filter(option => option.servicename?.toLowerCase().includes(this.searchTerm.toLowerCase()));
+  }
 
   onDropdownChange(event: Event): void {
-    // Get the selected dropdown value (the id of the selected vehicle type)
     const selectedValue = (event.target as HTMLSelectElement).value;
-    const typeid = Number(selectedValue); // Parse the selected value to a number
-
-    // Log the selected typeid to the console
+    const typeid = Number(selectedValue);
     console.log('Selected Vehicle Type ID:', typeid);
     this.typeid = typeid;
-    // Clear previous data before loading new data
     this.allBillingServiceOptions = [];
 
-    // Make the API call to get the billingserviceoption ids
     this.salesInvoiceServiceChargeLineDummyService.getElementsByID(typeid).subscribe({
       next: response => {
-        // Log the full response to understand its structure
-        console.log('API Response:', response);
-
-        // Check if response.body is an array and contains the 'billingserviceoption' field
         if (response.body && Array.isArray(response.body)) {
-          // Extract the 'billingserviceoption' ids from the response
           const billingserviceoptionIds = response.body.map((item: any) => item.billingserviceoptionid);
+          const requests = billingserviceoptionIds.map(id => this.salesInvoiceServiceChargeLineDummyService.getbillingid(id));
 
-          // Log the billingserviceoption ids to the console
-          console.log('Billing Service Option IDs:', billingserviceoptionIds);
-
-          // Now, use the getbillingid function to fetch details for each billingserviceoptionid
-          billingserviceoptionIds.forEach(id => {
-            this.salesInvoiceServiceChargeLineDummyService.getbillingid(id).subscribe({
-              next: billingResponse => {
-                // Log the detailed response for each billingserviceoption
-                console.log('Billing Service Option Details for ID ' + id, billingResponse.body);
-
-                // Add the billing service option details to the allBillingServiceOptions array
-                if (billingResponse.body) {
-                  this.allBillingServiceOptions.push(billingResponse.body);
-                }
-                console.log('All Billing Service Options:', this.allBillingServiceOptions);
-              },
-
-              error: err => {
-                console.error('Error fetching details for Billing Service Option ID ' + id, err);
-              },
-            });
+          forkJoin(requests).subscribe({
+            next: (results: HttpResponse<IBillingserviceoption[]>[]) => {
+              this.allBillingServiceOptions = results.map(res => res.body).filter((body): body is IBillingserviceoption[] => body !== null);
+              console.log('All Billing Service Options loaded:', this.allBillingServiceOptions);
+            },
+            error: err => console.error('Error fetching billing details:', err),
           });
-        } else {
-          console.error('Unexpected API response format:', response);
         }
       },
-      error: err => {
-        console.error('API Error:', err); // Log if there's an error
-      },
+      error: err => console.error('API Error:', err),
     });
+  }
+
+  toggleService(option: IBillingserviceoption): void {
+    const index = this.selectedServices.findIndex(s => s.id === option.id);
+    if (index === -1) {
+      this.selectedServices.push({ id: option.id!, servicename: option.servicename! });
+      // Real-time add to table
+      this.salesInvoiceServiceChargeLineDummyService.biliingvalues(option.id!, this.typeid).subscribe(response => {
+        const billingValues = response.body;
+        const fetchedValue = billingValues && billingValues.length > 0 ? billingValues[0].value : 0;
+
+        this.serviceChargeLinesArray.push(
+          this.fb.group({
+            serviceName: [option.servicename],
+            value: [fetchedValue],
+            isCustomerService: [false],
+            id: [option.id],
+          }),
+        );
+        this.updateLineTotal();
+      });
+    } else {
+      this.selectedServices.splice(index, 1);
+      // Remove from table
+      const tableIndex = this.serviceChargeLinesArray.controls.findIndex(c => c.get('id')?.value === option.id);
+      if (tableIndex !== -1) {
+        this.serviceChargeLinesArray.removeAt(tableIndex);
+        this.updateLineTotal();
+      }
+    }
+  }
+
+  isSelected(optionId: number | undefined): boolean {
+    return this.selectedServices.some(s => s.id === optionId);
   }
 
   addToTable() {

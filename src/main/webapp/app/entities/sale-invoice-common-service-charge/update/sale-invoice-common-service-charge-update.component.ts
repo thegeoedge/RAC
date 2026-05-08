@@ -32,6 +32,15 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   @Input() fetchedServicesCommon: any;
   commonServiceOptions: ICommonserviceoption[] = [];
   @Output() totalUpdated = new EventEmitter<number>();
+  searchTerm: string = '';
+
+  get filteredCommonOptions(): ICommonserviceoption[] {
+    if (!this.searchTerm) {
+      return this.commonServiceOptions;
+    }
+    const lowerTerm = this.searchTerm.toLowerCase();
+    return this.commonServiceOptions.filter(option => option.name?.toLowerCase().includes(lowerTerm));
+  }
   protected fb = inject(FormBuilder);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: FormGroup = new FormGroup({
@@ -40,7 +49,6 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   get serviceChargesArray(): FormArray {
     return this.editForm.get('serviceCharges') as FormArray;
   }
-  totalsum: number = 0; // Global variable to store total value
   updateLineTotal(): void {
     // Calculate the total by summing up all values in the serviceChargeLines array
     const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, value) => acc + value, 0);
@@ -48,7 +56,6 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     // Emit the total to the parent component
     this.totalUpdated.emit(total);
     console.log('Updated Total cccccccccccccccccccccccc:', total); // Log the updated total
-    this.totalsum = total;
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['fetchedServicesCommon'] && this.fetchedServicesCommon) {
@@ -110,58 +117,47 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         },
       });
   }
-  totalfetch: number = 0;
   onCheckboxChange(event: Event, option: ICommonserviceoption): void {
     const checkbox = event.target as HTMLInputElement;
 
-    // Log the checkbox state (checked or unchecked) and the option details
-    console.log('Checkbox changed:', checkbox.checked);
-    console.log('Selected option:', option);
-
     if (checkbox.checked) {
-      this.totalfetch += option.value ?? 0;
       // Create the form group for the selected option
-      const formGroup = new FormGroup({
-        id: new FormControl(null),
-        optionId: new FormControl(option.id),
-        description: new FormControl(option.description),
-        name: new FormControl(option.name),
-        value: new FormControl(option.value),
-        mainId: new FormControl(option.mainid),
-        code: new FormControl(option.code),
-        servicePrice: new FormControl(option.value),
-        discount: new FormControl(0),
+      const formGroup = this.fb.group({
+        id: [null],
+        optionId: [option.id],
+        description: [option.description],
+        name: [option.name],
+        value: [option.value],
+        mainId: [option.mainid],
+        code: [option.code],
+        servicePrice: [option.value],
+        discount: [0],
       });
 
-      // Check if this is the first row being added
-      if (this.serviceChargesArray.length === 0) {
-        // Add the first selected option to the first row (default row behavior)
-        this.serviceChargesArray.push(formGroup);
-      } else {
-        // If the array already has rows, insert the selected option at the start of the array
-        const firstRow = this.serviceChargesArray.at(0) as FormGroup;
+      // Check if we can reuse an empty row
+      const emptyRowIndex = this.serviceChargesArray.controls.findIndex(control => {
+        const group = control as FormGroup;
+        return !group.get('id')?.value && !group.get('optionId')?.value && !group.get('name')?.value;
+      });
 
-        // Check if there's already a default row and replace its values with the new selection
-        if (!firstRow.get('id')?.value) {
-          // Replace the default row with the first selected value
-          firstRow.patchValue({
-            id: null,
-            optionId: option.id,
-            description: option.description,
-            name: option.name,
-            value: option.value,
-            mainId: option.mainid,
-            code: option.code,
-            servicePrice: option.value,
-            discount: 0,
-          });
-        } else {
-          // If there is no default row, simply push to the array
-          this.serviceChargesArray.push(formGroup);
-        }
+      if (emptyRowIndex !== -1) {
+        (this.serviceChargesArray.at(emptyRowIndex) as FormGroup).patchValue({
+          optionId: option.id,
+          description: option.description,
+          name: option.name,
+          value: option.value,
+          mainId: option.mainid,
+          code: option.code,
+          servicePrice: option.value,
+          discount: 0,
+        });
+        this.totalvalue(this.serviceChargesArray.at(emptyRowIndex) as FormGroup);
+      } else {
+        this.serviceChargesArray.push(formGroup);
+        this.totalvalue(formGroup);
       }
     } else {
-      // Remove the option if unchecked from the serviceChargeDummies FormArray
+      // Remove the option if unchecked
       const index = this.serviceChargesArray.controls.findIndex(control => {
         const group = control as FormGroup;
         return group.get('optionId')?.value === option.id;
@@ -169,10 +165,27 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
 
       if (index !== -1) {
         this.serviceChargesArray.removeAt(index);
+        this.updateLineTotal();
       }
     }
-    console.log('Total Fetched Value:', this.totalfetch);
-    this.calculateTotal(this.totalfetch);
+  }
+
+  isSelected(id: number): boolean {
+    return this.serviceChargesArray.controls.some(control => {
+      const group = control as FormGroup;
+      return group.get('optionId')?.value === id;
+    });
+  }
+
+  toggleService(option: ICommonserviceoption): void {
+    const alreadySelected = this.isSelected(option.id);
+    if (alreadySelected) {
+      // Uncheck logic
+      this.onCheckboxChange({ target: { checked: false } } as any, option);
+    } else {
+      // Check logic
+      this.onCheckboxChange({ target: { checked: true } } as any, option);
+    }
   }
   onItemCodeSelect(event: Event, index: number): void {
     // Get the selected value (the item code)
@@ -199,16 +212,11 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
         servicePrice: selectedItem.value,
       });
       console.log(salesInvoiceLineGroup.value);
+      this.totalvalue(salesInvoiceLineGroup);
     } else {
       console.log('Item not found for code:', selectedItemCode);
     }
   }
-
-  calculateTotal(total: number): void {
-    console.log('Total Value:', total + this.totalsum); // Log the total value
-    this.totalUpdated.emit(total + this.totalsum); // Emit total to parent
-  }
-
   onItemCodeInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement
     const inputElement = <HTMLInputElement>event.target;

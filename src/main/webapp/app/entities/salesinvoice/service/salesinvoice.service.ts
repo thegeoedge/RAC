@@ -57,7 +57,7 @@ export class SalesinvoiceService {
     return this.http.get<any>(`${this.resourceInvoiceLinesUrlsercom}/invoice/${id}`, { observe: 'response' });
   }
   fetchReceiptCode(): Observable<HttpResponse<any>> {
-    return this.http.get<HttpResponse<any>>('/api/receipts?page=0&size=20&sort=id,desc', { observe: 'response' });
+    return this.http.get<HttpResponse<any>>('/api/salesinvoices?page=0&size=1&sort=id,desc', { observe: 'response' });
   }
 
   fetchReceiptAccountId(name: string): Observable<HttpResponse<any>> {

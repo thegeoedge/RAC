@@ -214,24 +214,23 @@
               <td class="text-end">
                 <div class="btn-group">
                   <a
-                    [routerLink]="['/salesinvoice', salesinvoice.id, 'view']"
+                    [routerLink]="['/sales-invoice-dummy', 'new']"
+                    [queryParams]="{ id: salesinvoice.id, invoice: salesinvoice.invoicedate, view: 'true' }"
                     class="btn btn-info btn-sm"
                     data-cy="entityDetailsButton"
                     title="View Details"
                   >
                     <fa-icon icon="eye"></fa-icon>
-                    <!-- <span class="d-none d-md-inline">View</span> -->
                   </a>
-                  <a
+                  <!-- <a
                     [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']"
                     class="btn btn-primary btn-sm"
                     data-cy="entityEditButton"
                     title="Edit Invoice"
                   >
                     <fa-icon icon="pencil-alt"></fa-icon>
-                    <!-- <span class="d-none d-md-inline">Edit</span> -->
-                  </a>
-                  <a
+                  </a> -->
+                  <!-- <a
                     [routerLink]="['/sales-invoice-dummy', 'new']"
                     class="btn btn-secondary btn-sm"
                     data-cy="entityEditButton"
@@ -239,8 +238,7 @@
                     title="Create Dummy Invoice"
                   >
                     <fa-icon icon="book"></fa-icon>
-                    <!-- <span class="d-none d-md-inline">Dummy Invoice</span> -->
-                  </a>
+                  </a> -->
 
                   <button
                     type="submit"

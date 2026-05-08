@@ -11,10 +11,13 @@
   .full-width-form .row {
     margin: 0;
   }
-  .full-width-form .col-md-4, .full-width-form .col-md-6, .full-width-form .col-12 {
+  .full-width-form .col-md-4,
+  .full-width-form .col-md-6,
+  .full-width-form .col-12 {
     padding: 10px;
   }
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -23,7 +26,9 @@
 </style>
 <div justify-content-right class="row full-width-form">
   <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="full-width-form">
-    <h2 id="jhi-sales-invoice-dummy-heading" data-cy="SalesInvoiceDummyCreateUpdateHeading" class="p-3">Sales Invoice Dummy</h2>
+    <h2 id="jhi-sales-invoice-dummy-heading" data-cy="SalesInvoiceDummyCreateUpdateHeading" class="p-3">
+      {{ readonly ? 'View Sales Invoice' : 'Sales Invoice Dummy' }}
+    </h2>
 
     <jhi-alert-error></jhi-alert-error>
 
@@ -47,6 +52,7 @@
                 name="customerName"
                 id="field_customerName"
                 formControlName="customerName"
+                [readonly]="readonly"
               />
             </div>
             <div class="mb-2">
@@ -57,11 +63,19 @@
                 name="amountOwing"
                 id="field_amountOwing"
                 formControlName="amountOwing"
+                [readonly]="readonly"
               />
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_vehicleNo">Vehicle No</label>
-              <input type="text" class="form-control form-control-sm" name="vehicleNo" id="field_vehicleNo" formControlName="vehicleNo" />
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                name="vehicleNo"
+                id="field_vehicleNo"
+                formControlName="vehicleNo"
+                [readonly]="readonly"
+              />
             </div>
             <div class="mb-2">
               <label class="form-label" for="field_invoiceDate">Invoice Date</label>
@@ -71,12 +85,13 @@
                 id="field_invoiceDate"
                 name="invoiceDate"
                 formControlName="invoiceDate"
+                [readonly]="readonly"
               />
             </div>
           </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4" *ngIf="!readonly">
           <div class="p-2 border rounded bg-light h-100">
             <h6 class="fw-bold text-primary">Item Details</h6>
             <div class="row">
@@ -135,13 +150,20 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer" (click)="onAddItem()">Add Item</button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="padding: 8px 16px; background-color: #1a58df; border: none; color: white; cursor: pointer"
+              (click)="onAddItem()"
+            >
+              Add Item
+            </button>
           </div>
         </div>
 
         <!-- Final Payments Container -->
-        <div class="col-md-4">
-          <div class="p-2 border rounded bg-light  h-100">
+        <div [class.col-md-4]="!readonly" [class.col-md-8]="readonly">
+          <div class="p-2 border rounded bg-light h-100">
             <h6 class="fw-bold text-primary">Final Payments</h6>
             <div class="row gx-3">
               <!-- Left Column -->
@@ -154,12 +176,13 @@
                     name="subTotal"
                     id="field_subTotal"
                     formControlName="subTotal"
+                    [readonly]="readonly"
                   />
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label">Discount Option</label>
-                  <div  class="d-flex gap-2 align-items-center">
+                  <div class="d-flex gap-2 align-items-center">
                     <input
                       type="radio"
                       name="discountOption"
@@ -167,6 +190,7 @@
                       value="percentage"
                       [checked]="discountOption === 'percentage'"
                       (change)="onDiscountOptionChange('percentage')"
+                      [disabled]="readonly"
                     />
                     <label for="percentage">%</label>
 
@@ -177,6 +201,7 @@
                       value="value"
                       [checked]="discountOption === 'value'"
                       (change)="onDiscountOptionChange('value')"
+                      [disabled]="readonly"
                     />
                     <label for="value">Value</label>
                   </div>
@@ -192,6 +217,7 @@
                     [(ngModel)]="discountValue"
                     [ngModelOptions]="{ standalone: true }"
                     (input)="onDiscountValueChange($event)"
+                    [readonly]="readonly"
                   />
                 </div>
               </div>
@@ -207,6 +233,7 @@
                       name="nbtAmount"
                       id="field_nbtAmount"
                       formControlName="nbtAmount"
+                      [readonly]="readonly"
                     />
                   </div>
 
@@ -218,6 +245,7 @@
                       name="vatAmount"
                       id="field_vatAmount"
                       formControlName="vatAmount"
+                      [readonly]="readonly"
                     />
                   </div>
                 </div>
@@ -230,12 +258,20 @@
                     name="totalTax"
                     id="field_totalTax"
                     formControlName="totalTax"
+                    [readonly]="readonly"
                   />
                 </div>
 
                 <div class="mb-3">
                   <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" name="tax" id="field_tax" formControlName="totalTax" />
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      name="tax"
+                      id="field_tax"
+                      formControlName="totalTax"
+                      [disabled]="readonly"
+                    />
                     <label class="form-check-label" for="field_tax">Apply Tax</label>
                   </div>
                 </div>
@@ -248,6 +284,7 @@
                     name="netTotal"
                     id="field_netTotal"
                     formControlName="netTotal"
+                    [readonly]="readonly"
                   />
                 </div>
               </div>
@@ -263,8 +300,8 @@
             <ul class="nav nav-tabs" role="tablist">
               <li class="nav-item" role="presentation">
                 <a
-                class="nav-link active"
-                id="billing-tab"
+                  class="nav-link active"
+                  id="billing-tab"
                   data-bs-toggle="tab"
                   href="#billing"
                   role="tab"
@@ -314,18 +351,21 @@
                 <jhi-sales-invoice-lines-dummy-update
                   [selectedItem]="selectedItem"
                   [fetchedItems]="fetchedItems"
+                  [readonly]="readonly"
                   (totalUpdated)="receiveTotal($event, 'child1')"
                 ></jhi-sales-invoice-lines-dummy-update>
               </div>
               <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab">
                 <jhi-sales-invoice-service-charge-line-dummy-update
                   [fetchedServices]="fetchedServices"
+                  [readonly]="readonly"
                   (totalUpdated)="receiveTotal($event, 'child2')"
                 ></jhi-sales-invoice-service-charge-line-dummy-update>
               </div>
               <div class="tab-pane fade" id="common-charges" role="tabpanel" aria-labelledby="common-charges-tab">
                 <jhi-sale-invoice-common-service-charge-dummy-update
                   [fetchedServicesCommon]="fetchedServicesCommon"
+                  [readonly]="readonly"
                   (totalUpdated)="receiveTotal($event, 'child3')"
                 ></jhi-sale-invoice-common-service-charge-dummy-update>
               </div>
@@ -620,7 +660,7 @@
 
     <div>
       <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-        <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+        <fa-icon icon="ban"></fa-icon>&nbsp;<span>Back</span>
       </button>
 
       <button
@@ -629,6 +669,7 @@
         data-cy="entityCreateSaveButton"
         [disabled]="editForm.invalid || isSaving"
         class="btn btn-success"
+        *ngIf="!readonly"
       >
         <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
       </button>

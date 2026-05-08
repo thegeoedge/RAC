@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
@@ -26,12 +26,18 @@ import { IInventory } from 'app/entities/inventory/inventory.model';
 import { SalesInvoiceLinesService } from 'app/entities/sales-invoice-lines/service/sales-invoice-lines.service';
 import { AutojobsinvoicelinesService } from 'app/entities/autojobsinvoicelines/service/autojobsinvoicelines.service';
 import { AutojobsinvoiceService } from 'app/entities/autojobsinvoice/service/autojobsinvoice.service';
+import { AutocareappointmentService } from 'app/entities/autocareappointment/service/autocareappointment.service';
+import { IAutocareappointment } from 'app/entities/autocareappointment/autocareappointment.model';
 import { IAutojobsinvoice } from 'app/entities/autojobsinvoice/autojobsinvoice.model';
 import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
 import { ReceiptModalComponent } from 'app/entities/receipt-modal/receipt-modal.component';
 import { AutocarejobService } from 'app/entities/autocarejob/service/autocarejob.service';
 import { IAutocarejob } from 'app/entities/autocarejob/autocarejob.model';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
+import { CustomervehicleService } from 'app/entities/customervehicle/service/customervehicle.service';
+import { ICustomervehicle } from 'app/entities/customervehicle/customervehicle.model';
+import { CustomerService } from 'app/entities/customer/service/customer.service';
+import { ICustomer } from 'app/entities/customer/customer.model';
 @Component({
   standalone: true,
   selector: 'jhi-salesinvoice-update',
@@ -68,6 +74,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   protected autocarejobService = inject(AutocarejobService);
   protected accountService = inject(AccountService);
+  protected customervehicleService = inject(CustomervehicleService);
+  protected customerService = inject(CustomerService);
+  protected autocareappointmentService = inject(AutocareappointmentService);
+  protected cdr = inject(ChangeDetectorRef);
+
+  filteredVehicles: any[] = [];
+  filteredCustomers: ICustomer[] = [];
+  showVehicleDropdown = false;
 
   filteredItems: IInventory[][] = [];
   ISalesInvoiceLines: ISalesInvoiceLines[] = [];
@@ -144,21 +158,25 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   fetchReceiptCode(): void {
     this.salesInvoiceService.fetchReceiptCode().subscribe(
       (response: HttpResponse<any>) => {
-        console.log('Full Response:', response);
-        console.log('Status:', response.status);
-        console.log('Headers:', response.headers);
+        let originalCode = response.body[0]?.code || 'SI00000';
 
-        let originalCode = response.body[0]?.code || '';
-        console.log('Original Code:', originalCode);
+        // If the code doesn't start with SI, force it to a default SI format
+        if (!originalCode.startsWith('SI')) {
+          originalCode = 'SI00000';
+        }
 
-        // Extract the numeric part and increment by 1
-        let newCode = originalCode.replace(/\d+$/, (match: string) => String(Number(match) + 1));
+        // Extract the numeric part and increment by 1, preserving padding
+        let newCode = originalCode.replace(/\d+$/, (match: string) => {
+          const incremented = Number(match) + 1;
+          return String(incremented).padStart(match.length, '0');
+        });
 
-        console.log('Updated Code:', newCode);
+        console.log('Updated Sales Invoice Code:', newCode);
         this.newcode = newCode;
+        this.editForm.patchValue({ code: newCode });
       },
       error => {
-        console.error('Error fetching receipt data:', error);
+        console.error('Error fetching invoice code:', error);
       },
     );
   }
@@ -435,7 +453,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       const transformedData: any = {
         id: null as unknown as number,
         code: (salesInvoiceDummy as any).code || undefined,
-        orderid: (salesInvoiceDummy as any).orderid ?? (salesInvoiceDummy as any).orderID ?? (salesInvoiceDummy as any).orderId ?? null,
+        orderid:
+          (salesInvoiceDummy as any).orderid ??
+          (salesInvoiceDummy as any).orderID ??
+          (salesInvoiceDummy as any).orderId ??
+          salesInvoiceDummy.id ??
+          null,
         customerid:
           (salesInvoiceDummy as any).customerid ?? (salesInvoiceDummy as any).customerID ?? (salesInvoiceDummy as any).customerId ?? null,
         customername: (salesInvoiceDummy as any).customername,
@@ -542,6 +565,16 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       return;
     }
 
+    if (this.buyquantity <= 0) {
+      alert('Please enter a valid Buy Quantity.');
+      return;
+    }
+
+    if (this.buyquantity > this.availablequantity) {
+      alert(`Buy Quantity (${this.buyquantity}) cannot be larger than Available Quantity (${this.availablequantity}).`);
+      return;
+    }
+
     let itemDiscount = 0;
     if (this.itemDiscountOption === 'percentage') {
       itemDiscount = (this.lastsellingprice * this.itemDiscountValue) / 100;
@@ -613,6 +646,163 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       });
   }
 
+  onVehicleSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const uppercasedValue = input.value.toUpperCase();
+    if (input.value !== uppercasedValue) {
+      input.value = uppercasedValue;
+      this.editForm.get('vehicleno')?.setValue(uppercasedValue, { emitEvent: false });
+    }
+    const searchTerm = uppercasedValue;
+
+    if (searchTerm.length > 2) {
+      this.autocareappointmentService.findByVehicleNumber(searchTerm).subscribe(response => {
+        this.filteredVehicles = this.getFirstUniqueAppointments(response.body || []);
+        this.showVehicleDropdown = false; // Keep as input while searching
+      });
+    } else {
+      this.filteredVehicles = [];
+    }
+  }
+
+  private getFirstUniqueAppointments(appointments: IAutocareappointment[]): IAutocareappointment[] {
+    const uniqueAppointments = new Map<string, IAutocareappointment>();
+    [...appointments]
+      .sort((left, right) => (left.id ?? Number.MAX_SAFE_INTEGER) - (right.id ?? Number.MAX_SAFE_INTEGER))
+      .forEach(appointment => {
+        const vehicleNumber = appointment.vehiclenumber?.trim();
+        if (vehicleNumber && !uniqueAppointments.has(vehicleNumber)) {
+          uniqueAppointments.set(vehicleNumber, appointment);
+        }
+      });
+    return [...uniqueAppointments.values()];
+  }
+
+  onVehicleSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selectedVehicleNumber = input.value;
+
+    if (!selectedVehicleNumber || selectedVehicleNumber === 'null') {
+      this.editForm.patchValue({
+        autocarejobid: null,
+      });
+      return;
+    }
+
+    const selectedVehicle = this.filteredVehicles.find(vehicle => vehicle.vehiclenumber === selectedVehicleNumber);
+
+    if (selectedVehicle) {
+      // If it's an appointment (has customername property), use its data
+      if ('customername' in selectedVehicle) {
+        this.editForm.patchValue({
+          vehicleno: selectedVehicle.vehiclenumber || '',
+          customerid: selectedVehicle.customerid ?? null,
+          customername: selectedVehicle.customername || '',
+        });
+      } else {
+        this.editForm.patchValue({
+          vehicleno: selectedVehicle.vehiclenumber || '',
+          customerid: selectedVehicle.customerid ?? null,
+        });
+      }
+
+      // Try to find the latest autocarejob for this vehicle
+      this.autocarejobService.query({ 'vehiclenumber.equals': selectedVehicleNumber, sort: ['id,desc'], size: 1 }).subscribe(jobRes => {
+        const latestJob = jobRes.body?.[0];
+        if (latestJob) {
+          this.editForm.patchValue({
+            autocarejobid: latestJob.id,
+          });
+          console.log('Linked to latest Autocare job:', latestJob.id);
+          this.cdr.detectChanges();
+        }
+      });
+
+      if (selectedVehicle.customerid) {
+        this.customerService.find(selectedVehicle.customerid).subscribe(customerRes => {
+          const customer = customerRes.body;
+          if (customer) {
+            this.editForm.patchValue({
+              customername: customer.fullname || customer.businessname || '',
+              customeraddress: customer.residenceaddress || customer.businessaddress || '',
+            });
+            this.fetchaccountid(customer.fullname || customer.businessname || '');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    }
+  }
+
+  onCustomerSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const searchTerm = input.value;
+
+    if (searchTerm.length > 2) {
+      this.customerService.query({ 'fullname.contains': searchTerm }).subscribe(response => {
+        this.filteredCustomers = response.body || [];
+      });
+    } else {
+      this.filteredCustomers = [];
+    }
+  }
+
+  onCustomerSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selectedCustomerName = input.value;
+
+    const selectedCustomer = this.filteredCustomers.find(customer => (customer.fullname || customer.businessname) === selectedCustomerName);
+
+    if (selectedCustomer) {
+      this.editForm.patchValue({
+        customerid: selectedCustomer.id,
+        customername: selectedCustomer.fullname || selectedCustomer.businessname || '',
+        customeraddress: selectedCustomer.residenceaddress || selectedCustomer.businessaddress || '',
+      });
+      this.fetchaccountid(selectedCustomer.fullname || selectedCustomer.businessname || '');
+
+      // Load vehicles associated with this customer
+      if (selectedCustomer.id) {
+        this.customervehicleService.query({ 'customerid.equals': selectedCustomer.id, size: 100 }).subscribe(vehicleRes => {
+          this.filteredVehicles = vehicleRes.body || [];
+          if (this.filteredVehicles.length === 1) {
+            this.showVehicleDropdown = false;
+            const vehicle = this.filteredVehicles[0];
+            this.editForm.patchValue({
+              vehicleno: vehicle.vehiclenumber || '',
+            });
+
+            // Also try to link the latest job for this vehicle
+            if (vehicle.vehiclenumber) {
+              this.autocarejobService
+                .query({ 'vehiclenumber.equals': vehicle.vehiclenumber, sort: ['id,desc'], size: 1 })
+                .subscribe(jobRes => {
+                  const latestJob = jobRes.body?.[0];
+                  if (latestJob) {
+                    this.editForm.patchValue({
+                      autocarejobid: latestJob.id,
+                    });
+                  }
+                  this.cdr.detectChanges();
+                });
+            }
+          } else if (this.filteredVehicles.length > 1) {
+            this.showVehicleDropdown = true;
+            // Clear vehicle number to force selection from dropdown
+            this.editForm.patchValue({
+              vehicleno: '',
+              autocarejobid: null,
+            });
+          } else {
+            this.showVehicleDropdown = false;
+          }
+          this.cdr.detectChanges();
+        });
+      }
+      this.cdr.detectChanges();
+    }
+  }
+
   previousState(): void {
     window.history.back();
   }
@@ -621,6 +811,18 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.calculateDiscount();
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
+
+    // Force orderid to have a value, defaulting to sourceInvoiceId or 0
+    salesinvoice.orderid = salesinvoice.orderid || this.sourceInvoiceId || 0;
+
+    // Ensure totaltax defaults to 0 if not set
+    salesinvoice.totaltax = salesinvoice.totaltax ?? 0;
+
+    // Redundant mappings to cover potential backend naming inconsistencies
+    (salesinvoice as any).orderID = salesinvoice.orderid;
+    (salesinvoice as any).orderId = salesinvoice.orderid;
+    (salesinvoice as any).TotalTax = salesinvoice.totaltax;
+    (salesinvoice as any).totalTax = salesinvoice.totaltax;
 
     if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
       const nettotal = salesinvoice.nettotal ?? 0;
@@ -660,6 +862,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         if (account) {
           salesinvoice.createdbyid = account.id;
           salesinvoice.createdbyname = account.firstName;
+          salesinvoice.lmu = account.id;
         }
         this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
 
