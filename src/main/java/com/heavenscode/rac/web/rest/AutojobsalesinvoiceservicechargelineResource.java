@@ -198,6 +198,8 @@ public class AutojobsalesinvoiceservicechargelineResource {
     public ResponseEntity<List<Map<String, Object>>> getServiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
         LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("id", "id");
+        columns.put("optionid", "optionid");
         columns.put("servicename", "servicename");
         columns.put("servicediscription", "servicediscription");
         columns.put("value", "value");

@@ -101,7 +101,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       tax: [Number(item.tax ?? 0)],
       sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
-      discount: [Number(Number(item.discount ?? 0) * Number(item.availablequantity ?? item.quantity ?? 1))], // total discount for the line (per-unit × qty)
+      discount: [Number(item.discount ?? 0)], // discount is now always the total discount for the line
       isNew: [item.isNew ?? false],
       sourceLineId: [item.lineid ?? null],
     });

@@ -57,6 +57,7 @@ import { AutocareJobServiceOptionService } from '../service/autocare-job-service
 import { IAutocareJobServiceOption } from '../autocare-job-service-option.model';
 import { AlertService } from 'app/core/util/alert.service';
 import { AlertMuteService } from 'app/core/util/alert-mute.service';
+import { AccountService } from 'app/core/auth/account.service';
 
 @Component({
   standalone: true,
@@ -120,6 +121,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   private savedCommonServiceCodes = new Set<string>();
   private savedSubcategoryIds = new Set<number>();
   private savedSubcategoryNames = new Set<string>();
+  private savedServiceValues = new Map<number, number>();
   workshopworklist: IWorkshopworklist[] = [];
   selectedworkItems: IWorkshopworklist[] = [];
   selectedSubcategoryItems: IServicesubcategory[] = [];
@@ -148,6 +150,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected autocareJobServiceOptionService = inject(AutocareJobServiceOptionService);
   protected alertService = inject(AlertService);
   protected alertMuteService = inject(AlertMuteService);
+  protected accountService = inject(AccountService);
+  currentUserId: number = 0;
 
   subcategoriesVisible = true; // Show service options by default
   showPrintSummary = false; // Controls whether the print summary is shown on screen
@@ -182,9 +186,21 @@ export class AutocarejobInstructionComponent implements OnInit {
       this.loadDataFromCommonServiceOptionEntities();
       this.loadVehicleTypes();
       this.loadBillingServiceOptions();
-      this.loadDataFromWorkshopWorklistEntities();
       this.setAutoNextServiceDate();
       this.loadExistingItemsForCurrentJob();
+    });
+
+    this.accountService.identity().subscribe(account => {
+      if (account) {
+        if ((account as any).id) {
+          this.currentUserId = (account as any).id;
+        } else {
+          const storedUserId = localStorage.getItem('userId');
+          if (storedUserId) {
+            this.currentUserId = parseInt(storedUserId, 10);
+          }
+        }
+      }
     });
   }
 
@@ -299,6 +315,7 @@ export class AutocarejobInstructionComponent implements OnInit {
 
   // Define the serviceArray to hold the selected service details
   serviceArray: Array<{
+    id?: number;
     invoiceid: number;
     lineid: number;
     optionid: number;
@@ -410,6 +427,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
   // Define the new array with the given structure
   commonServiceArray: Array<{
+    id?: number;
     invoiceid: number;
     lineid: number;
     optionid: number;
@@ -693,6 +711,54 @@ export class AutocarejobInstructionComponent implements OnInit {
         const savedServices = services.flatMap(response => response.body || []);
         const savedCommonServices = commonServices.flatMap(response => response.body || []);
 
+        this.savedServiceValues.clear();
+        savedServices.forEach(s => {
+          const optId = Number(s.optionid ?? 0);
+          if (optId > 0) {
+            this.savedServiceValues.set(optId, s.value ?? 0);
+
+            // Also ensure it's in serviceArray so edits can be saved
+            if (!this.serviceArray.some(sa => sa.optionid === optId)) {
+              this.serviceArray.push({
+                id: s.id,
+                invoiceid: s.invoiceid ?? 0,
+                lineid: s.lineid ?? 0,
+                optionid: optId,
+                servicename: s.servicename ?? '',
+                servicediscription: s.servicediscription ?? '',
+                value: s.value ?? 0,
+                addedbyid: s.addedbyid ?? 0,
+                iscustomersrvice: s.iscustomersrvice ?? true,
+                discount: s.discount ?? 0,
+                serviceprice: s.serviceprice ?? 0,
+              });
+            }
+          }
+        });
+
+        // Track saved common services
+        savedCommonServices.forEach(s => {
+          const optId = Number(s.optionid ?? 0);
+          if (optId > 0) {
+            if (!this.commonServiceArray.some(sa => sa.optionid === optId)) {
+              this.commonServiceArray.push({
+                id: s.id,
+                invoiceid: s.invoiceid ?? 0,
+                lineid: s.lineid ?? 0,
+                optionid: optId,
+                mainid: s.mainid ?? 0,
+                code: s.code ?? '',
+                name: s.name ?? '',
+                description: s.description ?? '',
+                value: s.value ?? 0,
+                addedbyid: s.addedbyid ?? 0,
+                discount: s.discount ?? 0,
+                serviceprice: s.serviceprice ?? 0,
+              });
+            }
+          }
+        });
+
         this.savedServiceOptionIds = new Set(savedServices.map(service => Number(service.optionid ?? 0)).filter(optionId => optionId > 0));
         this.savedServiceNames = new Set(
           savedServices
@@ -741,6 +807,12 @@ export class AutocarejobInstructionComponent implements OnInit {
   private syncSelectedServicesFromSaved(): void {
     this.selectedServices = this.filteredBillingServiceOptionValues.filter(service => {
       const optionId = Number(service.billingserviceoptionid ?? 0);
+
+      // Apply saved value if it exists
+      if (this.savedServiceValues.has(optionId)) {
+        service.value = this.savedServiceValues.get(optionId);
+      }
+
       const serviceName = this.getBillingServiceOptionName(service.billingserviceoptionid).trim().toLowerCase();
       return this.savedServiceOptionIds.has(optionId) || this.savedServiceNames.has(serviceName);
     });
@@ -823,7 +895,10 @@ export class AutocarejobInstructionComponent implements OnInit {
       unitofmeasurement: line.unitofmeasurement ?? '',
       availablequantity: null,
       lastsellingprice: line.sellingprice ?? 0,
-      discountPercentage: line.discount ?? 0,
+      discountPercentage:
+        line.sellingprice && line.quantity
+          ? (Number(line.discount) * 100) / (Number(line.sellingprice) * Number(line.quantity))
+          : line.discount ?? 0,
       requestedQuantity: line.quantity ?? 1,
     };
   }
@@ -837,7 +912,10 @@ export class AutocarejobInstructionComponent implements OnInit {
       }
 
       itemLine.quantity = selectedItem.requestedQuantity ?? 1;
-      itemLine.discount = selectedItem.discountPercentage ?? 0;
+      const price = selectedItem.lastsellingprice ?? 0;
+      const discountPercentage = selectedItem.discountPercentage ?? 0;
+      const quantity = selectedItem.requestedQuantity ?? 1;
+      itemLine.discount = ((price * discountPercentage) / 100) * quantity;
       itemLine.itemprice = selectedItem.lastsellingprice ?? 0;
       itemLine.sellingprice = selectedItem.lastsellingprice ?? 0;
       itemLine.linetotal = this.calculateItemTotal(selectedItem);
@@ -1137,10 +1215,10 @@ export class AutocarejobInstructionComponent implements OnInit {
       vehiclemodel: vehicleModel ?? '',
       mileage: String(formRaw.millage ?? ''),
       addeddate: this.localNow(),
-      iscalltocustomer: formRaw.updatetocustomer ?? false,
-      remarks: null,
+      iscalltocustomer: false,
+      remarks: '',
       calldate: null,
-      lmu: 0,
+      lmu: this.currentUserId,
       lmd: this.localNow(),
     };
   }
@@ -1256,29 +1334,49 @@ export class AutocarejobInstructionComponent implements OnInit {
           this.commonServiceArray.forEach(service => {
             service.invoiceid = effectiveInvoiceId;
 
-            // Assuming commonserviceoptionService.create() accepts service data and returns an observable
-            this.jobcommon.create({ ...service, id: null }).subscribe({
-              next: createResponse => {
-                console.log('Serviceee created successfully:', createResponse);
-              },
-              error: createError => {
-                console.error('Error creating service:', createError.body);
-              },
-            });
+            if (service.id) {
+              this.jobcommon.update(service as any).subscribe({
+                next: updateResponse => {
+                  console.log('Common Service updated successfully:', updateResponse);
+                },
+                error: updateError => {
+                  console.error('Error updating common service:', updateError);
+                },
+              });
+            } else {
+              this.jobcommon.create({ ...service, id: null }).subscribe({
+                next: createResponse => {
+                  console.log('Serviceee created successfully:', createResponse);
+                },
+                error: createError => {
+                  console.error('Error creating service:', createError.body);
+                },
+              });
+            }
           });
 
           this.serviceArray.forEach(service => {
             service.invoiceid = effectiveInvoiceId;
 
-            // Assuming commonserviceoptionService.create() accepts service data and returns an observable
-            this.jobservice.create({ ...service, id: null }).subscribe({
-              next: createResponse => {
-                console.log('Serviceeeeesssssssssssw created successfully:', createResponse);
-              },
-              error: createError => {
-                console.error('Error creating service:', createError.body);
-              },
-            });
+            if (service.id) {
+              this.jobservice.update(service as any).subscribe({
+                next: updateResponse => {
+                  console.log('Service updated successfully:', updateResponse);
+                },
+                error: updateError => {
+                  console.error('Error updating service:', updateError);
+                },
+              });
+            } else {
+              this.jobservice.create({ ...service, id: null }).subscribe({
+                next: createResponse => {
+                  console.log('Serviceeeeesssssssssssw created successfully:', createResponse);
+                },
+                error: createError => {
+                  console.error('Error creating service:', createError.body);
+                },
+              });
+            }
           });
 
           // Loop through the itemsArray and update the invoiceId field for each item
@@ -1500,8 +1598,8 @@ export class AutocarejobInstructionComponent implements OnInit {
               vehiclemodel: model || existingHeader.vehiclemodel || '',
               mileage: String(formRaw.millage ?? existingHeader.mileage ?? ''),
               addeddate: existingHeader.addeddate ?? this.localNow(),
-              iscalltocustomer: formRaw.updatetocustomer ?? false,
-              lmu: 0,
+              iscalltocustomer: false,
+              lmu: this.currentUserId,
               lmd: this.localNow(),
             };
             this.workshopvehicleworkService.update(updatedHeader).subscribe({

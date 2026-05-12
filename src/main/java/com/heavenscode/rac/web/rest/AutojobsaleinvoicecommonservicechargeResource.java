@@ -203,6 +203,8 @@ public class AutojobsaleinvoicecommonservicechargeResource {
     public ResponseEntity<List<Map<String, Object>>> getCommonChargesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
         LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("id", "id");
+        columns.put("optionid", "optionid");
         columns.put("name", "name");
         columns.put("description", "description");
         columns.put("value", "value");

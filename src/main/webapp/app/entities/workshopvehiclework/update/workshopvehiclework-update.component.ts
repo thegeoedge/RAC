@@ -12,8 +12,10 @@ import { WorkshopvehicleworkService } from '../service/workshopvehiclework.servi
 import { WorkshopvehicleworkFormService, WorkshopvehicleworkFormGroup } from './workshopvehiclework-form.service';
 import { IWorkshopworklist } from 'app/entities/workshopworklist/workshopworklist.model';
 import { WorkshopworklistService } from 'app/entities/workshopworklist/service/workshopworklist.service';
-import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
 import { IWorkshopVehicleWorkList } from 'app/entities/workshop-vehicle-work-list/workshop-vehicle-work-list.model';
+import { WorkshopVehicleWorkListService } from 'app/entities/workshop-vehicle-work-list/service/workshop-vehicle-work-list.service';
+import { AccountService } from 'app/core/auth/account.service';
+import dayjs from 'dayjs/esm';
 
 @Component({
   standalone: true,
@@ -43,6 +45,12 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
   protected activatedRoute = inject(ActivatedRoute);
   protected workshopworklistService = inject(WorkshopworklistService);
   protected workshopVehicleWorkListService = inject(WorkshopVehicleWorkListService);
+  protected accountService = inject(AccountService);
+
+  currentUserId: number = 0;
+  private localNow(): dayjs.Dayjs {
+    return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+  }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: WorkshopvehicleworkFormGroup = this.workshopvehicleworkFormService.createWorkshopvehicleworkFormGroup();
@@ -54,6 +62,19 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
         this.updateForm(workshopvehiclework);
       }
       this.loadDataFromWorkshopWorklistEntities();
+    });
+
+    this.accountService.identity().subscribe(account => {
+      if (account) {
+        if ((account as any).id) {
+          this.currentUserId = (account as any).id;
+        } else {
+          const storedUserId = localStorage.getItem('userId');
+          if (storedUserId) {
+            this.currentUserId = parseInt(storedUserId, 10);
+          }
+        }
+      }
     });
   }
 
@@ -134,7 +155,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
 
             this.syncSelectedWorkshopItemsFromSaved();
           },
-          error: error => {
+          error: (error: unknown) => {
             console.error('Failed to load saved workshop work rows:', error);
             this.savedWorkshopWorkIds.clear();
             this.savedWorkshopWorkNames.clear();
@@ -142,7 +163,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
           },
         });
       },
-      error: error => {
+      error: (error: unknown) => {
         console.error('Failed to load workshop work headers:', error);
         this.savedWorkshopWorkIds.clear();
         this.savedWorkshopWorkNames.clear();
@@ -206,12 +227,12 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
             vehiclebrand: this.formData?.vehiclebrand ?? '',
             vehiclemodel: this.formData?.vehiclemodel ?? '',
             mileage: this.formData?.mileage ?? '',
-            addeddate: null,
-            iscalltocustomer: null,
+            addeddate: this.localNow(),
+            iscalltocustomer: false,
             remarks: '',
             calldate: null,
-            lmu: null,
-            lmd: null,
+            lmu: this.currentUserId,
+            lmd: this.localNow(),
           };
           this.workshopvehicleworkService.create(headerPayload).subscribe({
             next: createResp => {
@@ -220,14 +241,14 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
                 this.replaceDetailRows(vehicleWorkId);
               }
             },
-            error: err => {
+            error: (err: unknown) => {
               console.error('Failed to create WorkshopVehicleWork header:', err);
               this.onSaveFinalize();
             },
           });
         }
       },
-      error: err => {
+      error: (err: unknown) => {
         console.error('Failed to query WorkshopVehicleWork headers:', err);
         this.onSaveFinalize();
       },
@@ -270,7 +291,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
             };
             this.workshopVehicleWorkListService.create(detailPayload).subscribe({
               next: () => {},
-              error: err => console.error('Failed to create WorkshopVehicleWorkList detail row:', err),
+              error: (err: unknown) => console.error('Failed to create WorkshopVehicleWorkList detail row:', err),
             });
           });
           this.onSaveFinalize();
@@ -281,7 +302,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
         } else {
           forkJoin(deleteOps).subscribe({
             next: () => doCreate(),
-            error: err => {
+            error: (err: unknown) => {
               console.error('Failed to delete stale WorkshopVehicleWorkList rows:', err);
               // Proceed with creation even if some deletes fail
               doCreate();
@@ -289,7 +310,7 @@ export class WorkshopvehicleworkUpdateComponent implements OnInit, OnChanges {
           });
         }
       },
-      error: err => {
+      error: (err: unknown) => {
         console.error('Failed to load existing WorkshopVehicleWorkList rows:', err);
         this.onSaveFinalize();
       },

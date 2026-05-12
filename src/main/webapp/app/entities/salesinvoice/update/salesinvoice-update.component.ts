@@ -637,7 +637,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       availablequantity: this.buyquantity,
       lastcost: this.selectedInventoryItem?.lastcost ?? 0,
       lastsellingprice: this.lastsellingprice,
-      discount: itemDiscount,
+      discount: itemDiscount * this.buyquantity, // Total discount for the line
       isNew: true,
     };
 
