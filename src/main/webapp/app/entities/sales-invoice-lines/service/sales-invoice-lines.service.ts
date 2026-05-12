@@ -103,8 +103,10 @@ export class SalesInvoiceLinesService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
-  queryByInvoiceId(invoiceId: number): Observable<HttpResponse<any[]>> {
-    return this.http.get<any[]>(`${this.resourceUrl}/invoice/${invoiceId}`, { observe: 'response' });
+  queryByInvoiceId(invoiceId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestSalesInvoiceLines[]>(`${this.resourceUrl}/invoice/${invoiceId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
   delete(id: number): Observable<HttpResponse<{}>> {

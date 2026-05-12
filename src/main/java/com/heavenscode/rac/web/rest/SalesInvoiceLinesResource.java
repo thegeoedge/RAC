@@ -174,14 +174,19 @@ public class SalesInvoiceLinesResource {
     public ResponseEntity<List<Map<String, Object>>> getInvoiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
         LOG.debug("REST request to get SalesInvoiceLines by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("id", "id");
+
         columns.put("itemname", "itemname");
         columns.put("itemcode", "itemcode");
         columns.put("description", "description");
         columns.put("quantity", "quantity");
         columns.put("unitofmeasurement", "unitofmeasurement");
         columns.put("itemprice", "itemprice");
+        columns.put("discount", "discount");
+        columns.put("tax", "tax");
         columns.put("sellingprice", "sellingprice");
         columns.put("linetotal", "linetotal");
+
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId(
                 "salesinvoicelines",

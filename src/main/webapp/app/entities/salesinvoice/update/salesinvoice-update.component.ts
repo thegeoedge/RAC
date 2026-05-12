@@ -96,6 +96,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   itemDiscountValue: number = 0;
   subTotal: number = 0;
   totalamount: number = 0;
+  totalLineDiscount: number = 0; // Tracks sum of (discount × qty) from billing lines
   i: number = 0;
   customername: string = '';
   customeraddress: string = '';
@@ -209,6 +210,31 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     );
   }
 
+  /**
+   * Fetches all active Sales Invoices for the given customer from dbo.SalesInvoice,
+   * sums only the positive AmountOwing values, and displays the total in the Amount Owing field.
+   */
+  fetchCustomerAmountOwing(customerId: number): void {
+    this.salesinvoiceService.query({ 'customerid.equals': customerId, 'isactive.equals': true, size: 1000 }).subscribe({
+      next: (response: HttpResponse<ISalesinvoice[]>) => {
+        const invoices = response.body || [];
+        // Only sum invoices that have a positive outstanding balance (exclude fully paid ones)
+        const totalOwing = invoices
+          .filter(inv => (Number(inv.amountowing) || 0) > 0)
+          .reduce((sum, inv) => sum + (Number(inv.amountowing) || 0), 0);
+
+        // Round to 2 decimal places and treat near-zero floating point as 0
+        const rounded = Math.round(totalOwing * 100) / 100;
+        console.log(`Customer ${customerId} — active invoices: ${invoices.length}, total AmountOwing: ${rounded}`);
+        this.editForm.patchValue({ amountowing: rounded });
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        console.error('Error fetching customer AmountOwing from SalesInvoice:', err);
+      },
+    });
+  }
+
   onDiscountValueChange(event: any): void {
     this.discountValue = event.target.value; // Update the discountValue with the input value
     console.log('Updated Discount Value:', this.discountValue); // Log the updated value to the console
@@ -241,25 +267,34 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     console.log('Sub Total:', subtotal);
     console.log('Discount Value:', valueDiscount);
 
-    let totalDiscount = 0;
+    // Invoice-level discount (from the Final Payments box only)
+    let invoiceLevelDiscount = 0;
 
     if (this.discountOption === 'percentage') {
-      totalDiscount = (subtotal * Number(valueDiscount)) / 100;
+      invoiceLevelDiscount = (subtotal * Number(valueDiscount)) / 100;
     } else if (this.discountOption === 'value') {
-      totalDiscount = valueDiscount;
+      invoiceLevelDiscount = valueDiscount;
     }
 
-    totalDiscount = Math.min(totalDiscount, subtotal);
-    const netTotal = subtotal - totalDiscount;
+    invoiceLevelDiscount = Math.min(invoiceLevelDiscount, subtotal);
 
-    console.log('Total Discount:', totalDiscount);
+    // netTotal only subtracts the invoice-level discount from subtotal.
+    // Line discounts are already reflected in subtotal (lineTotal = price×qty - lineDiscount).
+    const netTotal = Number((subtotal - invoiceLevelDiscount).toFixed(2));
+
+    // totaldiscount saved to DB = invoice-level discount + sum of all line-level discounts (for reporting)
+    const totalDiscount = Number((invoiceLevelDiscount + this.totalLineDiscount).toFixed(2));
+
+    console.log('Invoice-level Discount:', invoiceLevelDiscount);
+    console.log('Total Line Discount:', this.totalLineDiscount);
+    console.log('Total Discount (for DB):', totalDiscount);
     console.log('Net Total:', netTotal);
 
     this.editForm.patchValue({
-      totaldiscount: Number(totalDiscount.toFixed(2)),
-      nettotal: Number(netTotal.toFixed(2)),
+      totaldiscount: totalDiscount,
+      nettotal: netTotal,
     });
-    this.totalamount = Number(netTotal.toFixed(2));
+    this.totalamount = netTotal;
   }
 
   onDiscountOptionChange(option: string): void {
@@ -289,6 +324,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.editForm.patchValue({
       subtotal: this.subTotal,
     });
+    this.calculateDiscount();
+  }
+
+  receiveTotalLineDiscount(lineDiscount: number): void {
+    this.totalLineDiscount = lineDiscount;
+    console.log('Received Total Line Discount from child:', lineDiscount);
+    this.calculateDiscount();
   }
 
   fetchedServicesCommon: {
@@ -387,6 +429,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     quantity: number;
     sellingprice: number;
     itemcost?: number;
+    discount?: number;
     lineid?: number;
   }[] = [];
 
@@ -407,6 +450,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
                 quantity: item.quantity ?? 0,
                 sellingprice: item.sellingprice ?? 0,
                 itemcost: item.itemcost ?? item.lastcost ?? 0,
+                discount: item.discount ?? item.discountamount ?? item.discountAmount ?? item.totaldiscount ?? 0,
+
                 lineid: item.lineid,
               });
             });
@@ -727,6 +772,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               customeraddress: customer.residenceaddress || customer.businessaddress || '',
             });
             this.fetchaccountid(customer.fullname || customer.businessname || '');
+            // Fetch and display the customer's total outstanding Amount Owing
+            this.fetchCustomerAmountOwing(selectedVehicle.customerid!);
             this.cdr.detectChanges();
           }
         });
@@ -760,6 +807,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         customeraddress: selectedCustomer.residenceaddress || selectedCustomer.businessaddress || '',
       });
       this.fetchaccountid(selectedCustomer.fullname || selectedCustomer.businessname || '');
+
+      // Fetch and display the customer's total outstanding Amount Owing
+      if (selectedCustomer.id) {
+        this.fetchCustomerAmountOwing(selectedCustomer.id);
+      }
 
       // Load vehicles associated with this customer
       if (selectedCustomer.id) {
@@ -808,6 +860,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   save(): void {
+    // Guard: customer must be selected before saving
+    const customerId = this.editForm.get('customerid')?.value;
+    const customerName = this.editForm.get('customername')?.value;
+    if (!customerId && !customerName) {
+      alert('Please select a customer before saving the Sales Invoice.');
+      return;
+    }
+
     this.calculateDiscount();
     this.isSaving = true;
     const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
@@ -837,9 +897,9 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     } else {
       salesinvoice.locationid = 0;
       const now = dayjs();
-      salesinvoice.invoicedate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
-      salesinvoice.createddate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
-      salesinvoice.delieverydate = dayjs(now.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
+      salesinvoice.invoicedate = now;
+      salesinvoice.createddate = now;
+      salesinvoice.delieverydate = now;
       salesinvoice.isactive = true;
       salesinvoice.nbtamount = 0;
       salesinvoice.vatamount = 0;

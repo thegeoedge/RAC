@@ -35,6 +35,7 @@ import { InventorybatchesService } from 'app/entities/inventorybatches/service/i
 export class SalesInvoiceLinesUpdateComponent implements OnInit {
   isSaving = false;
   @Output() totalUpdated = new EventEmitter<number>();
+  @Output() totalDiscountUpdated = new EventEmitter<number>();
   salesInvoiceLines: ISalesInvoiceLines[] = []; // Now an array of sales invoice lines
   filteredItems: IInventory[][] = []; // Array of arrays to store filtered items for each row
   showCodeField: boolean = false;
@@ -100,7 +101,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       tax: [Number(item.tax ?? 0)],
       sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
-      discount: [Number(item.discount ?? 0)],
+      discount: [Number(Number(item.discount ?? 0) * Number(item.availablequantity ?? item.quantity ?? 1))], // total discount for the line (per-unit × qty)
       isNew: [item.isNew ?? false],
       sourceLineId: [item.lineid ?? null],
     });
@@ -126,11 +127,13 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   updateLineTotal(formGroup: FormGroup): void {
     const quantity = Number(formGroup.get('quantity')?.value || 0);
     const sellingPrice = Number(formGroup.get('sellingprice')?.value || 0);
-    const discount = Number(formGroup.get('discount')?.value || 0);
+    // discount is stored as the TOTAL line discount (per-unit × qty)
+    const totalLineItemDiscount = Number(formGroup.get('discount')?.value || 0);
     const lineTotalControl = formGroup.get('linetotal');
 
-    // Calculate line total: (sellingPrice - discount) * quantity
-    const lineTotal = (sellingPrice - discount) * quantity;
+    // Calculate line total: (sellingPrice * quantity) - totalDiscount
+    // This is mathematically identical to (sellingPrice - discountPerUnit) * quantity
+    const lineTotal = sellingPrice * quantity - totalLineItemDiscount;
     lineTotalControl?.setValue(lineTotal, { emitEvent: false }); // Set the value without emitting the event to avoid infinite loop
 
     // Calculate the total of all lineTotals in the form array
@@ -138,9 +141,17 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       .map(control => Number(control.get('linetotal')?.value || 0))
       .reduce((acc, value) => acc + value, 0);
 
+    // Sum all line-level discounts (each discount field already holds discount × qty)
+    const totalLineDiscount = this.salesInvoiceLinesDummyArray.controls
+      .map(control => Number(control.get('discount')?.value || 0))
+      .reduce((acc, value) => acc + value, 0);
+
     console.log('Totallll:', total);
+    console.log('Total Line Discount:', totalLineDiscount);
     // Emit the updated total of all lineTotals
     this.totalUpdated.emit(total);
+    // Emit the total line-level discount so the parent can include it in TotalDiscount
+    this.totalDiscountUpdated.emit(totalLineDiscount);
   }
   ngOnInit(): void {
     console.log('Selected Item on Initttt:', this.selectedItem); // Log selected item
@@ -353,11 +364,13 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     let salesInvoiceLines = this.salesInvoiceLinesFormService.getSalesInvoiceLines(this.salesInvoiceLinesArray);
 
     // Assign invoiceid to all rows and ensure unique lineid across all aggregated lines
+    // discount is already stored as (per-unit × qty) in the form field, so pass through directly
     salesInvoiceLines = salesInvoiceLines.map((line, index) => ({
       ...line,
       invoiceid: inid, // Assign the provided invoice ID
       lineid: index + 1, // Recalculate unique lineid for the current invoice
       description: line.description ?? line.itemname ?? null,
+      // discount is already the total line discount (no need to multiply again)
     }));
 
     console.log('Modified sales invoice lines:', salesInvoiceLines);

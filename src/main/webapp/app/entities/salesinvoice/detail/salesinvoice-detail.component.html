@@ -236,13 +236,13 @@
 
 <!-- Wrap the entire invoice content in a print area div -->
 <div class="d-flex justify-content-center invoice-print-area">
-  <div class="col-8">
+  <div class="col-10">
     @if (salesinvoice()) {
-      <div>
+      <div id="main-content">
         <!-- HEADER -->
         <div class="invoice-header">
           <br />
-          <h2 data-cy="salesinvoiceDetailsHeading">Sales Invoice</h2>
+          <h2 data-cy="salesinvoiceDetailsHeading" class="text-primary">Sales Invoice</h2>
           <br />
           <hr />
           <!-- Add invoice summary info -->
@@ -253,122 +253,166 @@
           </div>
         </div>
 
-        <!-- DETAILS GRID -->
-        <div class="invoice-details">
-          <div class="invoice-item">
-            <span class="invoice-label">ID</span><span class="invoice-value">{{ salesinvoice()!.id }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Code</span><span class="invoice-value">{{ salesinvoice()!.code }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Invoice Date</span
-            ><span class="invoice-value">{{ salesinvoice()!.invoicedate | formatMediumDatetime }}</span>
-          </div>
+        <!-- ITEMIZED TABS -->
+        <div class="mt-4">
+          <ul class="nav nav-tabs" id="invoiceTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active"
+                id="items-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#items"
+                type="button"
+                role="tab"
+                aria-controls="items"
+                aria-selected="true"
+              >
+                <fa-icon icon="boxes"></fa-icon> Items (Billing)
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="services-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#services"
+                type="button"
+                role="tab"
+                aria-controls="services"
+                aria-selected="false"
+              >
+                <fa-icon icon="tools"></fa-icon> Service Charges
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="common-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#common"
+                type="button"
+                role="tab"
+                aria-controls="common"
+                aria-selected="false"
+              >
+                <fa-icon icon="hand-holding-usd"></fa-icon> Common Charges
+              </button>
+            </li>
+          </ul>
 
-          <div class="invoice-item">
-            <span class="invoice-label">Created Date</span
-            ><span class="invoice-value">{{ salesinvoice()!.createddate | formatMediumDatetime }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Quote ID</span><span class="invoice-value">{{ salesinvoice()!.quoteid }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Order ID</span><span class="invoice-value">{{ salesinvoice()!.orderid }}</span>
-          </div>
+          <div class="tab-content border border-top-0 p-3 bg-white shadow-sm rounded-bottom" id="invoiceTabsContent">
+            <!-- ITEMS TAB -->
+            <div class="tab-pane fade show active" id="items" role="tabpanel" aria-labelledby="items-tab">
+              <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover">
+                  <thead class="table-light text-primary">
+                    <tr>
+                      <th>Code</th>
+                      <th>Description</th>
+                      <th class="text-center">Qty</th>
+                      <th class="text-end">Unit Price</th>
+                      <th class="text-end">Discount</th>
+                      <th class="text-end">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (line of invoiceLines(); track line.id) {
+                      <tr>
+                        <td>{{ line.itemcode }}</td>
+                        <td>{{ line.itemname || line.description }}</td>
+                        <td class="text-center">{{ line.quantity }}</td>
+                        <td class="text-end">{{ line.itemprice | currency: 'Rs. ' }}</td>
+                        <td class="text-end text-danger">
+                          {{ line.discount ?? line.discountamount ?? line.discountAmount ?? line.itemdiscount ?? 0 | currency: 'Rs. ' }}
+                        </td>
 
-          <div class="invoice-item">
-            <span class="invoice-label">Delivery Date</span
-            ><span class="invoice-value">{{ salesinvoice()!.delieverydate | formatMediumDatetime }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Sales Rep ID</span><span class="invoice-value">{{ salesinvoice()!.salesrepid }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Sales Rep Name</span><span class="invoice-value">{{ salesinvoice()!.salesrepname }}</span>
-          </div>
+                        <td class="text-end fw-bold text-success">{{ line.linetotal | currency: 'Rs. ' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="text-center text-muted py-3">No items found for this invoice.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-          <div class="invoice-item">
-            <span class="invoice-label">Deliver From</span><span class="invoice-value">{{ salesinvoice()!.delieverfrom }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Customer ID</span><span class="invoice-value">{{ salesinvoice()!.customerid }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Customer Name</span><span class="invoice-value">{{ salesinvoice()!.customername }}</span>
-          </div>
+            <!-- SERVICE CHARGES TAB -->
+            <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+              <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover">
+                  <thead class="table-light text-primary">
+                    <tr>
+                      <th>Service Name</th>
+                      <th class="text-end">Charge Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (service of serviceCharges(); track service.id) {
+                      <tr>
+                        <td>{{ service.serviceName }}</td>
+                        <td class="text-end fw-bold text-success">{{ service.value | currency: 'Rs. ' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="2" class="text-center text-muted py-3">No service charges found.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-          <div class="invoice-item">
-            <span class="invoice-label">Customer Address</span><span class="invoice-value">{{ salesinvoice()!.customeraddress }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Delivery Address</span><span class="invoice-value">{{ salesinvoice()!.deliveryaddress }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Vehicle No</span><span class="invoice-value">{{ salesinvoice()!.vehicleno }}</span>
-          </div>
-
-          <div class="invoice-item">
-            <span class="invoice-label">Subtotal</span><span class="invoice-value">{{ salesinvoice()!.subtotal | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Total Tax</span><span class="invoice-value">{{ salesinvoice()!.totaltax | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Total Discount</span
-            ><span class="invoice-value">{{ salesinvoice()!.totaldiscount | currency }}</span>
-          </div>
-
-          <div class="invoice-item">
-            <span class="invoice-label">Net Total</span><span class="invoice-value">{{ salesinvoice()!.nettotal | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Paid Amount</span><span class="invoice-value">{{ salesinvoice()!.paidamount | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Amount Owing</span><span class="invoice-value">{{ salesinvoice()!.amountowing | currency }}</span>
-          </div>
-
-          <div class="invoice-item">
-            <span class="invoice-label">Payment Type</span><span class="invoice-value">{{ salesinvoice()!.paymenttype }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Pending Amount</span
-            ><span class="invoice-value">{{ salesinvoice()!.pendingamount | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Advance Payment</span
-            ><span class="invoice-value">{{ salesinvoice()!.advancepayment | currency }}</span>
-          </div>
-
-          <div class="invoice-item">
-            <span class="invoice-label">VAT Amount</span><span class="invoice-value">{{ salesinvoice()!.vatamount | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">NBT Amount</span><span class="invoice-value">{{ salesinvoice()!.nbtamount | currency }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Is VAT Invoice</span><span class="invoice-value">{{ salesinvoice()!.isvatinvoice }}</span>
-          </div>
-
-          <div class="invoice-item">
-            <span class="invoice-label">Remarks</span><span class="invoice-value">{{ salesinvoice()!.remarks }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Message</span><span class="invoice-value">{{ salesinvoice()!.message }}</span>
-          </div>
-          <div class="invoice-item">
-            <span class="invoice-label">Discount Code</span><span class="invoice-value">{{ salesinvoice()!.discountcode }}</span>
+            <!-- COMMON CHARGES TAB -->
+            <div class="tab-pane fade" id="common" role="tabpanel" aria-labelledby="common-tab">
+              <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover">
+                  <thead class="table-light text-primary">
+                    <tr>
+                      <th>Charge Name</th>
+                      <th class="text-end">Charge Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (common of commonCharges(); track common.id) {
+                      <tr>
+                        <td>{{ common.name || common.itemName || common.itemname }}</td>
+                        <td class="text-end fw-bold text-success">
+                          {{ common.value || common.sellingPrice || common.sellingprice | currency: 'Rs. ' }}
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="2" class="text-center text-muted py-3">No common charges found.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Add a totals summary for better visibility -->
-        <div style="margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #000">
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; font-size: 12pt">
-            <div><strong>Subtotal:</strong> {{ salesinvoice()!.subtotal | currency }}</div>
-            <div><strong>Tax:</strong> {{ salesinvoice()!.totaltax | currency }}</div>
-            <div><strong>Discount:</strong> {{ salesinvoice()!.totaldiscount | currency }}</div>
-            <div style="font-size: 14pt"><strong>Total:</strong> {{ salesinvoice()!.nettotal | currency }}</div>
+        <div style="margin-top: 3rem; padding: 1.5rem; border: 1px solid #dee2e6; border-radius: 8px; background-color: #f8f9fa">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; font-size: 11pt">
+            <div>
+              <span class="text-muted small d-block">Subtotal</span>
+              <strong>{{ salesinvoice()!.subtotal | currency: 'Rs. ' }}</strong>
+            </div>
+            <div>
+              <span class="text-muted small d-block">Tax</span>
+              <strong>{{ salesinvoice()!.totaltax | currency: 'Rs. ' }}</strong>
+            </div>
+            <div>
+              <span class="text-muted small d-block text-danger">Discount</span>
+              <strong class="text-danger">{{ salesinvoice()!.totaldiscount | currency: 'Rs. ' }}</strong>
+            </div>
+            <div style="border-left: 2px solid #dee2e6; padding-left: 1rem">
+              <span class="text-muted small d-block">Net Total</span>
+              <h4 class="text-success mb-0">{{ salesinvoice()!.nettotal | currency: 'Rs. ' }}</h4>
+            </div>
           </div>
         </div>
 
@@ -376,9 +420,9 @@
         <div class="action-buttons">
           <button type="button" (click)="previousState()" class="btn btn-info"><fa-icon icon="arrow-left"></fa-icon>&nbsp;Back</button>
 
-          <button type="button" [routerLink]="['/salesinvoice', salesinvoice()!.id, 'edit']" class="btn btn-primary">
+          <!-- <button type="button" [routerLink]="['/salesinvoice', salesinvoice()!.id, 'edit']" class="btn btn-primary">
             <fa-icon icon="pencil-alt"></fa-icon>&nbsp;Edit
-          </button>
+          </button> -->
 
           <button type="button" class="btn btn-success" (click)="print()"><fa-icon icon="print"></fa-icon>&nbsp;Print 🖨</button>
         </div>

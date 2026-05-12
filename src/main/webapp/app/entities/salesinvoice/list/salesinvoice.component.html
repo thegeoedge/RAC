@@ -213,15 +213,24 @@
               <td>{{ salesinvoice.vehicleno }}</td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a
+                  <!-- <a
                     [routerLink]="['/sales-invoice-dummy', 'new']"
                     [queryParams]="{ id: salesinvoice.id, invoice: salesinvoice.invoicedate, view: 'true' }"
                     class="btn btn-info btn-sm"
                     data-cy="entityDetailsButton"
-                    title="View Details"
+                    title="View Details (Dummy)"
+                  >
+                    <fa-icon icon="eye"></fa-icon>
+                  </a> -->
+                  <a
+                    [routerLink]="['/salesinvoice', salesinvoice.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                    title="View Invoice Details"
                   >
                     <fa-icon icon="eye"></fa-icon>
                   </a>
+
                   <!-- <a
                     [routerLink]="['/salesinvoice', salesinvoice.id, 'edit']"
                     class="btn btn-primary btn-sm"

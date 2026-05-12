@@ -186,6 +186,9 @@ public class SaleInvoiceCommonServiceChargeResource {
         columns.put("optionid", "optionid");
         columns.put("mainid", "mainid");
         columns.put("code", "code");
+        columns.put("discount", "discount");
+        columns.put("servicePrice", "serviceprice");
+
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId("saleinvoicecommonservicecharge", "invoiceid", columns, invoiceId)
         );

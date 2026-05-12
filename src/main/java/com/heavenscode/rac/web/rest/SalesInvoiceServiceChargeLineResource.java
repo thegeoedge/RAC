@@ -177,9 +177,14 @@ public class SalesInvoiceServiceChargeLineResource {
     public ResponseEntity<List<Map<String, Object>>> getServiceLinesByInvoiceId(@PathVariable("invoiceId") Integer invoiceId) {
         LOG.debug("REST request to get SalesInvoiceServiceChargeLine by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        columns.put("id", "id");
+
         columns.put("serviceName", "servicename");
         columns.put("serviceDescription", "servicediscription");
         columns.put("value", "value");
+        columns.put("discount", "discount");
+        columns.put("servicePrice", "serviceprice");
+
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId("salesinvoiceservicechargeline", "invoiceid", columns, invoiceId)
         );

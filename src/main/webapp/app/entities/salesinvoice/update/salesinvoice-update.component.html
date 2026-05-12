@@ -423,6 +423,7 @@
                   [serviceChargeTotal]="total2"
                   [commonServiceChargeTotal]="total3"
                   (totalUpdated)="receiveTotal($event, 'child1')"
+                  (totalDiscountUpdated)="receiveTotalLineDiscount($event)"
                 ></jhi-sales-invoice-lines-update>
               </div>
               <div class="tab-pane fade" id="service-charges" role="tabpanel" aria-labelledby="service-charges-tab">

@@ -4,7 +4,7 @@
       <!-- Left Side: Form -->
       <div class="col-6">
         <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-          <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading">Create Autocarejob</h2>
+          <h2 id="jhi-autocarejob-heading" data-cy="AutocarejobCreateUpdateHeading" class="mb-4">Create Autocare Job</h2>
 
           <div>
             <jhi-alert-error></jhi-alert-error>
@@ -16,27 +16,10 @@
               </div>
             }
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_jobnumber">Jobnumber</label>
-          <input
-            type="number"
-            class="form-control"
-            name="jobnumber"
-            id="field_jobnumber"
-            data-cy="jobnumber"
-            formControlName="jobnumber"
-            [disabled]="true"
-          />
-        </div> -->
-
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_vehicleid">Vehicleid</label>
-          <input type="number" class="form-control" name="vehicleid" id="field_vehicleid" data-cy="vehicleid" formControlName="vehicleid" />
-        </div> -->
-
+            <!-- Vehicle Number & Millage (side by side) -->
             <div class="row">
-              <div class="mb-3 col-6">
-                <label class="form-label" for="field_vehiclenumber">Vehiclenumber</label>
+              <div class="mb-3 col-7">
+                <label class="form-label" for="field_vehiclenumber">Vehicle Number</label>
                 <input
                   type="text"
                   class="form-control"
@@ -57,13 +40,15 @@
                 </datalist>
               </div>
 
-              <div class="mb-3 col-6">
-                <label class="form-label" for="field_millage">Millage</label>
+              <div class="mb-3 col-5">
+                <label class="form-label" for="field_millage">Mileage</label>
                 <input type="number" class="form-control" name="millage" id="field_millage" data-cy="millage" formControlName="millage" />
               </div>
             </div>
+
+            <!-- Job Type -->
             <div class="mb-3">
-              <label class="form-label" for="field_jobtypename">Jobtypename</label>
+              <label class="form-label" for="field_jobtypename">Job Type</label>
               <select
                 class="form-control"
                 name="jobtypename"
@@ -79,7 +64,7 @@
               </select>
             </div>
 
-            <!-- New input field -->
+            <!-- Description -->
             <div class="mb-3">
               <label class="form-label" for="field_description">Description</label>
               <input
@@ -93,78 +78,38 @@
               />
             </div>
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_jobopenby">Jobopenby</label>
-          <input type="number" class="form-control" name="jobopenby" id="field_jobopenby" data-cy="jobopenby" formControlName="jobopenby" />
-        </div> -->
+            <!-- Customer Name & Tel (side by side) -->
+            <div class="row">
+              <div class="mb-3 col-7">
+                <label class="form-label" for="field_customername">Customer Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="customername"
+                  id="field_customername"
+                  data-cy="customername"
+                  formControlName="customername"
+                  [ngModel]="customername"
+                />
+              </div>
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_jobopentime">Jobopentime</label>
-          <div class="d-flex">
-            <input
-              id="field_jobopentime"
-              data-cy="jobopentime"
-              type="datetime-local"
-              class="form-control"
-              name="jobopentime"
-              formControlName="jobopentime"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div> -->
-
-            <div class="mb-3">
-              <label class="form-label" for="field_customername">Customername</label>
-              <input
-                type="text"
-                class="form-control"
-                name="customername"
-                id="field_customername"
-                data-cy="customername"
-                formControlName="customername"
-                [ngModel]="customername"
-              />
+              <div class="mb-3 col-5">
+                <label class="form-label" for="field_customertel">Customer Tel</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="customertel"
+                  id="field_customertel"
+                  data-cy="customertel"
+                  formControlName="customertel"
+                  [ngModel]="customerTel"
+                />
+              </div>
             </div>
 
+            <!-- Job Date -->
             <div class="mb-3">
-              <label class="form-label" for="field_customertel">Customer Tel</label>
-              <input
-                type="text"
-                class="form-control"
-                name="customertel"
-                id="field_customertel"
-                data-cy="customertel"
-                formControlName="customertel"
-                [ngModel]="customerTel"
-              />
-            </div>
-
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_customerid">Customerid</label>
-          <input
-            type="number"
-            class="form-control"
-            name="customerid"
-            id="field_customerid"
-            data-cy="customerid"
-            formControlName="customerid"
-          />
-        </div> -->
-
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_advisorfinalcheck">Advisorfinalcheck</label>
-          <input
-            type="checkbox"
-            class="form-check"
-            name="advisorfinalcheck"
-            id="field_advisorfinalcheck"
-            data-cy="advisorfinalcheck"
-            formControlName="advisorfinalcheck"
-          />
-        </div> -->
-
-            <div class="mb-3">
-              <label class="form-label" for="field_jobdate">Jobdate</label>
+              <label class="form-label" for="field_jobdate">Job Date</label>
               <div class="d-flex">
                 <input
                   id="field_jobdate"
@@ -178,97 +123,36 @@
               </div>
             </div>
 
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_iscompanyservice">Iscompanyservice</label>
-          <input
-            type="checkbox"
-            class="form-check"
-            name="iscompanyservice"
-            id="field_iscompanyservice"
-            data-cy="iscompanyservice"
-            formControlName="iscompanyservice"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_freeservicenumber">Freeservicenumber</label>
-          <input
-            type="text"
-            class="form-control"
-            name="freeservicenumber"
-            id="field_freeservicenumber"
-            data-cy="freeservicenumber"
-            formControlName="freeservicenumber"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_companyid">Companyid</label>
-          <input type="number" class="form-control" name="companyid" id="field_companyid" data-cy="companyid" formControlName="companyid" />
-        </div> -->
-
-            <div class="mb-3">
-              <label class="form-label" for="field_updatetocustomer">Call to Customer</label>
-              <input
-                type="checkbox"
-                class="form-check"
-                name="updatetocustomer"
-                id="field_updatetocustomer"
-                data-cy="updatetocustomer"
-                formControlName="updatetocustomer"
-              />
+            <!-- Checkboxes side by side -->
+            <div class="mb-4">
+              <div class="row">
+                <div class="col-6 d-flex align-items-center gap-2">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    name="updatetocustomer"
+                    id="field_updatetocustomer"
+                    data-cy="updatetocustomer"
+                    formControlName="updatetocustomer"
+                  />
+                  <label class="form-check-label mb-0" for="field_updatetocustomer">Call to Customer</label>
+                </div>
+                <div class="col-6 d-flex align-items-center gap-2">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    name="iswaiting"
+                    id="field_iswaiting"
+                    data-cy="iswaiting"
+                    formControlName="iswaiting"
+                  />
+                  <label class="form-check-label mb-0" for="field_iswaiting">Customer Is Waiting</label>
+                </div>
+              </div>
             </div>
-
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_nextgearoilmilage">Nextgearoilmilage</label>
-          <input
-            type="text"
-            class="form-control"
-            name="nextgearoilmilage"
-            id="field_nextgearoilmilage"
-            data-cy="nextgearoilmilage"
-            formControlName="nextgearoilmilage"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_isjobinvoiced">Isjobinvoiced</label>
-          <input
-            type="checkbox"
-            class="form-check"
-            name="isjobinvoiced"
-            id="field_isjobinvoiced"
-            data-cy="isjobinvoiced"
-            formControlName="isjobinvoiced"
-          />
-        </div> -->
-
-            <div class="mb-3">
-              <label class="form-label" for="field_iswaiting">Customer Is waiting</label>
-              <input
-                type="checkbox"
-                class="form-check"
-                name="iswaiting"
-                id="field_iswaiting"
-                data-cy="iswaiting"
-                formControlName="iswaiting"
-              />
-            </div>
-
-            <!-- <div class="mb-3">
-          <label class="form-label" for="field_iscustomercomment">Iscustomercomment</label>
-          <input
-            type="checkbox"
-            class="form-check"
-            name="iscustomercomment"
-            id="field_iscustomercomment"
-            data-cy="iscustomercomment"
-            formControlName="iscustomercomment"
-          />
-        </div> -->
           </div>
 
-          <div>
+          <div class="d-flex gap-2">
             <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
               <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
             </button>
