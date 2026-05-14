@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output, Input, inject, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormArray, FormGroup, FormControl, FormBuilder } from '@angular/forms';
 import SharedModule from 'app/shared/shared.module';
@@ -14,6 +14,8 @@ import {
 } from './sale-invoice-common-service-charge-form.service';
 import { ICommonserviceoption } from 'app/entities/commonserviceoption/commonserviceoption.model';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
+import { AutojobsaleinvoicecommonservicechargeService } from 'app/entities/autojobsaleinvoicecommonservicecharge/service/autojobsaleinvoicecommonservicecharge.service';
+import { NewAutojobsaleinvoicecommonservicecharge } from 'app/entities/autojobsaleinvoicecommonservicecharge/autojobsaleinvoicecommonservicecharge.model';
 
 @Component({
   standalone: true,
@@ -29,7 +31,10 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   protected saleInvoiceCommonServiceChargeService = inject(SaleInvoiceCommonServiceChargeService);
   protected saleInvoiceCommonServiceChargeFormService = inject(SaleInvoiceCommonServiceChargeFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected autojobsaleinvoicecommonservicechargeService = inject(AutojobsaleinvoicecommonservicechargeService);
   @Input() fetchedServicesCommon: any;
+  @Input() allowManual: boolean = true;
+  @Input() sourceInvoiceId: number | null = null;
   commonServiceOptions: ICommonserviceoption[] = [];
   @Output() totalUpdated = new EventEmitter<number>();
   searchTerm: string = '';
@@ -59,6 +64,7 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['fetchedServicesCommon'] && this.fetchedServicesCommon) {
+      this.serviceChargesArray.clear();
       // Loop through the fetchedItems array and add each item to the form array
       this.fetchedServicesCommon.forEach((item: any) => {
         this.addItemToFormArray(item);
@@ -79,6 +85,9 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
       mainId: [item.mainId ?? null],
       servicePrice: [item.servicePrice || item.sellingprice || 0],
       discount: [item.discount || 0],
+      sourceAutoJobLineId: [item.id ?? null],
+      sourceAutoJobInvoiceId: [item.sourceAutoJobInvoiceId ?? null],
+      sourceAutoJobLineNumber: [item.sourceAutoJobLineNumber ?? null],
     });
 
     // Add the new form group to the form array
@@ -255,10 +264,11 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     window.history.back();
   }
 
-  save(inid: number): void {
+  save(inid: number): Observable<any> {
     this.isSaving = true;
 
-    const serviceCharges = this.serviceChargesArray.value.map((line: any, index: number) => {
+    const serviceCharges = this.serviceChargesArray.controls.map((control, index) => {
+      const line = (control as FormGroup).getRawValue();
       const resolvedOption = this.resolveCommonServiceOption(line);
 
       return {
@@ -274,31 +284,68 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
     // Log each dummy's id to check its value
     console.log('Service Charge Dummies before saving:', serviceCharges);
 
-    const requests: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>[] = serviceCharges.map(
-      (dummy: ISaleInvoiceCommonServiceCharge | NewSaleInvoiceCommonServiceCharge) => {
-        console.log('Processing Dummy - ID:', dummy.id);
-        // If the charge doesn't have an ID, or if it belongs to a different invoice, create it as new
-        if (!dummy.id || dummy.invoiceId !== inid) {
-          return this.saleInvoiceCommonServiceChargeService.create({ ...dummy, id: null, invoiceId: inid });
-        } else {
-          // If it's an existing charge for THIS invoice, update it
-          return this.saleInvoiceCommonServiceChargeService.update(dummy);
-        }
-      },
-    );
+    const requests: Observable<any>[] = [];
 
-    forkJoin(requests)
-      .pipe(finalize(() => this.onSaveFinalize()))
-      .subscribe({
-        //   next: () => //this.onSaveSuccess(),
-        error: () => this.onSaveError(),
-      });
-  }
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<ISaleInvoiceCommonServiceCharge>>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      //  next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+    // Calculate next lineid for AutoJobs if we have a sourceInvoiceId
+    let nextAutoLineId = 1;
+    if (this.sourceInvoiceId) {
+      const existingLineIds = serviceCharges
+        .map((l: any) => Number(l.sourceAutoJobLineNumber))
+        .filter((lineId: number) => Number.isFinite(lineId) && lineId > 0);
+      if (existingLineIds.length > 0) {
+        nextAutoLineId = Math.max(...existingLineIds) + 1;
+      }
+    }
+
+    serviceCharges.forEach((dummy: any) => {
+      console.log('Processing Dummy - ID:', dummy.id);
+      // If the charge doesn't have an ID, or if it belongs to a different invoice, create it as new
+      if (!dummy.id || dummy.invoiceId !== inid) {
+        const saleInvoiceCommonServiceCharge = this.toSaleInvoiceCommonServiceChargePayload(dummy);
+        requests.push(this.saleInvoiceCommonServiceChargeService.create({ ...saleInvoiceCommonServiceCharge, id: null, invoiceId: inid }));
+
+        // ONLY save to AutoJobs if it's TRULY a new item added on this page
+        if (this.sourceInvoiceId && !dummy.id && !this.isSourceAutoJobLine(dummy)) {
+          const autoLine: NewAutojobsaleinvoicecommonservicecharge = {
+            id: null,
+            invoiceid: this.sourceInvoiceId,
+            lineid: nextAutoLineId++,
+            optionid: dummy.optionId,
+            mainid: dummy.mainId,
+            code: dummy.code,
+            name: dummy.name,
+            description: dummy.description,
+            value: dummy.value,
+            discount: dummy.discount,
+            serviceprice: dummy.servicePrice,
+          };
+          requests.push(this.autojobsaleinvoicecommonservicechargeService.create(autoLine));
+        }
+      } else {
+        // If it's an existing charge for THIS invoice, update it
+        requests.push(
+          this.saleInvoiceCommonServiceChargeService.update(
+            this.toSaleInvoiceCommonServiceChargePayload(dummy) as ISaleInvoiceCommonServiceCharge,
+          ),
+        );
+      }
     });
+
+    if (requests.length > 0) {
+      return forkJoin(requests).pipe(finalize(() => this.onSaveFinalize()));
+    } else {
+      this.onSaveFinalize();
+      return of(null);
+    }
+  }
+
+  private isSourceAutoJobLine(line: any): boolean {
+    return Number(line.sourceAutoJobLineId) > 0 || Number(line.sourceAutoJobInvoiceId) > 0 || Number(line.sourceAutoJobLineNumber) > 0;
+  }
+
+  private toSaleInvoiceCommonServiceChargePayload(line: any): ISaleInvoiceCommonServiceCharge | NewSaleInvoiceCommonServiceCharge {
+    const { sourceAutoJobLineId, sourceAutoJobInvoiceId, sourceAutoJobLineNumber, isCustomerService, ...payload } = line;
+    return payload as ISaleInvoiceCommonServiceCharge | NewSaleInvoiceCommonServiceCharge;
   }
   addServiceChargeDummy(): void {
     // Push a new form group into the serviceChargeDummies array

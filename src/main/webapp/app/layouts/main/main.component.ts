@@ -43,7 +43,7 @@ export default class MainComponent implements OnInit {
 
   isSidebarHidden(): boolean {
     const url = this.router.url;
-    if (url === '/login') {
+    if (url === '/login' || url.startsWith('/printinvoice')) {
       return true;
     }
     const isHome = url === '/' || url === '' || url === '/#';

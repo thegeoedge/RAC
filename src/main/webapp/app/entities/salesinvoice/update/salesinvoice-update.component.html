@@ -430,12 +430,16 @@
                 <jhi-sales-invoice-service-charge-line-update
                   (totalUpdated)="receiveTotal($event, 'child2')"
                   [fetchedServices]="fetchedServices"
+                  [sourceInvoiceId]="sourceInvoiceId"
+                  [allowManual]="false"
                 ></jhi-sales-invoice-service-charge-line-update>
               </div>
               <div class="tab-pane fade" id="common-charges" role="tabpanel" aria-labelledby="common-charges-tab">
                 <jhi-sale-invoice-common-service-charge-update
                   [fetchedServicesCommon]="fetchedServicesCommon"
+                  [sourceInvoiceId]="sourceInvoiceId"
                   (totalUpdated)="receiveTotal($event, 'child3')"
+                  [allowManual]="false"
                 ></jhi-sale-invoice-common-service-charge-update>
               </div>
             </div>

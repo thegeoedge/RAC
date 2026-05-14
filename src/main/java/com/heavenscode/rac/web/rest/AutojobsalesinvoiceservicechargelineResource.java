@@ -199,10 +199,13 @@ public class AutojobsalesinvoiceservicechargelineResource {
         LOG.debug("REST request to get Autojobsalesinvoiceservicechargeline by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
         columns.put("id", "id");
+        columns.put("lineid", "lineid");
         columns.put("optionid", "optionid");
         columns.put("servicename", "servicename");
         columns.put("servicediscription", "servicediscription");
         columns.put("value", "value");
+        columns.put("discount", "discount");
+        columns.put("serviceprice", "serviceprice");
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId("autojobsalesinvoiceservicechargeline", "invoiceid", columns, invoiceId)
         );

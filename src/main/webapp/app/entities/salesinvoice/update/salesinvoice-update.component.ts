@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { debounceTime } from 'rxjs/operators';
@@ -71,6 +71,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected salesinvoiceService = inject(SalesinvoiceService);
   protected salesinvoiceFormService = inject(SalesinvoiceFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected router = inject(Router);
   protected salesInvoiceLinesService = inject(SalesInvoiceLinesService);
   protected autocarejobService = inject(AutocarejobService);
   protected accountService = inject(AccountService);
@@ -119,6 +120,16 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   newcode: string = '';
   sourceInvoiceId: number | null = null;
+
+  /** Returns current local time offset so it serializes as local time instead of UTC */
+  private localNow(): dayjs.Dayjs {
+    return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+  }
+
+  /** Offsets a parsed date so it serializes as local time instead of UTC */
+  private localDate(val: any): dayjs.Dayjs {
+    return val ? dayjs(val).add(-new Date().getTimezoneOffset(), 'minute') : this.localNow();
+  }
 
   ngOnInit(): void {
     console.log('starttt');
@@ -335,12 +346,16 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   fetchedServicesCommon: {
     id?: number;
+    sourceAutoJobInvoiceId?: number;
+    sourceAutoJobLineNumber?: number;
     itemcode: string;
     itemname: string;
     sellingprice: number;
     optionId?: number;
     mainId?: number;
     code?: string;
+    discount?: number;
+    servicePrice?: number;
   }[] = [];
 
   private toValidId(value: unknown): number | null {
@@ -354,27 +369,64 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     this.fetchedServicesCommon = [];
   }
 
+  private normalizeKeyPart(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase();
+  }
+
+  private normalizeMoneyKeyPart(value: unknown): string {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue.toFixed(2) : '0.00';
+  }
+
+  private uniqueByKey<T>(items: T[], keySelector: (item: T) => string): T[] {
+    const seen = new Set<string>();
+    return items.filter(item => {
+      const key = keySelector(item);
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  }
+
   private servicecommonlines(ids: number[]): void {
     if (!ids || ids.length === 0) return;
     forkJoin(ids.map(id => this.salesInvoiceService.fetchServiceCommon(id))).subscribe(
       responses => {
         this.fetchedServicesCommon = [];
-        responses.forEach(res => {
+        responses.forEach((res, index) => {
+          const sourceAutoJobInvoiceId = ids[index];
           if (res.body && res.body.length > 0) {
             res.body.forEach((item: any) => {
               this.fetchedServicesCommon.push({
                 id: item.id,
+                sourceAutoJobInvoiceId,
+                sourceAutoJobLineNumber: item.lineid,
                 itemcode: item.code ?? '',
                 itemname: item.name ?? '',
                 sellingprice: item.value ?? 0,
                 optionId: item.optionid,
                 mainId: item.mainid,
                 code: item.code,
+                discount: item.discount,
+                servicePrice: item.serviceprice,
               });
             });
           }
         });
-        this.fetchedServicesCommon = [...this.fetchedServicesCommon];
+        this.fetchedServicesCommon = this.uniqueByKey(this.fetchedServicesCommon, item =>
+          [
+            item.sourceAutoJobInvoiceId,
+            item.optionId,
+            item.mainId,
+            this.normalizeKeyPart(item.itemcode || item.code),
+            this.normalizeKeyPart(item.itemname),
+            this.normalizeMoneyKeyPart(item.sellingprice),
+          ].join('|'),
+        );
         console.log('Fetched Itemssssscommon:', this.fetchedServicesCommon);
       },
       error => {
@@ -384,6 +436,9 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   }
 
   fetchedServices: {
+    id?: number;
+    sourceAutoJobInvoiceId?: number;
+    sourceAutoJobLineNumber?: number;
     itemname: string;
     sellingprice: number;
     optionId?: number;
@@ -397,10 +452,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     forkJoin(ids.map(id => this.salesInvoiceService.fetchService(id))).subscribe(
       responses => {
         this.fetchedServices = [];
-        responses.forEach(res => {
+        responses.forEach((res, index) => {
+          const sourceAutoJobInvoiceId = ids[index];
           if (res.body && res.body.length > 0) {
             res.body.forEach((item: any) => {
               this.fetchedServices.push({
+                id: item.id,
+                sourceAutoJobInvoiceId,
+                sourceAutoJobLineNumber: item.lineid,
                 itemname: item.servicename ?? '',
                 sellingprice: item.value ?? 0,
                 optionId: item.optionid,
@@ -411,7 +470,15 @@ export class SalesinvoiceUpdateComponent implements OnInit {
             });
           }
         });
-        this.fetchedServices = [...this.fetchedServices];
+        this.fetchedServices = this.uniqueByKey(this.fetchedServices, item =>
+          [
+            item.sourceAutoJobInvoiceId,
+            item.optionId,
+            this.normalizeKeyPart(item.itemname),
+            this.normalizeKeyPart(item.serviceDescription),
+            this.normalizeMoneyKeyPart(item.sellingprice),
+          ].join('|'),
+        );
         console.log('Fetched Itemssssssssssssssssss:', this.fetchedServices);
       },
       error => {
@@ -498,12 +565,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       const transformedData: any = {
         id: null as unknown as number,
         code: (salesInvoiceDummy as any).code || undefined,
-        orderid:
-          (salesInvoiceDummy as any).orderid ??
-          (salesInvoiceDummy as any).orderID ??
-          (salesInvoiceDummy as any).orderId ??
-          salesInvoiceDummy.id ??
-          null,
+        orderid: 0,
         customerid:
           (salesInvoiceDummy as any).customerid ?? (salesInvoiceDummy as any).customerID ?? (salesInvoiceDummy as any).customerId ?? null,
         customername: (salesInvoiceDummy as any).customername,
@@ -870,60 +932,69 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
     this.calculateDiscount();
     this.isSaving = true;
-    const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
 
-    // Force orderid to have a value, defaulting to sourceInvoiceId or 0
-    salesinvoice.orderid = salesinvoice.orderid || this.sourceInvoiceId || 0;
+    this.accountService.identity().subscribe(account => {
+      const now = this.localNow();
+      const salesinvoice = this.salesinvoiceFormService.getSalesinvoice(this.editForm);
 
-    // Ensure totaltax defaults to 0 if not set
-    salesinvoice.totaltax = salesinvoice.totaltax ?? 0;
-
-    // Redundant mappings to cover potential backend naming inconsistencies
-    (salesinvoice as any).orderID = salesinvoice.orderid;
-    (salesinvoice as any).orderId = salesinvoice.orderid;
-    (salesinvoice as any).TotalTax = salesinvoice.totaltax;
-    (salesinvoice as any).totalTax = salesinvoice.totaltax;
-
-    if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
-      const nettotal = salesinvoice.nettotal ?? 0;
-      const paidamount = salesinvoice.paidamount ?? 0;
-      if (paidamount > nettotal) {
-        salesinvoice.paidamount = nettotal;
-      }
-    }
-
-    if (salesinvoice.id !== null) {
-      this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
-    } else {
-      salesinvoice.locationid = 0;
-      const now = dayjs();
+      // Apply shifted current time to all requested date fields
       salesinvoice.invoicedate = now;
-      salesinvoice.createddate = now;
       salesinvoice.delieverydate = now;
-      salesinvoice.isactive = true;
-      salesinvoice.nbtamount = 0;
-      salesinvoice.vatamount = 0;
-      salesinvoice.invcanceldate = null;
-      salesinvoice.advancepayment = 0;
+      salesinvoice.lmd = now;
+      if (account) {
+        salesinvoice.lmu = account.id;
+      }
 
-      const nettotal = salesinvoice.nettotal ?? 0;
-      const paidamount = salesinvoice.paidamount ?? 0;
-      const pendingamount = nettotal - paidamount;
+      // Force orderid to be 0 as requested
+      salesinvoice.orderid = 0;
+
+      // Ensure totaltax defaults to 0 if not set
+      salesinvoice.totaltax = salesinvoice.totaltax ?? 0;
+
+      // Redundant mappings to cover potential backend naming inconsistencies
+      (salesinvoice as any).orderID = salesinvoice.orderid;
+      (salesinvoice as any).orderId = salesinvoice.orderid;
+      (salesinvoice as any).TotalTax = salesinvoice.totaltax;
+      (salesinvoice as any).totalTax = salesinvoice.totaltax;
 
       if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
-        salesinvoice.pendingamount = 0;
-        salesinvoice.amountowing = 0;
-      } else {
-        salesinvoice.pendingamount = pendingamount;
-        salesinvoice.amountowing = pendingamount;
+        const nettotal = salesinvoice.nettotal ?? 0;
+        const paidamount = salesinvoice.paidamount ?? 0;
+        if (paidamount > nettotal) {
+          salesinvoice.paidamount = nettotal;
+        }
       }
 
-      this.accountService.identity().subscribe(account => {
+      if (salesinvoice.id !== null) {
+        // Update
+        this.subscribeToSaveResponse(this.salesinvoiceService.update(salesinvoice));
+      } else {
+        // Create
+        salesinvoice.createddate = now;
+        salesinvoice.locationid = 0;
+        salesinvoice.isactive = true;
+        salesinvoice.nbtamount = 0;
+        salesinvoice.vatamount = 0;
+        salesinvoice.invcanceldate = null;
+        salesinvoice.advancepayment = 0;
+
+        const nettotal = salesinvoice.nettotal ?? 0;
+        const paidamount = salesinvoice.paidamount ?? 0;
+        const pendingamount = nettotal - paidamount;
+
+        if (salesinvoice.paymenttype?.toLowerCase() === 'cash') {
+          salesinvoice.pendingamount = 0;
+          salesinvoice.amountowing = 0;
+        } else {
+          salesinvoice.pendingamount = pendingamount;
+          salesinvoice.amountowing = pendingamount;
+        }
+
         if (account) {
           salesinvoice.createdbyid = account.id;
           salesinvoice.createdbyname = account.firstName;
-          salesinvoice.lmu = account.id;
         }
+
         this.subscribeToSaveResponse(this.salesinvoiceService.create(salesinvoice));
 
         // Update Autocarejob status
@@ -931,8 +1002,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         if (jobId) {
           this.autocarejobService.partialUpdate({ id: jobId, isjobclose: true, isjobinvoiced: true }).subscribe();
         }
-      });
-    }
+      }
+    });
   }
 
   incrementId(id: string): string {
@@ -946,42 +1017,54 @@ export class SalesinvoiceUpdateComponent implements OnInit {
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISalesinvoice>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: response => {
-        if (response.status === 201) {
-          if (response.body) {
-            console.log('Sales invoice created:', response.body.id);
-            console.log('Full response body on creation:', response.body); // Log full response body on creation
+        if (response.status === 201 || response.status === 200) {
+          const invoiceId = response.body?.id;
+          if (invoiceId) {
+            console.log(`Sales invoice ${response.status === 201 ? 'created' : 'updated'}:`, invoiceId);
 
-            const sharedSubId = window.crypto.randomUUID
-              ? window.crypto.randomUUID()
-              : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                  const r = (Math.random() * 16) | 0,
-                    v = c == 'x' ? r : (r & 0x3) | 0x8;
-                  return v.toString(16);
-                });
-            this.salesInvoiceLinesService.setSubId(sharedSubId);
-            this.salesInvoiceLinesUpdateComponent.transactionmodule(response.body.id);
+            const childSaveObservables: Observable<any>[] = [];
 
-            // Call save from the child components if available
+            if (response.status === 201) {
+              const sharedSubId = window.crypto.randomUUID
+                ? window.crypto.randomUUID()
+                : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                    const r = (Math.random() * 16) | 0,
+                      v = c == 'x' ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                  });
+              this.salesInvoiceLinesService.setSubId(sharedSubId);
+              this.salesInvoiceLinesUpdateComponent.transactionmodule(invoiceId);
+            }
+
+            // Collect save observables from child components
             if (this.salesInvoiceLinesUpdateComponent) {
-              this.salesInvoiceLinesUpdateComponent.save(response.body.id); // Call save from the child component
+              childSaveObservables.push(this.salesInvoiceLinesUpdateComponent.save(invoiceId));
             }
             if (this.SalesInvoiceServiceChargeLinesUpdateComponent) {
-              this.SalesInvoiceServiceChargeLinesUpdateComponent.save(response.body.id); // Call save from the child component
+              childSaveObservables.push(this.SalesInvoiceServiceChargeLinesUpdateComponent.save(invoiceId));
             }
             if (this.SaleInvoiceCommonServiceChargesUpdateComponent) {
-              this.SaleInvoiceCommonServiceChargesUpdateComponent.save(response.body.id); // Call save from the child component
+              childSaveObservables.push(this.SaleInvoiceCommonServiceChargesUpdateComponent.save(invoiceId));
             }
-            // alert("sucess?")
+
+            if (childSaveObservables.length > 0) {
+              forkJoin(childSaveObservables).subscribe({
+                next: () => {
+                  console.log('All child components saved successfully.');
+                  this.router.navigate(['/printinvoice'], { queryParams: { id: invoiceId } });
+                },
+                error: err => {
+                  console.error('Error saving child components:', err);
+                },
+              });
+            } else {
+              this.router.navigate(['/printinvoice'], { queryParams: { id: invoiceId } });
+            }
           }
-        } else if (response.status === 200) {
-          console.log('Sales invoice updated:', response.body);
-          console.log('Full response body on update:', response.body); // Log full response body on update
         }
-        // Uncomment if you have an onSaveSuccess method for successful operations
-        // this.onSaveSuccess();
       },
       error: err => {
-        console.error('Error Response:', err); // Log the error response
+        console.error('Error Response:', err);
         this.onSaveError();
       },
     });

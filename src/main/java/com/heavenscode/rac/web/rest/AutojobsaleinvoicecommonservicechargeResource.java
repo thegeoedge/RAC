@@ -204,10 +204,15 @@ public class AutojobsaleinvoicecommonservicechargeResource {
         LOG.debug("REST request to get Autojobsaleinvoicecommonservicecharge by invoiceId : {}", invoiceId);
         LinkedHashMap<String, String> columns = new LinkedHashMap<>();
         columns.put("id", "id");
+        columns.put("lineid", "lineid");
         columns.put("optionid", "optionid");
+        columns.put("mainid", "mainid");
+        columns.put("code", "code");
         columns.put("name", "name");
         columns.put("description", "description");
         columns.put("value", "value");
+        columns.put("discount", "discount");
+        columns.put("serviceprice", "serviceprice");
         return ResponseEntity.ok(
             legacyInvoiceChildrenReadService.findByInvoiceId("autojobsaleinvoicecommonservicecharge", "invoiceid", columns, invoiceId)
         );

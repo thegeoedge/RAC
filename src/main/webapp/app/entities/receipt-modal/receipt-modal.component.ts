@@ -781,10 +781,7 @@ export class ReceiptModalComponent implements OnChanges {
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
 
-    // Brief delay to allow DOM updates before navigation
-    setTimeout(() => {
-      this.router.navigate(['/autocarejob/autocareopenjob']);
-    }, 300);
+    // No navigation here anymore, letting SalesinvoiceUpdateComponent handle it
   }
 
   protected onSaveError(): void {

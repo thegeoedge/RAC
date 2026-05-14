@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Input, Output, inject, SimpleChanges } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 
@@ -17,6 +17,8 @@ import {
 import { IVehicletype } from 'app/entities/vehicletype/vehicletype.model';
 import { VehicletypeService } from 'app/entities/vehicletype/service/vehicletype.service';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
+import { AutojobsalesinvoiceservicechargelineService } from 'app/entities/autojobsalesinvoiceservicechargeline/service/autojobsalesinvoiceservicechargeline.service';
+import { NewAutojobsalesinvoiceservicechargeline } from 'app/entities/autojobsalesinvoiceservicechargeline/autojobsalesinvoiceservicechargeline.model';
 
 @Component({
   standalone: true,
@@ -36,7 +38,10 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
 
   @Output() totalUpdated = new EventEmitter<number>(); // Emit total to parent
   protected vehicletypesService = inject(VehicletypeService);
+  protected autojobsalesinvoiceservicechargelineService = inject(AutojobsalesinvoiceservicechargelineService);
   @Input() fetchedServices: any;
+  @Input() allowManual: boolean = true;
+  @Input() sourceInvoiceId: number | null = null;
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: FormGroup = new FormGroup({
     serviceChargeLines: new FormArray([]),
@@ -64,6 +69,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['fetchedServices'] && this.fetchedServices) {
+      this.serviceChargeLinesArray.clear();
       // Loop through the fetchedItems array and add each item to the form array
       this.fetchedServices.forEach((item: any) => {
         this.addItemToFormArray(item);
@@ -74,6 +80,7 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
   addItemToFormArray(item: any): void {
     // Create a new form group for the item
     const newItem = this.fb.group({
+      id: [null],
       serviceName: [item.itemname],
       value: [item.sellingprice],
       isCustomerService: [false],
@@ -81,6 +88,9 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
       serviceDescription: [item.serviceDescription || ''],
       discount: [item.discount || 0],
       servicePrice: [item.servicePrice || item.sellingprice || 0],
+      sourceAutoJobLineId: [item.id ?? null],
+      sourceAutoJobInvoiceId: [item.sourceAutoJobInvoiceId ?? null],
+      sourceAutoJobLineNumber: [item.sourceAutoJobLineNumber ?? null],
     });
 
     // Add the new form group to the form array
@@ -320,41 +330,89 @@ export class SalesInvoiceServiceChargeLineUpdateComponent implements OnInit {
     }
   }
 
-  save(inid: number): void {
+  save(inid: number): Observable<any> {
     this.isSaving = true;
 
-    const serviceChargeLines = this.serviceChargeLinesArray.value.map((line: any, index: number) => ({
-      ...line,
-      invoiceId: inid, // Assign invoice ID
-      lineId: index + 1, // Ensure unique line ID for this invoice
-      optionId: line.optionId,
-    }));
+    const serviceChargeLines = this.serviceChargeLinesArray.controls.map((control, index) => {
+      const line = (control as FormGroup).getRawValue();
+      return {
+        ...line,
+        invoiceId: inid, // Assign invoice ID
+        lineId: index + 1, // Ensure unique line ID for this invoice
+        optionId: line.optionId,
+      };
+    });
 
     console.log('Modified sales invoice lines:', serviceChargeLines);
 
-    const requests: Observable<HttpResponse<ISalesInvoiceServiceChargeLine>>[] = serviceChargeLines.map(
-      (line: ISalesInvoiceServiceChargeLine | NewSalesInvoiceServiceChargeLine) => {
-        console.log('Processing line:', line);
-        // If the line doesn't have an ID, or if it belongs to a different invoice, create it as new
-        if (!line.id || line.invoiceId !== inid) {
-          return this.salesInvoiceServiceChargeLineService.create({
-            ...line,
+    const requests: Observable<any>[] = [];
+
+    // Calculate next lineid for AutoJobs if we have a sourceInvoiceId
+    let nextAutoLineId = 1;
+    if (this.sourceInvoiceId) {
+      const existingLineIds = serviceChargeLines
+        .map((l: any) => Number(l.sourceAutoJobLineNumber))
+        .filter((lineId: number) => Number.isFinite(lineId) && lineId > 0);
+      if (existingLineIds.length > 0) {
+        nextAutoLineId = Math.max(...existingLineIds) + 1;
+      }
+    }
+
+    serviceChargeLines.forEach((line: any) => {
+      console.log('Processing line:', line);
+      // If the line doesn't have an ID, or if it belongs to a different invoice, create it as new
+      if (!line.id || line.invoiceId !== inid) {
+        const salesInvoiceLine = this.toSalesInvoiceServiceChargeLinePayload(line);
+        requests.push(
+          this.salesInvoiceServiceChargeLineService.create({
+            ...salesInvoiceLine,
             id: null,
             invoiceId: inid,
-          } as NewSalesInvoiceServiceChargeLine);
-        } else {
-          // If it's an existing line for THIS invoice, update it
-          return this.salesInvoiceServiceChargeLineService.update(line);
-        }
-      },
-    );
+          } as NewSalesInvoiceServiceChargeLine),
+        );
 
-    forkJoin(requests)
-      .pipe(finalize(() => this.onSaveFinalize()))
-      .subscribe({
-        next: () => this.onSaveSuccess(),
-        error: () => this.onSaveError(),
-      });
+        // ONLY save to AutoJobs if it's TRULY a new item added on this page
+        if (this.sourceInvoiceId && !line.id && !this.isSourceAutoJobLine(line)) {
+          const autoLine: NewAutojobsalesinvoiceservicechargeline = {
+            id: null,
+            invoiceid: this.sourceInvoiceId,
+            lineid: nextAutoLineId++,
+            optionid: line.optionId,
+            servicename: line.serviceName,
+            servicediscription: line.serviceDescription,
+            value: line.value,
+            addedbyid: line.addedById,
+            iscustomersrvice: line.isCustomerService,
+            discount: line.discount,
+            serviceprice: line.servicePrice,
+          };
+          requests.push(this.autojobsalesinvoiceservicechargelineService.create(autoLine));
+        }
+      } else {
+        // If it's an existing line for THIS invoice, update it
+        requests.push(
+          this.salesInvoiceServiceChargeLineService.update(
+            this.toSalesInvoiceServiceChargeLinePayload(line) as ISalesInvoiceServiceChargeLine,
+          ),
+        );
+      }
+    });
+
+    if (requests.length > 0) {
+      return forkJoin(requests).pipe(finalize(() => this.onSaveFinalize()));
+    } else {
+      this.onSaveFinalize();
+      return of(null);
+    }
+  }
+
+  private isSourceAutoJobLine(line: any): boolean {
+    return Number(line.sourceAutoJobLineId) > 0 || Number(line.sourceAutoJobInvoiceId) > 0 || Number(line.sourceAutoJobLineNumber) > 0;
+  }
+
+  private toSalesInvoiceServiceChargeLinePayload(line: any): ISalesInvoiceServiceChargeLine | NewSalesInvoiceServiceChargeLine {
+    const { sourceAutoJobLineId, sourceAutoJobInvoiceId, sourceAutoJobLineNumber, ...payload } = line;
+    return payload as ISalesInvoiceServiceChargeLine | NewSalesInvoiceServiceChargeLine;
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISalesInvoiceServiceChargeLine>>): void {

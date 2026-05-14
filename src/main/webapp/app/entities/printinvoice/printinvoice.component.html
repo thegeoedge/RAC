@@ -1,115 +1,237 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  /* Global overrides for the print page */
+  :host {
+    display: block;
+    background: white;
+  }
 
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        font-size: 12px;
-      }
-      .invoice-container {
-        width: 80%;
-        margin: auto;
-        border: 1px solid #ffffff;
-        padding: 20px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th,
-      td {
-        border: 1px solid rgb(255, 255, 255);
-        padding: 8px;
-        text-align: left;
-      }
-      .header-table td {
-        border: none;
-      }
-      .total-section {
-        margin-top: 20px;
-        text-align: right;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="invoice-container">
-      <table class="header-table">
-        <tr>
-          <td><strong *ngIf="false">Customer Name & Address:</strong> NANNIYAVA</td>
-          <td><strong *ngIf="false">Invoice No:</strong> STL-60176</td>
-        </tr>
-        <tr>
-          <td><strong *ngIf="false">Vehicle No:</strong> 20-</td>
-          <td><strong *ngIf="false">Invoice Type:</strong> Cash</td>
-        </tr>
-        <tr>
-          <td><strong *ngIf="false">Current Service:</strong> 31/03/2021</td>
-          <td><strong *ngIf="false">Next Service:</strong> 41465</td>
-        </tr>
-      </table>
+  * {
+    font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 8.5pt !important;
+    font-weight: bold !important; /* Make all content bold */
+    color: #000 !important;
+    box-sizing: border-box;
+  }
 
-      <table>
-        <tr *ngIf="false">
-          <th>Description</th>
-          <th>Discount</th>
-          <th>Qty</th>
-          <th>Unit Price</th>
-          <th>Total Amount</th>
-        </tr>
-        <tr>
-          <td>SAKURA OIL FILTER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>550.00</td>
-          <td>550.00</td>
-        </tr>
-        <tr>
-          <td>WURTH WINDSCREEN CLEANER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>190.00</td>
-          <td>190.00</td>
-        </tr>
-        <tr>
-          <td>AC FILTER</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>1900.00</td>
-          <td>1900.00</td>
-        </tr>
-        <tr>
-          <td>BOSCH WIPER BLADE</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>1900.00</td>
-          <td>1900.00</td>
-        </tr>
-        <tr>
-          <td>FULL SERVICE CHARGE</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>3600.00</td>
-          <td>3600.00</td>
-        </tr>
-        <tr>
-          <td>PLASTIC CARE TREATMENT</td>
-          <td>0.00</td>
-          <td>1.00</td>
-          <td>190.00</td>
-          <td>190.00</td>
-        </tr>
-      </table>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    line-height: 1.1;
+  }
 
-      <div class="total-section">
-        <p><strong>Sub Total:</strong> 9075.00</p>
-        <p><strong>Discount:</strong> 0.00</p>
-        <p><strong>Net Total:</strong> 9075.00</p>
-      </div>
+  .invoice-container {
+    width: 612pt; /* 8.5 inches */
+    margin: auto;
+    padding-top: 60pt; /* 1200 dxa */
+    padding-bottom: 14pt; /* 280 dxa */
+    padding-left: 18pt; /* 360 dxa */
+    padding-right: 36pt; /* 720 dxa */
+  }
+
+  /* Header Table Alignment */
+  .header-table {
+    display: flex;
+    flex-direction: column;
+    margin-left: 9.65pt; /* 193 dxa */
+    margin-bottom: 6.3pt; /* 126 dxa */
+  }
+
+  .header-row {
+    display: flex;
+    height: 15pt;
+  }
+
+  /* Header Columns (Exact pt from dxa) */
+  .h-col-1 {
+    width: 166.6pt;
+    padding-left: 2.5pt;
+    text-align: left;
+  }
+  .h-col-2 {
+    width: 169.65pt;
+    padding-right: 42.1pt;
+    text-align: left;
+  }
+  .h-col-3 {
+    width: 101.65pt;
+    padding-left: 3.5pt;
+    text-align: center;
+  }
+  .h-col-4 {
+    width: 80.85pt;
+    padding-left: 35.45pt;
+    text-align: left;
+  }
+
+  /* Lines Table Alignment */
+  .lines-table {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10.5pt; /* 210 dxa */
+  }
+
+  .line-row {
+    display: flex;
+    min-height: 13.5pt; /* Average line height from Word */
+    align-items: center;
+  }
+
+  /* Line Columns (Exact pt from dxa) */
+  .l-col-1 {
+    width: 31.1pt;
+    padding-left: 2.5pt;
+    text-align: left;
+  }
+  .l-col-2 {
+    width: 183.25pt;
+    padding-left: 10.65pt;
+    text-align: left;
+  }
+  .l-col-3 {
+    width: 79.45pt;
+    padding-right: 6pt;
+    text-align: right;
+  }
+  .l-col-4 {
+    width: 54pt;
+    padding-left: 6.25pt;
+    text-align: left;
+  }
+  .l-col-5 {
+    width: 107.65pt;
+    padding-right: 41.65pt;
+    text-align: right;
+  }
+  .l-col-6 {
+    width: 78.05pt;
+    padding-right: 2.2pt;
+    text-align: right;
+  }
+
+  /* 39-line spacing gap (at 10pt font standard spacing) */
+  .spacer-gap {
+    height: 420pt; /* Adjusted for visual match */
+    width: 100%;
+  }
+
+  /* Totals Table Alignment */
+  .totals-table {
+    display: flex;
+    flex-direction: column;
+    margin-left: 356.05pt; /* 7121 dxa */
+    margin-top: 7pt; /* 140 dxa */
+  }
+
+  .total-row {
+    display: flex;
+    height: 15pt;
+  }
+
+  .t-col-label {
+    width: 103.65pt;
+    padding-right: 41.75pt;
+    text-align: left;
+  }
+  .t-col-value {
+    width: 78.05pt;
+    padding-right: 2.35pt;
+    text-align: right;
+  }
+
+  @media print {
+    @page {
+      size: letter;
+      margin: 0;
+    }
+    body {
+      margin: 0 !important;
+    }
+    jhi-sidebar,
+    jhi-footer,
+    .sidebar,
+    .content-container jhi-footer {
+      display: none !important;
+    }
+    .jh-card {
+      padding: 0 !important;
+      border: none !important;
+    }
+  }
+</style>
+
+<div class="invoice-container" *ngIf="salesInvoice">
+  <!-- Header Section -->
+  <div class="header-table">
+    <div class="header-row">
+      <div class="h-col-1">{{ salesInvoice.customername }}</div>
+      <div class="h-col-2">{{ salesInvoice.vehicleno }}</div>
+      <div class="h-col-3">{{ salesInvoice.autocarejobid }}</div>
+      <div class="h-col-4">{{ salesInvoice.invoicedate | date: 'dd/MM/yyyy' }}</div>
     </div>
-  </body>
-</html>
+    <div class="header-row" style="margin-top: 10pt">
+      <div class="h-col-1"></div>
+      <div class="h-col-2">{{ salesInvoice.code }}</div>
+      <div class="h-col-3">{{ salesInvoice.orderid || salesInvoice.quoteid }}</div>
+      <div class="h-col-4">{{ salesInvoice.paymenttype }}</div>
+    </div>
+  </div>
+
+  <!-- Lines Section -->
+  <div class="lines-table">
+    <!-- Items -->
+    <div class="line-row" *ngFor="let line of invoiceLines">
+      <div class="l-col-1">{{ line.itemcode || line.itemid || line.id }}</div>
+      <div class="l-col-2">{{ line.itemname }}</div>
+      <div class="l-col-3">{{ line.discount | number: '1.2-2' }}</div>
+      <div class="l-col-4">{{ line.quantity | number: '1.2-2' }}</div>
+      <div class="l-col-5">{{ line.sellingprice | number: '1.2-2' }}</div>
+      <div class="l-col-6">{{ line.linetotal || line.quantity * line.sellingprice - line.discount | number: '1.2-2' }}</div>
+    </div>
+    <!-- Services -->
+    <div class="line-row" *ngFor="let line of serviceLines">
+      <div class="l-col-1">{{ line.serviceCode || line.code || line.optionId || line.id || 'S' }}</div>
+      <div class="l-col-2">{{ line.serviceName }}</div>
+      <div class="l-col-3">{{ line.discount | number: '1.2-2' }}</div>
+      <div class="l-col-4">1.00</div>
+      <div class="l-col-5">{{ line.servicePrice || line.value | number: '1.2-2' }}</div>
+      <div class="l-col-6">{{ line.value | number: '1.2-2' }}</div>
+    </div>
+    <!-- Common Services -->
+    <div class="line-row" *ngFor="let line of commonServiceLines">
+      <div class="l-col-1">{{ line.code || line.optionId || line.id || 'C' }}</div>
+      <div class="l-col-2">{{ line.name }}</div>
+      <div class="l-col-3">{{ line.discount | number: '1.2-2' }}</div>
+      <div class="l-col-4">1.00</div>
+      <div class="l-col-5">{{ line.servicePrice || line.value | number: '1.2-2' }}</div>
+      <div class="l-col-6">{{ line.value | number: '1.2-2' }}</div>
+    </div>
+  </div>
+
+  <!-- 39-line spacer -->
+  <div class="spacer-gap"></div>
+
+  <!-- Totals Section -->
+  <div class="totals-table">
+    <div class="total-row">
+      <div class="t-col-label">Sub Total</div>
+      <div class="t-col-value">{{ salesInvoice.subtotal | number: '1.2-2' }}</div>
+    </div>
+    <div class="total-row">
+      <div class="t-col-label">Discount</div>
+      <div class="t-col-value">{{ salesInvoice.totaldiscount | number: '1.2-2' }}</div>
+    </div>
+    <div class="total-row">
+      <div class="t-col-label">Net Total</div>
+      <div class="t-col-value">{{ salesInvoice.nettotal | number: '1.2-2' }}</div>
+    </div>
+    <div class="total-row">
+      <div class="t-col-label">Paid Amount</div>
+      <div class="t-col-value">{{ salesInvoice.paidamount | number: '1.2-2' }}</div>
+    </div>
+    <div class="total-row">
+      <div class="t-col-label">Balance Amount</div>
+      <div class="t-col-value">{{ salesInvoice.nettotal - (salesInvoice.paidamount || 0) | number: '1.2-2' }}</div>
+    </div>
+  </div>
+</div>

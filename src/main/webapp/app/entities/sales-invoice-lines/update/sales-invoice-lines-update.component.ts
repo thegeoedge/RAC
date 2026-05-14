@@ -339,25 +339,25 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     window.history.back();
   }
 
-  save(inid: number): void {
+  save(inid: number): Observable<any> {
     this.isSaving = true;
 
     // Ensure the form is initialized properly
     if (!this.editForm) {
       console.error('Form is not initialized');
-      return; // Exit if the form is not initialized
+      return of(null); // Return empty observable if the form is not initialized
     }
 
     // Ensure the form is a FormGroup and check if 'salesInvoiceLines' is a FormArray
     if (!(this.editForm.get('salesInvoiceLines') instanceof FormArray)) {
       console.error('Form is not an instance of FormArray');
-      return; // Exit if salesInvoiceLines is not a FormArray
+      return of(null); // Return empty observable if salesInvoiceLines is not a FormArray
     }
 
     // Check if the form is valid
     if (!this.editForm.valid) {
       console.error('Form is invalid', this.editForm.errors);
-      return; // Exit if the form is not valid
+      return of(null); // Return empty observable if the form is not valid
     }
 
     // Get the invoice lines from the form (now it's a FormArray)
@@ -420,20 +420,10 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
     // If there are any observables, subscribe to them
     if (saveObservables.length > 0) {
-      forkJoin(saveObservables)
-        .pipe(finalize(() => this.onSaveFinalize()))
-        .subscribe({
-          next: response => {
-            console.log('Save successful. Server response:', response);
-            this.onSaveSuccess();
-          },
-          error: error => {
-            console.error('Save failed. Server error:', error);
-            this.onSaveError();
-          },
-        });
+      return forkJoin(saveObservables).pipe(finalize(() => this.onSaveFinalize()));
     } else {
       this.onSaveFinalize();
+      return of(null);
     }
   }
 

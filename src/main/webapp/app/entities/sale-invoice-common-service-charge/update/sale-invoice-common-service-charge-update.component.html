@@ -131,6 +131,7 @@
                       (input)="onItemCodeInput($event, i)"
                       (change)="onItemCodeSelect($event, i)"
                       [attr.list]="'autocomplete__' + i"
+                      [readonly]="!allowManual"
                     />
                   </div>
 
@@ -178,7 +179,7 @@
           </table>
         </div>
 
-        <div class="mt-3">
+        <div class="mt-3" *ngIf="allowManual">
           <button type="button" class="btn btn-outline-success btn-sm border-dashed" (click)="addServiceChargeDummy()">
             <fa-icon icon="plus"></fa-icon> Add New Manual Charge
           </button>
