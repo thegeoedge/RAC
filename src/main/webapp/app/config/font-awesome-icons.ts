@@ -42,6 +42,7 @@ import {
   faBagShopping,
   faClipboardList,
   faFileInvoice,
+  faPrint,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -89,5 +90,6 @@ export const fontAwesomeIcons = [
   faBagShopping,
   faClipboardList,
   faFileInvoice,
+  faPrint,
   // jhipster-needle-add-icon-import
 ];

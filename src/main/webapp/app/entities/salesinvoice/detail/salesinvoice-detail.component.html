@@ -424,7 +424,9 @@
             <fa-icon icon="pencil-alt"></fa-icon>&nbsp;Edit
           </button> -->
 
-          <button type="button" class="btn btn-success" (click)="print()"><fa-icon icon="print"></fa-icon>&nbsp;Print 🖨</button>
+          <a [routerLink]="['/printinvoice']" [queryParams]="{ id: salesinvoice()!.id }" class="btn btn-success">
+            <fa-icon icon="print"></fa-icon>&nbsp;Print 🖨
+          </a>
         </div>
       </div>
     }
