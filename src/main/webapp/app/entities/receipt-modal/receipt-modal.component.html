@@ -87,7 +87,14 @@
                 <div *ngIf="selectedOption === 3">
                   <div class="mb-3">
                     <label class="form-label" for="chequeNo">Cheque No <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="chequeNo" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="chequeNo"
+                      name="checkno"
+                      [(ngModel)]="checkno"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
                   </div>
 
                   <div class="mb-3">
@@ -125,7 +132,14 @@
 
                   <div class="mb-3">
                     <label class="form-label" for="chequeDate">Cheque Date <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="chequeDate" />
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="chequeDate"
+                      name="checkdate"
+                      [(ngModel)]="checkdate"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
                   </div>
                 </div>
 

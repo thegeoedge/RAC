@@ -44,6 +44,10 @@ export class BankbranchService {
     return this.http.get<IBankbranch[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
+  findByBankcode(bankcode: string): Observable<EntityArrayResponseType> {
+    return this.http.get<IBankbranch[]>(`${this.resourceUrl}/by-bankcode/${bankcode}`, { observe: 'response' });
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

@@ -147,6 +147,19 @@ public class BankbranchResource {
     }
 
     /**
+     * {@code GET  /bankbranches/by-bankcode/:bankcode} : get all the bankbranches by bankcode.
+     *
+     * @param bankcode the bankcode to filter by.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of bankbranches in body.
+     */
+    @GetMapping("/by-bankcode/{bankcode}")
+    public ResponseEntity<List<Bankbranch>> getAllBankbranchesByBankcode(@PathVariable("bankcode") String bankcode) {
+        log.debug("REST request to get all Bankbranches by bankcode : {}", bankcode);
+        List<Bankbranch> bankbranches = bankbranchRepository.findByBankcode(bankcode);
+        return ResponseEntity.ok().body(bankbranches);
+    }
+
+    /**
      * {@code GET  /bankbranches} : get all the bankbranches.
      *
      * @param pageable the pagination information.

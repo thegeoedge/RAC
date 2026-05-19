@@ -97,7 +97,6 @@ export class ReceiptModalComponent implements OnChanges {
       console.log('Updated receiptpaymentsdetails:', changes['receiptpaymentsdetails'].currentValue);
       this.updateForm(this.receiptpaymentsdetails);
       this.loadBanks();
-      this.loadBankBranch();
     }
   }
 
@@ -114,9 +113,17 @@ export class ReceiptModalComponent implements OnChanges {
     return dayjs().add(-new Date().getTimezoneOffset(), 'minute');
   }
 
+  /** Takes a selected date and appends current time offset for local timezone */
+  private localDateTime(d: any): dayjs.Dayjs {
+    if (!d) return this.localNow();
+    const now = dayjs();
+    return dayjs(d).hour(now.hour()).minute(now.minute()).second(now.second()).add(-new Date().getTimezoneOffset(), 'minute');
+  }
+
   loadBanks(): void {
     this.banksService.query({ size: 1000 }).subscribe((res: HttpResponse<IBanks[]>) => {
       this.banks = res.body || [];
+      this.loadBankBranch();
     });
   }
 
@@ -470,7 +477,7 @@ export class ReceiptModalComponent implements OnChanges {
       // Clear previous branches immediately
       this.bankbranch = [];
 
-      this.bankbranchService.query({ 'bankcode.equals': selectedObject.code }).subscribe((res: HttpResponse<IBankbranch[]>) => {
+      this.bankbranchService.findByBankcode(selectedObject.code || '').subscribe((res: HttpResponse<IBankbranch[]>) => {
         this.bankbranch = res.body || [];
         console.log('Bank Branches:', this.bankbranch);
       });
@@ -481,17 +488,33 @@ export class ReceiptModalComponent implements OnChanges {
   }
 
   Branch: string = '';
+  branchid: number = 0;
 
   onItemChequebranchInput(event: Event): void {
-    const selectedBranch = (event.target as HTMLSelectElement).value;
-    this.Branch = selectedBranch;
-    console.log('Selected Branch:', this.Branch);
+    const selectedBranchName = (event.target as HTMLSelectElement).value;
+    this.Branch = selectedBranchName;
+    const selectedBranch = this.bankbranch.find(branch => branch.branchname === selectedBranchName);
+    if (selectedBranch) {
+      this.branchid = Number(selectedBranch.id);
+    } else {
+      this.branchid = 0;
+    }
+    console.log('Selected Branch:', this.Branch, 'ID:', this.branchid);
   }
 
   loadBankBranch(): void {
-    this.bankbranchService.query({ size: 1000 }).subscribe((res: HttpResponse<IBankbranch[]>) => {
-      this.bankbranch = res.body || [];
-    });
+    if (!this.bank) {
+      this.bankbranch = [];
+      return;
+    }
+    const selectedObject = this.banks.find(bank => bank.name === this.bank);
+    if (selectedObject && selectedObject.code) {
+      this.bankbranchService.findByBankcode(selectedObject.code).subscribe((res: HttpResponse<IBankbranch[]>) => {
+        this.bankbranch = res.body || [];
+      });
+    } else {
+      this.bankbranch = [];
+    }
   }
   receipt = {
     code: 'string',
@@ -628,10 +651,10 @@ export class ReceiptModalComponent implements OnChanges {
           invoicecode: this.invoicecode ?? '',
           invoicetype: 'Sales Invoice',
           originalamount: this.totalamount || 0,
-          amountowing: this.method === 'Cash' ? 0 : (this.totalamount || 0) - (paymentAmount || 0),
+          amountowing: this.method === 'Bank' ? 0 : this.method === 'Cash' ? 0 : (this.totalamount || 0) - (paymentAmount || 0),
           discountavailable: 0,
           discounttaken: 0,
-          amountreceived: this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
+          amountreceived: this.method === 'Bank' ? 0 : this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
           lmu: finalUserId,
           lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
           accountid: safeAccountId,
@@ -662,22 +685,12 @@ export class ReceiptModalComponent implements OnChanges {
           // These were previously hardcoded to 0/null/'' in the other system's code
           checkqueamount: this.method === 'Cheque' ? this.chequeAmount || 0 : 0,
           checkqueno: this.method === 'Cheque' ? this.checkno || '' : '',
-          checkquedate:
-            this.method === 'Cheque'
-              ? this.checkdate
-                ? dayjs(this.checkdate.toISOString())
-                : dayjs().add(-new Date().getTimezoneOffset(), 'minute')
-              : null,
-          checkqueexpiredate:
-            this.method === 'Cheque'
-              ? this.checkdate
-                ? dayjs(this.checkdate.toISOString())
-                : dayjs().add(-new Date().getTimezoneOffset(), 'minute')
-              : null,
-          bankname: this.method === 'Cheque' ? this.bankname || this.bank || '' : '',
-          bankid: this.method === 'Cheque' ? this.bankid : 0,
-          bankbranchname: this.method === 'Cheque' ? this.Branch : '',
-          bankbranchid: 0,
+          checkquedate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
+          checkqueexpiredate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
+          bankname: this.method === 'Cheque' || this.method === 'Bank' ? this.bankname || this.bank || '' : '',
+          bankid: this.method === 'Cheque' || this.method === 'Bank' ? this.bankid : 0,
+          bankbranchname: this.method === 'Cheque' || this.method === 'Bank' ? this.Branch : '',
+          bankbranchid: this.method === 'Cheque' || this.method === 'Bank' ? this.branchid : 0,
           // ==========================================
 
           creditcardno: '',
@@ -759,10 +772,10 @@ export class ReceiptModalComponent implements OnChanges {
     this.receipt.customeraddress = this.customeraddress ?? '';
     this.receipt.comments = this.comments ?? '';
 
-    this.receipt.date = this.date ? dayjs(this.date.toISOString()) : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+    this.receipt.date = this.date ? this.localDateTime(this.date) : this.localNow();
 
     this.receipt.amount = this.amount ?? 0;
-    this.receipt.checkdate = this.checkdate ? dayjs(this.checkdate.toISOString()) : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+    this.receipt.checkdate = this.checkdate ? this.localDateTime(this.checkdate) : this.localNow();
     this.receipt.checkno = this.checkno ?? '';
     this.receipt.bank = this.bank ?? '';
     this.receipt.customerid = this.customerid ?? 0;
@@ -771,9 +784,7 @@ export class ReceiptModalComponent implements OnChanges {
     this.receipt.createdby = this.createdby ?? 0;
     this.receipt.totalamountinword = this.totalamountinword ?? '';
     this.receipt.code = this.newcode ?? '';
-    this.receipt.receiptdate = this.receiptdate
-      ? dayjs(this.receiptdate.toISOString())
-      : dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+    this.receipt.receiptdate = this.receiptdate ? this.localDateTime(this.receiptdate) : this.localNow();
     this.receipt.vehicleno = this.vehicleno ?? '';
 
     // Logging all values

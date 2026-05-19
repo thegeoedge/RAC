@@ -819,21 +819,65 @@
 
     <!-- Print Layout (Hidden in UI, Only Visible in Print) -->
     <div id="printSummary" class="d-none d-print-block p-3" style="font-family: Arial, sans-serif">
-      <div class="text-center">
-        <h3 class="font-weight-bold">RATHNAWEERA AUTO CARE [PVT] LTD</h3>
-        <h5>ADVISOR INSTRUCTION SHEET - Admin</h5>
+      <div class="text-center mb-3">
+        <h2 class="font-weight-bold mb-1">RATHNAWEERA AUTO CARE [PVT] LTD</h2>
+        <h4 class="mb-0">ADVISOR INSTRUCTION SHEET - Admin</h4>
       </div>
 
-      <div class="border p-2 mt-3">
-        <div class="info-grid">
-          <p><strong>VEHICLE NO:</strong> {{ editForm.controls['vehiclenumber'].value }}</p>
-          <p><strong>JOB TYPE:</strong> {{ editForm.controls['jobtypename'].value }}</p>
+      <div class="border border-dark p-2 mt-2 mb-3" style="font-size: 11px; line-height: 1.1">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); row-gap: 0px; column-gap: 15px">
+          <div>
+            <p class="m-0"><strong>VEHICLE NO</strong> - {{ editForm.controls['vehiclenumber'].value }}</p>
+          </div>
+          <div>
+            <p class="m-0"><strong>MILAGE</strong> - {{ editForm.controls['millage'].value }}</p>
+          </div>
+          <div>
+            <p class="m-0">
+              <strong>JOB N0</strong> - {{ editForm.controls['id'].value }}{{ editForm.controls['iswaiting'].value ? ' / Waiting' : '' }}
+            </p>
+          </div>
 
-          <p><strong>NAME:</strong> {{ editForm.controls['customername'].value }}</p>
-          <p><strong>MILLAGE:</strong> {{ editForm.controls['millage'].value }}</p>
+          <div>
+            <p class="m-0"><strong>DATE</strong> - {{ editForm.controls['jobopentime'].value | date: 'dd/MM/yyyy-HH:mm' }}</p>
+          </div>
+          <div>
+            <p class="m-0"><strong>NAME</strong> - {{ editForm.controls['customername'].value }}</p>
+          </div>
+          <div>
+            <p class="m-0"><strong>T/P</strong> - {{ editForm.controls['customertel'].value }}</p>
+          </div>
 
-          <p><strong>DATE:</strong> {{ editForm.controls['nextservicedate'].value }}</p>
-          <p><strong>TP:</strong> {{ editForm.controls['customertel'].value }}</p>
+          <div>
+            <p class="m-0">
+              <strong>ADDRESS</strong> - {{ searchedCustomer?.residenceaddress || searchedCustomer?.businessaddress || '' }}
+            </p>
+          </div>
+          <div>
+            <p class="m-0"><strong>JOB TYPE</strong> - {{ editForm.controls['jobtypename'].value }}</p>
+          </div>
+          <div>
+            <p class="m-0">
+              <strong>REFERENCE</strong> -
+              <ng-container *ngFor="let service of selectedServices; let last = last"
+                >{{ getBillingServiceOptionName(service.billingserviceoptionid)
+                }}{{ !last || selectedcommonServices.length > 0 ? ', ' : '' }}</ng-container
+              >
+              <ng-container *ngFor="let service of selectedcommonServices; let last = last"
+                >{{ service.name }}{{ !last ? ', ' : '' }}</ng-container
+              >
+            </p>
+          </div>
+
+          <div>
+            <p class="m-0"><strong>SPECIAL REQUIRMENTS</strong> - {{ editForm.controls['specialrquirments'].value || '' }}</p>
+          </div>
+          <div>
+            <p class="m-0"><strong>REMARKS</strong> - {{ editForm.controls['remarks'].value || '' }}</p>
+          </div>
+          <div>
+            <p class="m-0"><strong>SP INSTRUCTIONS</strong> - {{ editForm.controls['specialinstructions'].value || '' }}</p>
+          </div>
         </div>
       </div>
 
