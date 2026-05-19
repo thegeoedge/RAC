@@ -1051,14 +1051,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               forkJoin(childSaveObservables).subscribe({
                 next: () => {
                   console.log('All child components saved successfully.');
-                  this.router.navigate(['/printinvoice'], { queryParams: { id: invoiceId } });
+                  window.open('/printinvoice?id=' + invoiceId, '_blank');
                 },
                 error: err => {
                   console.error('Error saving child components:', err);
                 },
               });
             } else {
-              this.router.navigate(['/printinvoice'], { queryParams: { id: invoiceId } });
+              window.open('/printinvoice?id=' + invoiceId, '_blank');
             }
           }
         }

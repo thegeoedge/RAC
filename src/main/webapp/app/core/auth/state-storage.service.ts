@@ -24,6 +24,8 @@ export class StateStorageService {
     if (rememberMe) {
       localStorage.setItem(this.authenticationKey, authenticationToken);
     } else {
+      // Store in both to ensure multi-tab support (e.g. printing) works correctly
+      localStorage.setItem(this.authenticationKey, authenticationToken);
       sessionStorage.setItem(this.authenticationKey, authenticationToken);
     }
   }

@@ -150,4 +150,11 @@ export class SalesInvoiceDummyComponent implements OnInit {
       });
     });
   }
+
+  printInvoice(id: number | null | undefined): void {
+    if (!id) {
+      return;
+    }
+    window.open('/printinvoice?id=' + id, '_blank');
+  }
 }

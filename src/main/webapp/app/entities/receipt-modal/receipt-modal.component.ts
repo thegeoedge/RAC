@@ -25,6 +25,7 @@ import { SalesInvoiceLinesService } from '../sales-invoice-lines/service/sales-i
 import { AccountsService } from '../accounts/service/accounts.service';
 import { SalesinvoiceService } from '../salesinvoice/service/salesinvoice.service';
 import { CustomerService } from 'app/entities/customer/service/customer.service';
+
 @Component({
   selector: 'app-receipt-modal',
   standalone: true,
@@ -447,6 +448,46 @@ export class ReceiptModalComponent implements OnChanges {
     }
   }
 
+  bankid: number = 0;
+  bankname: string = '';
+
+  onItemBankInput($event: Event): void {
+    const selectedBank = ($event.target as HTMLSelectElement).value;
+
+    if (!selectedBank) {
+      console.log('No bank selected');
+      this.bankbranch = []; // Clear previous branches if nothing is selected
+      return;
+    }
+
+    const selectedObject = this.banks.find(bank => bank.name === selectedBank);
+
+    if (selectedObject) {
+      this.bankid = Number(selectedObject.id);
+      this.bankname = selectedObject.name ? selectedObject.name.toString() : '';
+      this.bank = this.bankname; // sync with input property
+
+      // Clear previous branches immediately
+      this.bankbranch = [];
+
+      this.bankbranchService.query({ 'bankcode.equals': selectedObject.code }).subscribe((res: HttpResponse<IBankbranch[]>) => {
+        this.bankbranch = res.body || [];
+        console.log('Bank Branches:', this.bankbranch);
+      });
+    } else {
+      console.log('Selected bank not found in the list');
+      this.bankbranch = [];
+    }
+  }
+
+  Branch: string = '';
+
+  onItemChequebranchInput(event: Event): void {
+    const selectedBranch = (event.target as HTMLSelectElement).value;
+    this.Branch = selectedBranch;
+    console.log('Selected Branch:', this.Branch);
+  }
+
   loadBankBranch(): void {
     this.bankbranchService.query({ size: 1000 }).subscribe((res: HttpResponse<IBankbranch[]>) => {
       this.bankbranch = res.body || [];
@@ -601,6 +642,9 @@ export class ReceiptModalComponent implements OnChanges {
           error: (err: any) => console.error('ReceiptLines error:', err),
         });
 
+        // ==========================================
+        // FIX: PROPERLY MAP CHEQUE DETAILS INTO THE PAYLOAD
+        // ==========================================
         const receiptPaymentsPayload: any = {
           id: receiptId,
           lineid: 1,
@@ -614,13 +658,28 @@ export class ReceiptModalComponent implements OnChanges {
           accountcode: this.accountCode || '',
           isdeposit: false,
           ispdcheque: false,
-          checkqueamount: 0,
-          checkqueno: '',
-          checkquedate: null,
-          checkqueexpiredate: null,
-          bankname: '',
-          bankid: 0,
+
+          // These were previously hardcoded to 0/null/'' in the other system's code
+          checkqueamount: this.method === 'Cheque' ? this.chequeAmount || 0 : 0,
+          checkqueno: this.method === 'Cheque' ? this.checkno || '' : '',
+          checkquedate:
+            this.method === 'Cheque'
+              ? this.checkdate
+                ? dayjs(this.checkdate.toISOString())
+                : dayjs().add(-new Date().getTimezoneOffset(), 'minute')
+              : null,
+          checkqueexpiredate:
+            this.method === 'Cheque'
+              ? this.checkdate
+                ? dayjs(this.checkdate.toISOString())
+                : dayjs().add(-new Date().getTimezoneOffset(), 'minute')
+              : null,
+          bankname: this.method === 'Cheque' ? this.bankname || this.bank || '' : '',
+          bankid: this.method === 'Cheque' ? this.bankid : 0,
+          bankbranchname: this.method === 'Cheque' ? this.Branch : '',
           bankbranchid: 0,
+          // ==========================================
+
           creditcardno: '',
           creditcardamount: 0,
           reference: 'Sales Invoice',

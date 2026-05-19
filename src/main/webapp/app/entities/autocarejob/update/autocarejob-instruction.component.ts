@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, Input } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
@@ -151,6 +151,7 @@ export class AutocarejobInstructionComponent implements OnInit {
   protected alertService = inject(AlertService);
   protected alertMuteService = inject(AlertMuteService);
   protected accountService = inject(AccountService);
+  protected router = inject(Router);
   currentUserId: number = 0;
 
   subcategoriesVisible = true; // Show service options by default
@@ -1224,9 +1225,17 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   printSummary() {
-    const printContents = document.getElementById('printSummary')?.innerHTML;
-    if (!printContents) {
-      console.error('Print section not found!');
+    console.log('printSummary called, invoiceId:', this.invoiceId);
+    if (!this.invoiceId) {
+      alert('Please save the job first');
+      return;
+    }
+    const element = document.getElementById('printSummary');
+    console.log('printSummary element found:', !!element);
+    const printContents = element?.innerHTML;
+    console.log('printSummary contents length:', printContents?.length ?? 0);
+    if (!printContents || printContents.trim() === '') {
+      console.error('Print section not found or empty!');
       return;
     }
 
@@ -1266,6 +1275,8 @@ export class AutocarejobInstructionComponent implements OnInit {
         </html>
       `);
       printWindow.document.close();
+    } else {
+      console.error('Failed to open print window. It might be blocked by the browser.');
     }
   }
 
@@ -1450,19 +1461,28 @@ export class AutocarejobInstructionComponent implements OnInit {
 
     this.showPrintSummary = true;
     this.cdr.detectChanges();
-    // Scroll to the summary
+
+    // Scroll to the summary and trigger print with a delay to ensure DOM is ready and bypass popup blockers
     setTimeout(() => {
       const element = document.getElementById('printSummary');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.printSummary(); // Trigger automatic print after save
+      } else {
+        console.warn('Print summary element not found in onSaveSuccess timeout, trying direct call');
+        this.printSummary();
       }
-    }, 100);
+
+      // Navigate to the open jobs list after a short delay to prevent double-saving/conflicts
+      setTimeout(() => {
+        this.router.navigate(['/autocarejob/autocareopenjob']);
+      }, 1000);
+    }, 800);
 
     // Unmute after some time to allow background saves to finish without alerts
     setTimeout(() => {
       this.alertMuteService.unmute();
     }, 10000); // 10 seconds should cover the background item saves
-    // Removed previousState() to allow viewing the summary
   }
 
   protected onSaveError(): void {

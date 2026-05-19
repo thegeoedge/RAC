@@ -60,7 +60,10 @@ export class SalesinvoiceDetailComponent implements OnInit {
   previousState(): void {
     window.history.back();
   }
-  print(): void {
-    window.print();
+  printInvoice(): void {
+    const id = this.salesinvoice()?.id;
+    if (id) {
+      window.open('/printinvoice?id=' + id, '_blank');
+    }
   }
 }

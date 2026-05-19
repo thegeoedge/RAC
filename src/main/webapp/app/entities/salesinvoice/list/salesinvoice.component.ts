@@ -211,15 +211,7 @@ export class SalesinvoiceComponent implements OnInit {
       return;
     }
 
-    const url = `${window.location.origin}/salesinvoice/${id}/view`;
-    const printWindow = window.open(url, '_blank');
-
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    }
+    window.open('/printinvoice?id=' + id, '_blank');
   }
 
   toggleFilter(filter: string): void {

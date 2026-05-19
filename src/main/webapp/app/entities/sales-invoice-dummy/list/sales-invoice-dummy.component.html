@@ -432,15 +432,10 @@
                     <fa-icon icon="times"></fa-icon>
                     <span class="d-none d-md-inline">Delete</span>
                   </button>
-                  <a
-                    class="btn btn-secondary btn-sm"
-                    data-cy="entityPrintButton"
-                    [routerLink]="['/printinvoice']"
-                    [queryParams]="{ id: salesInvoiceDummy.id }"
-                  >
+                  <button type="button" (click)="printInvoice(salesInvoiceDummy.id)" class="btn btn-secondary btn-sm" title="Print Invoice">
                     <fa-icon [icon]="faPrint"></fa-icon>
                     <span class="d-none d-md-inline"> Print</span>
-                  </a>
+                  </button>
                 </div>
               </td>
             </tr>

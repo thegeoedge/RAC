@@ -84,7 +84,9 @@ export class AutojobsinvoiceUpdateComponent implements OnInit, OnChanges {
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    if (!this.formData) {
+      this.previousState();
+    }
   }
 
   protected onSaveError(): void {
