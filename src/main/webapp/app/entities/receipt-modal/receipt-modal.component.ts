@@ -103,6 +103,7 @@ export class ReceiptModalComponent implements OnChanges {
   // Log for debugging
   ngOnInit() {
     console.log('selectedOption:', this.selectedOption);
+    this.fetchpaymentmethod();
   }
   previousState(): void {
     window.history.back();
@@ -149,22 +150,53 @@ export class ReceiptModalComponent implements OnChanges {
 
   onpaymentOptionChange(option: string): void {
     this.paymentType = option;
-    this.fetchpaymentmethod();
-    let commissionRate = 0;
-    if (this.items && this.items.length > 0) {
-      if (this.paymentType === 'visa') {
-        commissionRate = this.items[2]?.commission || 0;
-      } else if (this.paymentType === 'paypal') {
-        commissionRate = this.items[1]?.commission || 0;
-      } else if (this.paymentType === 'amex') {
-        commissionRate = this.items[0]?.commission || 0;
+    console.log('Payment Option Changed:', this.paymentType);
+    console.log('Total Amount:', this.totalamount);
+
+    const calculateCommission = () => {
+      let commissionRate = 0;
+      const selected = this.items.find(item => {
+        const name = (item.paymentMethodName || '').toLowerCase();
+        if (this.paymentType === 'visa' && (name.includes('visa') || name.includes('master'))) {
+          return true;
+        }
+        if (this.paymentType === 'amex' && name.includes('amex')) {
+          return true;
+        }
+        if (this.paymentType === 'paypal' && (name.includes('qr') || name.includes('paypal'))) {
+          return true;
+        }
+        return false;
+      });
+
+      if (selected) {
+        commissionRate = selected.commission || 0;
       }
+      this.finalcommisonamount = (this.totalamount * commissionRate) / 100;
+      console.log('Commission Rate calculated:', commissionRate);
+      console.log('Final Commission Amount:', this.finalcommisonamount);
+    };
+
+    if (!this.items || this.items.length === 0) {
+      this.fetchpaymentmethod(() => {
+        calculateCommission();
+      });
+    } else {
+      calculateCommission();
     }
-    this.finalcommisonamount = (this.totalamount * commissionRate) / 100;
   }
 
-  fetchpaymentmethod(): void {
-    // Implementation skipped as PaymentMethodService is missing
+  fetchpaymentmethod(callback?: () => void): void {
+    // Mocked payment methods since PaymentMethodService is missing in this project
+    this.items = [
+      { id: 1, paymentMethodName: 'Amex', commission: 2.5 },
+      { id: 2, paymentMethodName: 'QR/PayPal', commission: 0.0 },
+      { id: 3, paymentMethodName: 'Visa/Master', commission: 2.5 },
+    ];
+    console.log('Mocked payment methods:', this.items);
+    if (callback) {
+      callback();
+    }
   }
 
   account = {
@@ -636,6 +668,7 @@ export class ReceiptModalComponent implements OnChanges {
       this.receipt.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
       this.receipt.customername = this.customername ?? '';
       this.receipt.totalamount = this.totalamount;
+      this.receipt.deposited = this.method === 'Cheque' ? false : this.deposited ?? true;
 
       // Calculate amount in words if not already set or to ensure it's current
       const words = toWords(this.totalamount).replace(/,/g, '').replace(/and/g, 'and');
@@ -703,7 +736,7 @@ export class ReceiptModalComponent implements OnChanges {
           depositeddate: null,
           chequestatuschangeddate: null,
           returnchequesttledate: null,
-          chequestatusid: 0,
+          chequestatusid: this.method === 'Cheque' ? 1 : 0,
           depositdate: null,
           bankdepositbankname: '',
           bankdepositbankid: 0,
@@ -765,8 +798,10 @@ export class ReceiptModalComponent implements OnChanges {
 
   onOptionChange(option: number): void {
     this.selectedOption = option;
-
-    // Updating receipt object with the required properties
+    if (option !== 4) {
+      this.finalcommisonamount = 0;
+      this.paymentType = '';
+    }
     this.receipt.totalamount = this.totalamount;
     this.receipt.customername = this.customername ?? '';
     this.receipt.customeraddress = this.customeraddress ?? '';
@@ -822,6 +857,7 @@ export class ReceiptModalComponent implements OnChanges {
     this.accountmethod(paymentMethod);
     this.receipt.term = paymentMethod;
     this.receipt.termid = termid;
+    this.receipt.deposited = this.method === 'Cheque' ? false : this.deposited ?? true;
 
     // Sync with main SalesInvoice form
     this.salesinvoiceupdate.editForm.patchValue({

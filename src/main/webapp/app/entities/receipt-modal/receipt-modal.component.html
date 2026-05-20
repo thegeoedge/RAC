@@ -154,18 +154,46 @@
                   <div class="mb-3">
                     <div class="d-flex gap-3">
                       <div>
-                        <input type="radio" name="paymentType" id="visa" value="Visa" />
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          id="visa"
+                          value="Visa"
+                          [checked]="paymentType === 'visa'"
+                          (change)="onpaymentOptionChange('visa')"
+                        />
                         <label for="visa">Visa/Master</label>
                       </div>
                       <div>
-                        <input type="radio" name="paymentType" id="mastercard" value="MasterCard" />
-                        <label for="mastercard">Arramax</label>
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          id="mastercard"
+                          value="MasterCard"
+                          [checked]="paymentType === 'amex'"
+                          (change)="onpaymentOptionChange('amex')"
+                        />
+                        <label for="mastercard">Amex</label>
                       </div>
                       <div>
-                        <input type="radio" name="paymentType" id="paypal" value="PayPal" />
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          id="paypal"
+                          value="PayPal"
+                          [checked]="paymentType === 'paypal'"
+                          (change)="onpaymentOptionChange('paypal')"
+                        />
                         <label for="paypal">QR</label>
                       </div>
                     </div>
+                  </div>
+
+                  <!-- Final Total Display -->
+                  <div class="mt-3">
+                    <span style="color: black; font-weight: bold">
+                      Final Total (with commission): {{ (totalamount + finalcommisonamount).toFixed(2) }}
+                    </span>
                   </div>
                 </div>
 
