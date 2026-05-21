@@ -305,7 +305,7 @@
                 <legend class="w-auto px-2">Instructions</legend>
                 <div class="row">
                   <div class="mb-3 col-6">
-                    <label class="form-label" for="field_specialrquirments">Special rquirments</label>
+                    <label class="form-label" for="field_specialrquirments">Special requirements</label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
@@ -859,12 +859,8 @@
           <div>
             <p class="m-0">
               <strong>REFERENCE</strong> -
-              <ng-container *ngFor="let service of selectedServices; let last = last"
-                >{{ getBillingServiceOptionName(service.billingserviceoptionid)
-                }}{{ !last || selectedcommonServices.length > 0 ? ', ' : '' }}</ng-container
-              >
-              <ng-container *ngFor="let service of selectedcommonServices; let last = last"
-                >{{ service.name }}{{ !last ? ', ' : '' }}</ng-container
+              <ng-container *ngFor="let subcategory of selectedSubcategoryItems; let last = last"
+                >{{ subcategory.name }}{{ !last ? ', ' : '' }}</ng-container
               >
             </p>
           </div>

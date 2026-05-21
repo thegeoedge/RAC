@@ -56,7 +56,9 @@ export class SaleInvoiceCommonServiceChargeUpdateComponent implements OnInit {
   }
   updateLineTotal(): void {
     // Calculate the total by summing up all values in the serviceChargeLines array
-    const total = this.serviceChargesArray.controls.map(control => control.get('value')?.value || 0).reduce((acc, value) => acc + value, 0);
+    const total = this.serviceChargesArray.controls
+      .map(control => Number(control.get('value')?.value || 0))
+      .reduce((acc, value) => acc + value, 0);
 
     // Emit the total to the parent component
     this.totalUpdated.emit(total);

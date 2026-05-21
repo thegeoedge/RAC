@@ -321,11 +321,11 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   receiveTotal(total: number, source: string) {
     if (source === 'child1') {
-      this.total1 = total; // Update total from first child
+      this.total1 = Number(total) || 0; // Update total from first child
     } else if (source === 'child2') {
-      this.total2 = total; // Update total from second child
+      this.total2 = Number(total) || 0; // Update total from second child
     } else if (source === 'child3') {
-      this.total3 = total; // Update total from second child
+      this.total3 = Number(total) || 0; // Update total from second child
     }
 
     this.subTotal = this.total1 + this.total2 + this.total3; // Combine the totals
