@@ -1052,6 +1052,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
                 next: () => {
                   console.log('All child components saved successfully.');
                   window.open('/printinvoice?id=' + invoiceId, '_blank');
+                  this.previousState();
                 },
                 error: err => {
                   console.error('Error saving child components:', err);
@@ -1059,6 +1060,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
               });
             } else {
               window.open('/printinvoice?id=' + invoiceId, '_blank');
+              this.previousState();
             }
           }
         }

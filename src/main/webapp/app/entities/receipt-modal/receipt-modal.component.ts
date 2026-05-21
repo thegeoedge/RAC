@@ -93,6 +93,9 @@ export class ReceiptModalComponent implements OnChanges {
   editForm: ReceiptpaymentsdetailsFormGroup = this.receiptpaymentsdetailsFormService.createReceiptpaymentsdetailsFormGroup();
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['newcode'] && changes['newcode'].currentValue) {
+      this.receipt.code = changes['newcode'].currentValue;
+    }
     if (changes['receiptpaymentsdetails'] && changes['receiptpaymentsdetails'].currentValue) {
       console.log('Updated receiptpaymentsdetails:', changes['receiptpaymentsdetails'].currentValue);
       this.updateForm(this.receiptpaymentsdetails);
@@ -637,6 +640,134 @@ export class ReceiptModalComponent implements OnChanges {
     this.save();
   }
 
+  generateNextReceiptCode(lastCode: string | null | undefined): string {
+    const defaultCode = 'RCPT1000';
+    let originalCode = lastCode?.trim() || defaultCode;
+
+    if (!originalCode.toLowerCase().startsWith('rcpt')) {
+      originalCode = defaultCode;
+    }
+
+    const match = originalCode.match(/\d+$/);
+    if (match) {
+      return originalCode.replace(/\d+$/, (numStr: string) => {
+        const incremented = Number(numStr) + 1;
+        return String(incremented).padStart(numStr.length, '0');
+      });
+    } else {
+      return 'RCPT1001';
+    }
+  }
+
+  saveReceiptWithCode(nextReceiptCode: string, finalUserId: number): void {
+    const paymentAmount = this.method === 'Cheque' ? this.chequeAmount || 0 : this.cash || this.totalamount || 0;
+    const safeAccountId = this.accountId && !isNaN(Number(this.accountId)) ? Number(this.accountId) : 0;
+
+    this.receipt.code = nextReceiptCode;
+    this.receipt.lmu = finalUserId;
+    this.receipt.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
+    this.receipt.customername = this.customername ?? '';
+    this.receipt.totalamount = this.totalamount;
+    this.receipt.deposited = this.method === 'Cheque' ? false : this.deposited ?? true;
+
+    // Calculate amount in words if not already set or to ensure it's current
+    const words = toWords(this.totalamount).replace(/,/g, '').replace(/and/g, 'and');
+    this.receipt.totalamountinword = words + ' Rupees Only';
+
+    this.subscribeToSaveResponseWithCallback(this.reciptService.create(this.receipt as any), (receiptId: number) => {
+      const receiptLinePayload: any = {
+        id: receiptId,
+        lineid: 1,
+        invoicecode: this.invoicecode ?? '',
+        invoicetype: 'Sales Invoice',
+        originalamount: this.totalamount || 0,
+        amountowing: this.method === 'Bank' ? 0 : this.method === 'Cash' ? 0 : (this.totalamount || 0) - (paymentAmount || 0),
+        discountavailable: 0,
+        discounttaken: 0,
+        amountreceived: this.method === 'Bank' ? 0 : this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
+        lmu: finalUserId,
+        lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
+        accountid: safeAccountId,
+      };
+      console.log('ReceiptLines Payload:', receiptLinePayload);
+      this.reciptlines.create(receiptLinePayload).subscribe({
+        next: () => console.log('ReceiptLines saved OK'),
+        error: (err: any) => console.error('ReceiptLines error:', err),
+      });
+
+      // ==========================================
+      // FIX: PROPERLY MAP CHEQUE DETAILS INTO THE PAYLOAD
+      // ==========================================
+      const receiptPaymentsPayload: any = {
+        id: receiptId,
+        lineid: 1,
+        paymentamount: this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
+        totalreceiptamount: this.totalamount || 0,
+        lmu: finalUserId,
+        lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
+        termid: this.receipt.termid || 0,
+        termname: this.method || '',
+        accountid: safeAccountId,
+        accountcode: this.accountCode || '',
+        isdeposit: false,
+        ispdcheque: false,
+
+        // These were previously hardcoded to 0/null/'' in the other system's code
+        checkqueamount: this.method === 'Cheque' ? this.chequeAmount || 0 : 0,
+        checkqueno: this.method === 'Cheque' ? this.checkno || '' : '',
+        checkquedate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
+        checkqueexpiredate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
+        bankname: this.method === 'Cheque' || this.method === 'Bank' ? this.bankname || this.bank || '' : '',
+        bankid: this.method === 'Cheque' || this.method === 'Bank' ? this.bankid : 0,
+        bankbranchname: this.method === 'Cheque' || this.method === 'Bank' ? this.Branch : '',
+        bankbranchid: this.method === 'Cheque' || this.method === 'Bank' ? this.branchid : 0,
+        // ==========================================
+
+        creditcardno: '',
+        creditcardamount: 0,
+        reference: 'Sales Invoice',
+        otherdetails: '',
+        accountno: '',
+        accountnumber: '',
+        chequereturndate: null,
+        depositeddate: null,
+        chequestatuschangeddate: null,
+        returnchequesttledate: null,
+        chequestatusid: this.method === 'Cheque' ? 1 : 0,
+        depositdate: null,
+        bankdepositbankname: '',
+        bankdepositbankid: 0,
+        bankdepositbankbranchname: '',
+        bankdepositbankbranchid: 0,
+        returnchequefine: 0,
+        companybankid: 0,
+        isbankreconciliation: false,
+      };
+      console.log('ReceiptPayments Payload:', receiptPaymentsPayload);
+      this.paymentdetails.create(receiptPaymentsPayload).subscribe({
+        next: () => console.log('Receiptpaymentsdetails saved OK'),
+        error: (err: any) => console.error('Receiptpaymentsdetails error:', err),
+      });
+
+      this.salesinvoiceupdate.save();
+
+      this.subid = crypto.randomUUID();
+
+      const transactionAmount = this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0;
+
+      if (this.customername != 'CASH') {
+        this.updaterecipttransactionwithcustomer();
+        this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
+      } else {
+        this.reciptnocustomerupdate(this.accountId);
+        this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
+      }
+
+      this.updatecustomermain(transactionAmount);
+      this.receiptmainacctransactions(receiptId, this.receipt.code, this.subid, transactionAmount);
+    });
+  }
+
   save(): void {
     this.isSaving = true;
 
@@ -664,110 +795,19 @@ export class ReceiptModalComponent implements OnChanges {
     const finalUserId = isNaN(userIdNumber) ? 0 : userIdNumber;
 
     if (this.receipt) {
-      this.receipt.lmu = finalUserId;
-      this.receipt.lmd = dayjs().add(-new Date().getTimezoneOffset(), 'minute');
-      this.receipt.customername = this.customername ?? '';
-      this.receipt.totalamount = this.totalamount;
-      this.receipt.deposited = this.method === 'Cheque' ? false : this.deposited ?? true;
+      this.reciptService.query({ page: 0, size: 1, sort: ['id,desc'] }).subscribe({
+        next: (res: HttpResponse<any[]>) => {
+          const lastReceipt = res.body?.[0];
+          const lastCode = lastReceipt?.code;
+          const nextReceiptCode = this.generateNextReceiptCode(lastCode);
 
-      // Calculate amount in words if not already set or to ensure it's current
-      const words = toWords(this.totalamount).replace(/,/g, '').replace(/and/g, 'and');
-      this.receipt.totalamountinword = words + ' Rupees Only';
-
-      this.subscribeToSaveResponseWithCallback(this.reciptService.create(this.receipt as any), (receiptId: number) => {
-        const paymentAmount = this.method === 'Cheque' ? this.chequeAmount || 0 : this.cash || this.totalamount || 0;
-        const safeAccountId = this.accountId && !isNaN(Number(this.accountId)) ? Number(this.accountId) : 0;
-
-        const receiptLinePayload: any = {
-          id: receiptId,
-          lineid: 1,
-          invoicecode: this.invoicecode ?? '',
-          invoicetype: 'Sales Invoice',
-          originalamount: this.totalamount || 0,
-          amountowing: this.method === 'Bank' ? 0 : this.method === 'Cash' ? 0 : (this.totalamount || 0) - (paymentAmount || 0),
-          discountavailable: 0,
-          discounttaken: 0,
-          amountreceived: this.method === 'Bank' ? 0 : this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
-          lmu: finalUserId,
-          lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
-          accountid: safeAccountId,
-        };
-        console.log('ReceiptLines Payload:', receiptLinePayload);
-        this.reciptlines.create(receiptLinePayload).subscribe({
-          next: () => console.log('ReceiptLines saved OK'),
-          error: (err: any) => console.error('ReceiptLines error:', err),
-        });
-
-        // ==========================================
-        // FIX: PROPERLY MAP CHEQUE DETAILS INTO THE PAYLOAD
-        // ==========================================
-        const receiptPaymentsPayload: any = {
-          id: receiptId,
-          lineid: 1,
-          paymentamount: this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0,
-          totalreceiptamount: this.totalamount || 0,
-          lmu: finalUserId,
-          lmd: dayjs().add(-new Date().getTimezoneOffset(), 'minute'),
-          termid: this.receipt.termid || 0,
-          termname: this.method || '',
-          accountid: safeAccountId,
-          accountcode: this.accountCode || '',
-          isdeposit: false,
-          ispdcheque: false,
-
-          // These were previously hardcoded to 0/null/'' in the other system's code
-          checkqueamount: this.method === 'Cheque' ? this.chequeAmount || 0 : 0,
-          checkqueno: this.method === 'Cheque' ? this.checkno || '' : '',
-          checkquedate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
-          checkqueexpiredate: this.method === 'Cheque' ? (this.checkdate ? this.localDateTime(this.checkdate) : this.localNow()) : null,
-          bankname: this.method === 'Cheque' || this.method === 'Bank' ? this.bankname || this.bank || '' : '',
-          bankid: this.method === 'Cheque' || this.method === 'Bank' ? this.bankid : 0,
-          bankbranchname: this.method === 'Cheque' || this.method === 'Bank' ? this.Branch : '',
-          bankbranchid: this.method === 'Cheque' || this.method === 'Bank' ? this.branchid : 0,
-          // ==========================================
-
-          creditcardno: '',
-          creditcardamount: 0,
-          reference: 'Sales Invoice',
-          otherdetails: '',
-          accountno: '',
-          accountnumber: '',
-          chequereturndate: null,
-          depositeddate: null,
-          chequestatuschangeddate: null,
-          returnchequesttledate: null,
-          chequestatusid: this.method === 'Cheque' ? 1 : 0,
-          depositdate: null,
-          bankdepositbankname: '',
-          bankdepositbankid: 0,
-          bankdepositbankbranchname: '',
-          bankdepositbankbranchid: 0,
-          returnchequefine: 0,
-          companybankid: 0,
-          isbankreconciliation: false,
-        };
-        console.log('ReceiptPayments Payload:', receiptPaymentsPayload);
-        this.paymentdetails.create(receiptPaymentsPayload).subscribe({
-          next: () => console.log('Receiptpaymentsdetails saved OK'),
-          error: (err: any) => console.error('Receiptpaymentsdetails error:', err),
-        });
-
-        this.salesinvoiceupdate.save();
-
-        this.subid = crypto.randomUUID();
-
-        const transactionAmount = this.method === 'Cash' ? this.totalamount || 0 : paymentAmount || 0;
-
-        if (this.customername != 'CASH') {
-          this.updaterecipttransactionwithcustomer();
-          this.receipttransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
-        } else {
-          this.reciptnocustomerupdate(this.accountId);
-          this.reciptnocustransactions(receiptId, this.receipt.code, this.subid, this.receipt.termid, this.method, transactionAmount);
-        }
-
-        this.updatecustomermain(transactionAmount);
-        this.receiptmainacctransactions(receiptId, this.receipt.code, this.subid, transactionAmount);
+          this.saveReceiptWithCode(nextReceiptCode, finalUserId);
+        },
+        error: (err: any) => {
+          console.error('Error fetching last receipt code:', err);
+          const nextReceiptCode = this.generateNextReceiptCode(null);
+          this.saveReceiptWithCode(nextReceiptCode, finalUserId);
+        },
       });
     } else {
       this.isSaving = true;
