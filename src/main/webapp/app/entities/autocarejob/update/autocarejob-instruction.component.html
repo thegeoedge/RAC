@@ -546,8 +546,17 @@
               <div class="row align-items-center mb-3">
                 <label class="col-auto fw-bold">Items :</label>
                 <div class="col-auto">
-                  <input type="radio" name="searchBy" id="byName" checked /> <label for="byName">By Name</label>
-                  <input type="radio" name="searchBy" id="byCode" class="ms-2" /> <label for="byCode">By Code</label>
+                  <input type="radio" name="searchBy" id="byName" [checked]="!searchItemsByCode" (change)="onItemSearchModeChange(false)" />
+                  <label for="byName">By Name</label>
+                  <input
+                    type="radio"
+                    name="searchBy"
+                    id="byCode"
+                    class="ms-2"
+                    [checked]="searchItemsByCode"
+                    (change)="onItemSearchModeChange(true)"
+                  />
+                  <label for="byCode">By Code</label>
                 </div>
                 <div class="col">
                   <input
@@ -561,9 +570,15 @@
                     (input)="onItemSearch($event)"
                   />
                   <datalist id="itemList">
-                    <option *ngFor="let item of filtereditems" [value]="item.name">
-                      {{ item.lastsellingprice }} - {{ item.availablequantity }}
-                    </option>
+                    @if (searchItemsByCode) {
+                      <option *ngFor="let item of filtereditems" [value]="item.code">
+                        {{ item.name }} — {{ item.lastsellingprice }} — Avl: {{ item.availablequantity }}
+                      </option>
+                    } @else {
+                      <option *ngFor="let item of filtereditems" [value]="item.name">
+                        {{ item.lastsellingprice }} — Avl: {{ item.availablequantity }}
+                      </option>
+                    }
                   </datalist>
                 </div>
                 <div class="col-auto">

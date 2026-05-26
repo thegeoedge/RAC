@@ -660,10 +660,12 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       this.availablequantity = selectedItem.availablequantity ?? 0;
       this.lastsellingprice = selectedItem.lastsellingprice ?? 0;
       this.code = selectedItem.code ?? '';
+      this.buyquantity = 1;
     } else {
       console.warn('No matching item found for:', selectedCode);
       this.selectedInventoryItem = null;
       this.itemname = ''; // Clear itemName if no match is found
+      this.buyquantity = 0;
     }
   }
   onAddItem(): void {
@@ -829,11 +831,13 @@ export class SalesinvoiceUpdateComponent implements OnInit {
         this.customerService.find(selectedVehicle.customerid).subscribe(customerRes => {
           const customer = customerRes.body;
           if (customer) {
+            const custName = customer.fullname || customer.businessname || '';
+            this.customername = custName;
             this.editForm.patchValue({
-              customername: customer.fullname || customer.businessname || '',
+              customername: custName,
               customeraddress: customer.residenceaddress || customer.businessaddress || '',
             });
-            this.fetchaccountid(customer.fullname || customer.businessname || '');
+            this.fetchaccountid(custName);
             // Fetch and display the customer's total outstanding Amount Owing
             this.fetchCustomerAmountOwing(selectedVehicle.customerid!);
             this.cdr.detectChanges();
@@ -863,12 +867,14 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     const selectedCustomer = this.filteredCustomers.find(customer => (customer.fullname || customer.businessname) === selectedCustomerName);
 
     if (selectedCustomer) {
+      const custName = selectedCustomer.fullname || selectedCustomer.businessname || '';
+      this.customername = custName;
       this.editForm.patchValue({
         customerid: selectedCustomer.id,
-        customername: selectedCustomer.fullname || selectedCustomer.businessname || '',
+        customername: custName,
         customeraddress: selectedCustomer.residenceaddress || selectedCustomer.businessaddress || '',
       });
-      this.fetchaccountid(selectedCustomer.fullname || selectedCustomer.businessname || '');
+      this.fetchaccountid(custName);
 
       // Fetch and display the customer's total outstanding Amount Owing
       if (selectedCustomer.id) {

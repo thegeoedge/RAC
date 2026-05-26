@@ -579,21 +579,25 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   filtereditems: IInventory[] = [];
+  searchItemsByCode = false;
   selectedItems: Array<IInventory & { discountPercentage: number; requestedQuantity: number }> = [];
   itemAddErrorMessage: string | null = null;
+
+  onItemSearchModeChange(byCode: boolean): void {
+    this.searchItemsByCode = byCode;
+    this.filtereditems = [];
+  }
 
   onItemSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     const searchTerm = input.value;
 
     if (searchTerm.length > 1) {
-      // Use the new service method to fetch matching results
-      this.inventoryService.findByItem(searchTerm).subscribe(response => {
+      const search$ = this.searchItemsByCode ? this.inventoryService.findByCode(searchTerm) : this.inventoryService.findByItem(searchTerm);
+      search$.subscribe(response => {
         this.filtereditems = response.body || [];
-        console.log('Filtered Itemsssssssss:', this.filtereditems);
       });
     } else {
-      // Clear the suggestions if input is too short
       this.filtereditems = [];
     }
   }
@@ -976,7 +980,8 @@ export class AutocarejobInstructionComponent implements OnInit {
   }
 
   onAddItem(): void {
-    const selectedItem = this.filtereditems.find(item => item.name === (document.getElementById('field_item') as HTMLInputElement).value);
+    const inputValue = (document.getElementById('field_item') as HTMLInputElement).value;
+    const selectedItem = this.filtereditems.find(item => (this.searchItemsByCode ? item.code === inputValue : item.name === inputValue));
 
     if (selectedItem) {
       if ((selectedItem.availablequantity ?? 0) <= 0) {

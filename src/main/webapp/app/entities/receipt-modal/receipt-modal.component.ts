@@ -101,12 +101,21 @@ export class ReceiptModalComponent implements OnChanges {
       this.updateForm(this.receiptpaymentsdetails);
       this.loadBanks();
     }
+    if (changes['customername']) {
+      const custName = changes['customername'].currentValue;
+      if (custName && custName.trim().toUpperCase() === 'CASH') {
+        this.onOptionChange(1);
+      }
+    }
   }
 
   // Log for debugging
   ngOnInit() {
     console.log('selectedOption:', this.selectedOption);
     this.fetchpaymentmethod();
+    if (this.customername && this.customername.trim().toUpperCase() === 'CASH') {
+      this.onOptionChange(1);
+    }
   }
   previousState(): void {
     window.history.back();

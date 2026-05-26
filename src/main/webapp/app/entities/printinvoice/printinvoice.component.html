@@ -395,11 +395,11 @@
         <td class="line-qty">1.00</td>
 
         <td class="line-price">
-          {{ line.servicePrice || line.value | number: '1.2-2' }}
+          {{ line.value ?? line.servicePrice | number: '1.2-2' }}
         </td>
 
         <td class="line-total">
-          {{ line.value | number: '1.2-2' }}
+          {{ line.value ?? line.servicePrice | number: '1.2-2' }}
         </td>
       </tr>
 
@@ -421,11 +421,11 @@
         <td class="line-qty">1.00</td>
 
         <td class="line-price">
-          {{ line.servicePrice || line.value | number: '1.2-2' }}
+          {{ line.value ?? line.servicePrice | number: '1.2-2' }}
         </td>
 
         <td class="line-total">
-          {{ line.value | number: '1.2-2' }}
+          {{ line.value ?? line.servicePrice | number: '1.2-2' }}
         </td>
       </tr>
     </tbody>

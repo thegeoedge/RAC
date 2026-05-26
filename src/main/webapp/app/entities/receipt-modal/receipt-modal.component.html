@@ -22,23 +22,67 @@
                   <label class="form-label d-block fw-bold">Select a Payment Option</label>
                   <div class="payment-box d-flex flex-wrap gap-3 p-2 bg-white border rounded">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="option" id="option1" value="1" (change)="onOptionChange(1)" />
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="option"
+                        id="option1"
+                        value="1"
+                        [checked]="selectedOption === 1"
+                        (change)="onOptionChange(1)"
+                      />
                       <label class="form-check-label" for="option1">Cash</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="option" id="option2" value="2" (change)="onOptionChange(2)" />
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="option"
+                        id="option2"
+                        value="2"
+                        [checked]="selectedOption === 2"
+                        (change)="onOptionChange(2)"
+                        [disabled]="customername?.trim()?.toUpperCase() === 'CASH'"
+                      />
                       <label class="form-check-label" for="option2">Credit</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="option" id="option3" value="3" (change)="onOptionChange(3)" />
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="option"
+                        id="option3"
+                        value="3"
+                        [checked]="selectedOption === 3"
+                        (change)="onOptionChange(3)"
+                        [disabled]="customername?.trim()?.toUpperCase() === 'CASH'"
+                      />
                       <label class="form-check-label" for="option3">Cheque</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="option" id="option4" value="4" (change)="onOptionChange(4)" />
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="option"
+                        id="option4"
+                        value="4"
+                        [checked]="selectedOption === 4"
+                        (change)="onOptionChange(4)"
+                        [disabled]="customername?.trim()?.toUpperCase() === 'CASH'"
+                      />
                       <label class="form-check-label" for="option4">Card/Other</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="option" id="option5" value="5" (change)="onOptionChange(5)" />
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="option"
+                        id="option5"
+                        value="5"
+                        [checked]="selectedOption === 5"
+                        (change)="onOptionChange(5)"
+                        [disabled]="customername?.trim()?.toUpperCase() === 'CASH'"
+                      />
                       <label class="form-check-label" for="option5">Bank</label>
                     </div>
                   </div>
