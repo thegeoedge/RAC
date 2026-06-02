@@ -1,3 +1,10 @@
+<style>
+  .billing-table-header th {
+    vertical-align: middle;
+    text-align: center;
+  }
+</style>
+
 <div class="d-flex justify-content">
   <form name="editForm" novalidate [formGroup]="editForm">
     <h2 id="jhi-sales-invoice-lines-heading" data-cy="SalesInvoiceLinesCreateUpdateHeading" *ngIf="showCodeField"></h2>
@@ -7,22 +14,23 @@
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
         <thead>
-          <tr>
+          <tr class="billing-table-header">
             <th *ngIf="showCodeField" style="width: 120px">ID</th>
             <th *ngIf="showCodeField" style="width: 150px">Invoice Id</th>
             <th *ngIf="showCodeField" style="width: 150px">Line Id</th>
             <th *ngIf="showCodeField" style="width: 150px">Item Id</th>
             <th style="width: 120px">Item Code</th>
-            <th style="width: 950px">Item Name</th>
+            <th style="width: 750px">Item Name</th>
             <th *ngIf="showCodeField" style="width: 200px">Description</th>
             <th *ngIf="showCodeField" style="width: 150px">Unit Of Measurement</th>
             <th style="width: 100px">Quantity</th>
             <th *ngIf="showCodeField" style="width: 150px">Item Cost</th>
             <th *ngIf="showCodeField" style="width: 150px">Item Price</th>
-            <th style="width: 120px">Discount</th>
+            <th style="width: 120px">Discount %</th>
+            <th style="width: 120px">Discount Value</th>
             <th *ngIf="showCodeField" style="width: 120px">Tax</th>
-            <th style="width: 150px" class="text-end">Selling Price</th>
-            <th style="width: 150px" class="text-end">Line Total</th>
+            <th style="width: 150px">Selling Price</th>
+            <th style="width: 150px">Line Total</th>
             <th *ngIf="showCodeField" style="width: 120px">Lmu</th>
             <th *ngIf="showCodeField" style="width: 180px">Lmd</th>
             <th *ngIf="showCodeField" style="width: 100px">Nbt</th>
@@ -48,6 +56,7 @@
                 (input)="onItemCodeInput($event, i)"
                 (change)="onItemCodeSelect($event, i)"
                 [attr.list]="'autocomplete' + i"
+                readonly
               />
               <datalist [id]="'autocomplete' + i">
                 <option *ngFor="let item of filteredItems[i]" [value]="item.name">
@@ -64,6 +73,7 @@
                 (input)="onItemNameInput($event, i)"
                 (change)="onItemNameSelect($event, i)"
                 [attr.list]="'autocomplete' + i"
+                readonly
               />
               <datalist [id]="'autocomplete' + i">
                 <option *ngFor="let item of filteredItems[i]" [value]="item.code">
@@ -77,10 +87,13 @@
             <td><input type="number" class="form-control" formControlName="quantity" (input)="onQuantityChange(i)" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemcost" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="itemprice" /></td>
-            <td><input type="number" class="form-control" formControlName="discount" /></td>
+            <td>
+              <input type="number" class="form-control" formControlName="discountpercentage" (input)="onDiscountPercentageChange(i)" />
+            </td>
+            <td><input type="number" class="form-control" formControlName="discountvalue" (input)="onDiscountValueChange(i)" /></td>
             <td *ngIf="showCodeField"><input type="number" class="form-control" formControlName="tax" /></td>
             <td class="text-end">
-              <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="sellingprice" />
+              <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="sellingprice" readonly />
             </td>
             <td class="text-end">
               <input type="text" inputmode="decimal" appDecimal class="form-control text-end" formControlName="linetotal" />

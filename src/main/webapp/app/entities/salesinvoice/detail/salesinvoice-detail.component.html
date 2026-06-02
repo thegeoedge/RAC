@@ -250,6 +250,7 @@
             <div><strong>Invoice #:</strong> {{ salesinvoice()!.code }}</div>
             <div><strong>Date:</strong> {{ salesinvoice()!.invoicedate | formatMediumDatetime }}</div>
             <div><strong>Customer:</strong> {{ salesinvoice()!.customername }}</div>
+            <div><strong>Vehicle No:</strong> {{ salesinvoice()!.vehicleno || '-' }}</div>
           </div>
         </div>
 

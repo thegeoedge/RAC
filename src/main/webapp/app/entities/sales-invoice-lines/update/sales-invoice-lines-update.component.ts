@@ -10,7 +10,7 @@ import { IInventory } from 'app/entities/inventory/inventory.model';
 import { ISalesInvoiceLines } from '../sales-invoice-lines.model';
 import { SalesInvoiceLinesService } from '../service/sales-invoice-lines.service';
 import { SalesInvoiceLinesFormGroup, SalesInvoiceLinesFormService } from './sales-invoice-lines-form.service';
-import { FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import dayjs from 'dayjs/esm';
 import CommonModule from 'app/shared/shared.module';
 import { DecimalInputDirective } from 'app/shared/decimal-input.directive';
@@ -89,19 +89,26 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   addItemToFormArray(item: any): void {
     const resolvedSellingPrice = Number(item.lastsellingprice ?? item.sellingprice ?? item.itemprice ?? 0);
+    const quantity = Number(item.availablequantity ?? item.quantity ?? 0);
+    const discountValue = Number(item.discountvalue ?? item.discountValue ?? item.discount ?? 0);
+    const baseAmount = resolvedSellingPrice * quantity;
+    const discountPercentage =
+      item.discountpercentage ?? item.discountPercentage ?? (baseAmount > 0 ? Number(((discountValue / baseAmount) * 100).toFixed(2)) : 0);
     const newItem = this.fb.group({
       itemid: [item.itemid ?? item.id ?? null],
       itemcode: [item.code || item.itemcode || ''], // Match template
       itemname: [item.name || item.itemname], // Match template
       description: [item.description ?? null],
       unitofmeasurement: [item.unitofmeasurement ?? null],
-      quantity: [item.availablequantity ?? item.quantity ?? 0],
+      quantity: [quantity],
       itemcost: [Number(item.lastcost ?? item.itemcost ?? 0)],
       itemprice: [resolvedSellingPrice],
       tax: [Number(item.tax ?? 0)],
       sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
       discount: [Number(item.discount ?? 0)], // discount is now always the total discount for the line
+      discountpercentage: [Number(discountPercentage ?? 0)],
+      discountvalue: [Number(discountValue ?? 0)],
       isNew: [item.isNew ?? false],
       sourceLineId: [item.lineid ?? null],
     });
@@ -123,6 +130,51 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
     // Also update lineTotal when the form is initialized
     this.updateLineTotal(formGroup);
+  }
+
+  onDiscountPercentageChange(index: number): void {
+    const salesInvoiceLineGroup = this.salesInvoiceLinesArray.at(index) as FormGroup;
+    const quantity = Number(salesInvoiceLineGroup.get('quantity')?.value || 0);
+    const sellingPrice = Number(salesInvoiceLineGroup.get('sellingprice')?.value || 0);
+    const discountPercentage = Number(salesInvoiceLineGroup.get('discountpercentage')?.value || 0);
+    const lineBaseAmount = quantity * sellingPrice;
+    const discountValue = Number(((lineBaseAmount * discountPercentage) / 100).toFixed(2));
+
+    salesInvoiceLineGroup.patchValue(
+      {
+        discountvalue: discountValue,
+        discount: discountValue,
+      },
+      { emitEvent: false },
+    );
+    this.updateLineTotal(salesInvoiceLineGroup);
+  }
+
+  onDiscountValueChange(index: number): void {
+    const salesInvoiceLineGroup = this.salesInvoiceLinesArray.at(index) as FormGroup;
+    const quantity = Number(salesInvoiceLineGroup.get('quantity')?.value || 0);
+    const sellingPrice = Number(salesInvoiceLineGroup.get('sellingprice')?.value || 0);
+    const discountValue = Number(salesInvoiceLineGroup.get('discountvalue')?.value || 0);
+    const lineBaseAmount = quantity * sellingPrice;
+    const discountPercentage = lineBaseAmount > 0 ? Number(((discountValue / lineBaseAmount) * 100).toFixed(2)) : 0;
+
+    salesInvoiceLineGroup.patchValue(
+      {
+        discountpercentage: discountPercentage,
+        discount: discountValue,
+      },
+      { emitEvent: false },
+    );
+    this.updateLineTotal(salesInvoiceLineGroup);
+  }
+
+  private ensureDiscountControls(formGroup: FormGroup): void {
+    if (!formGroup.get('discountpercentage')) {
+      formGroup.addControl('discountpercentage', new FormControl(0));
+    }
+    if (!formGroup.get('discountvalue')) {
+      formGroup.addControl('discountvalue', new FormControl(0));
+    }
   }
   updateLineTotal(formGroup: FormGroup): void {
     const quantity = Number(formGroup.get('quantity')?.value || 0);
@@ -277,6 +329,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   onQuantityChange(index: number): void {
     const salesInvoiceLineGroup = this.salesInvoiceLinesDummyArray.at(index) as FormGroup;
+    this.onDiscountPercentageChange(index);
     this.updateLineTotal(salesInvoiceLineGroup);
   }
   onItemNameInput(event: Event, index: number): void {
@@ -466,6 +519,20 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     // Add each line of salesInvoiceLines to the form array
     salesInvoiceLines.forEach(line => {
       const formGroup = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup(line);
+      this.ensureDiscountControls(formGroup);
+
+      const quantity = Number(formGroup.get('quantity')?.value || 0);
+      const sellingPrice = Number(formGroup.get('sellingprice')?.value || 0);
+      const discountValue = Number(formGroup.get('discount')?.value || 0);
+      const lineBaseAmount = quantity * sellingPrice;
+      const discountPercentage = lineBaseAmount > 0 ? Number(((discountValue / lineBaseAmount) * 100).toFixed(2)) : 0;
+      (formGroup as FormGroup).patchValue(
+        {
+          discountvalue: discountValue,
+          discountpercentage: discountPercentage,
+        },
+        { emitEvent: false },
+      );
       console.log('Created form group:', formGroup.value); // Log the form group values
       this.salesInvoiceLinesArray.push(formGroup);
     });
