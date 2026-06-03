@@ -638,6 +638,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     lastcost?: number | null;
     lastsellingprice: number;
     discount?: number;
+    discountOption?: string;
+    itemDiscountValue?: number;
     isNew?: boolean;
   } | null = null;
   private selectedInventoryItem: IInventory | null = null;
@@ -702,6 +704,8 @@ export class SalesinvoiceUpdateComponent implements OnInit {
       lastcost: this.selectedInventoryItem?.lastcost ?? 0,
       lastsellingprice: this.lastsellingprice,
       discount: itemDiscount * this.buyquantity, // Total discount for the line
+      discountOption: this.itemDiscountOption,
+      itemDiscountValue: this.itemDiscountValue,
       isNew: true,
     };
 

@@ -90,10 +90,9 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   addItemToFormArray(item: any): void {
     const resolvedSellingPrice = Number(item.lastsellingprice ?? item.sellingprice ?? item.itemprice ?? 0);
     const quantity = Number(item.availablequantity ?? item.quantity ?? 0);
-    const discountValue = Number(item.discountvalue ?? item.discountValue ?? item.discount ?? 0);
-    const baseAmount = resolvedSellingPrice * quantity;
-    const discountPercentage =
-      item.discountpercentage ?? item.discountPercentage ?? (baseAmount > 0 ? Number(((discountValue / baseAmount) * 100).toFixed(2)) : 0);
+    const totalLineDiscount = Number(item.discount ?? 0);
+    const discountOption = item.discountOption ?? item.itemDiscountOption;
+    const { discountPercentage, discountValue } = this.resolveDiscountDisplayFields(item, discountOption, totalLineDiscount);
     const newItem = this.fb.group({
       itemid: [item.itemid ?? item.id ?? null],
       itemcode: [item.code || item.itemcode || ''], // Match template
@@ -106,9 +105,9 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       tax: [Number(item.tax ?? 0)],
       sellingprice: [resolvedSellingPrice], // Match template
       linetotal: [{ value: 0, disabled: true }], // Match template
-      discount: [Number(item.discount ?? 0)], // discount is now always the total discount for the line
-      discountpercentage: [Number(discountPercentage ?? 0)],
-      discountvalue: [Number(discountValue ?? 0)],
+      discount: [totalLineDiscount], // discount is now always the total discount for the line
+      discountpercentage: [discountPercentage],
+      discountvalue: [discountValue],
       isNew: [item.isNew ?? false],
       sourceLineId: [item.lineid ?? null],
     });
@@ -138,12 +137,12 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     const sellingPrice = Number(salesInvoiceLineGroup.get('sellingprice')?.value || 0);
     const discountPercentage = Number(salesInvoiceLineGroup.get('discountpercentage')?.value || 0);
     const lineBaseAmount = quantity * sellingPrice;
-    const discountValue = Number(((lineBaseAmount * discountPercentage) / 100).toFixed(2));
+    const totalDiscount = Number(((lineBaseAmount * discountPercentage) / 100).toFixed(2));
 
     salesInvoiceLineGroup.patchValue(
       {
-        discountvalue: discountValue,
-        discount: discountValue,
+        discountvalue: null,
+        discount: totalDiscount,
       },
       { emitEvent: false },
     );
@@ -152,15 +151,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   onDiscountValueChange(index: number): void {
     const salesInvoiceLineGroup = this.salesInvoiceLinesArray.at(index) as FormGroup;
-    const quantity = Number(salesInvoiceLineGroup.get('quantity')?.value || 0);
-    const sellingPrice = Number(salesInvoiceLineGroup.get('sellingprice')?.value || 0);
     const discountValue = Number(salesInvoiceLineGroup.get('discountvalue')?.value || 0);
-    const lineBaseAmount = quantity * sellingPrice;
-    const discountPercentage = lineBaseAmount > 0 ? Number(((discountValue / lineBaseAmount) * 100).toFixed(2)) : 0;
 
     salesInvoiceLineGroup.patchValue(
       {
-        discountpercentage: discountPercentage,
+        discountpercentage: null,
         discount: discountValue,
       },
       { emitEvent: false },
@@ -168,12 +163,51 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     this.updateLineTotal(salesInvoiceLineGroup);
   }
 
+  private resolveDiscountDisplayFields(
+    item: any,
+    discountOption: string | undefined,
+    totalLineDiscount: number,
+  ): { discountPercentage: number | null; discountValue: number | null } {
+    if (discountOption === 'percentage') {
+      const pct = Number(item.itemDiscountValue ?? item.discountpercentage ?? item.discountPercentage ?? 0);
+      return {
+        discountPercentage: pct > 0 ? pct : null,
+        discountValue: null,
+      };
+    }
+    if (discountOption === 'value') {
+      return {
+        discountPercentage: null,
+        discountValue: totalLineDiscount > 0 ? totalLineDiscount : null,
+      };
+    }
+    const explicitPercentage = item.discountpercentage ?? item.discountPercentage;
+    if (explicitPercentage != null && explicitPercentage !== '') {
+      const pct = Number(explicitPercentage);
+      return { discountPercentage: pct > 0 ? pct : null, discountValue: null };
+    }
+    const explicitValue = item.discountvalue ?? item.discountValue;
+    if (explicitValue != null && explicitValue !== '') {
+      const val = Number(explicitValue);
+      return { discountPercentage: null, discountValue: val > 0 ? val : null };
+    }
+    return {
+      discountPercentage: null,
+      discountValue: totalLineDiscount > 0 ? totalLineDiscount : null,
+    };
+  }
+
+  private hasDiscountPercentage(formGroup: FormGroup): boolean {
+    const pct = formGroup.get('discountpercentage')?.value;
+    return pct !== null && pct !== undefined && pct !== '';
+  }
+
   private ensureDiscountControls(formGroup: FormGroup): void {
     if (!formGroup.get('discountpercentage')) {
-      formGroup.addControl('discountpercentage', new FormControl(0));
+      formGroup.addControl('discountpercentage', new FormControl(null));
     }
     if (!formGroup.get('discountvalue')) {
-      formGroup.addControl('discountvalue', new FormControl(0));
+      formGroup.addControl('discountvalue', new FormControl(null));
     }
   }
   updateLineTotal(formGroup: FormGroup): void {
@@ -329,8 +363,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   onQuantityChange(index: number): void {
     const salesInvoiceLineGroup = this.salesInvoiceLinesDummyArray.at(index) as FormGroup;
-    this.onDiscountPercentageChange(index);
-    this.updateLineTotal(salesInvoiceLineGroup);
+    if (this.hasDiscountPercentage(salesInvoiceLineGroup)) {
+      this.onDiscountPercentageChange(index);
+    } else {
+      this.updateLineTotal(salesInvoiceLineGroup);
+    }
   }
   onItemNameInput(event: Event, index: number): void {
     // Type assertion: Treat event target as HTMLInputElement
@@ -521,15 +558,11 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       const formGroup = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup(line);
       this.ensureDiscountControls(formGroup);
 
-      const quantity = Number(formGroup.get('quantity')?.value || 0);
-      const sellingPrice = Number(formGroup.get('sellingprice')?.value || 0);
       const discountValue = Number(formGroup.get('discount')?.value || 0);
-      const lineBaseAmount = quantity * sellingPrice;
-      const discountPercentage = lineBaseAmount > 0 ? Number(((discountValue / lineBaseAmount) * 100).toFixed(2)) : 0;
       (formGroup as FormGroup).patchValue(
         {
-          discountvalue: discountValue,
-          discountpercentage: discountPercentage,
+          discountvalue: discountValue > 0 ? discountValue : null,
+          discountpercentage: null,
         },
         { emitEvent: false },
       );
