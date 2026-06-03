@@ -120,6 +120,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
   newcode: string = '';
   sourceInvoiceId: number | null = null;
+  private currentAutocareJobId: number | null = null;
 
   /** Returns current local time offset so it serializes as local time instead of UTC */
   private localNow(): dayjs.Dayjs {
@@ -497,6 +498,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
     sellingprice: number;
     itemcost?: number;
     discount?: number;
+    description?: string;
     lineid?: number;
   }[] = [];
 
@@ -518,19 +520,59 @@ export class SalesinvoiceUpdateComponent implements OnInit {
                 sellingprice: item.sellingprice ?? 0,
                 itemcost: item.itemcost ?? item.lastcost ?? 0,
                 discount: item.discount ?? item.discountamount ?? item.discountAmount ?? item.totaldiscount ?? 0,
-
+                description: item.description,
                 lineid: item.lineid,
               });
             });
           }
         });
         this.fetchedItems = [...this.fetchedItems];
+        this.enrichFetchedItemsFromSavedSalesLines();
         console.log('Fetched Items:', this.fetchedItems);
       },
       error => {
         console.error('Error fetching invoice lines:', error);
       },
     );
+  }
+
+  /** Merge discount-entry markers from previously saved SalesInvoiceLines (description [PCT]/[VAL] prefixes). */
+  private enrichFetchedItemsFromSavedSalesLines(): void {
+    const jobId = this.currentAutocareJobId ?? this.editForm.get('autocarejobid')?.value;
+    if (!jobId) {
+      return;
+    }
+    this.salesinvoiceService.query({ 'autocarejobid.equals': Number(jobId), size: 50 }).subscribe({
+      next: (invoiceRes: HttpResponse<ISalesinvoice[]>) => {
+        const invoiceIds = (invoiceRes.body ?? []).map(inv => inv.id).filter((id): id is number => id != null);
+        if (invoiceIds.length === 0) {
+          return;
+        }
+        forkJoin(invoiceIds.map(invoiceId => this.salesInvoiceLinesService.queryByInvoiceId(invoiceId))).subscribe({
+          next: lineResponses => {
+            const savedLines = lineResponses.flatMap(res => res.body ?? []);
+            this.fetchedItems = this.fetchedItems.map(item => {
+              const saved = savedLines.find(
+                line =>
+                  line.itemcode === item.itemcode &&
+                  line.itemid === item.itemid &&
+                  Math.abs(Number(line.discount ?? 0) - Number(item.discount ?? 0)) < 0.01,
+              );
+              if (!saved?.description) {
+                return item;
+              }
+              return {
+                ...item,
+                description: saved.description,
+                discount: saved.discount ?? item.discount,
+              };
+            });
+            this.fetchedItems = [...this.fetchedItems];
+            this.cdr.detectChanges();
+          },
+        });
+      },
+    });
   }
 
   private loadSalesInvoiceDummy(id: number): void {
@@ -581,6 +623,7 @@ export class SalesinvoiceUpdateComponent implements OnInit {
 
       // Fetch vehicle number from the linked autocarejob via jobid
       const jobId = (salesInvoiceDummy as any).jobid;
+      this.currentAutocareJobId = jobId != null && Number(jobId) > 0 ? Number(jobId) : null;
       if (jobId != null && Number(jobId) > 0) {
         this.autocarejobService.find(Number(jobId)).subscribe({
           next: (jobRes: HttpResponse<IAutocarejob>) => {

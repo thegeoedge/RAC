@@ -46,6 +46,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
   @Input() selectedItem: any;
   @Input() fetchedItems: any;
   @Input() sourceInvoiceId: number | null = null;
+  private static readonly DISCOUNT_ENTRY_PCT_MARKER = '[PCT]';
+  private static readonly DISCOUNT_ENTRY_VAL_MARKER = '[VAL]';
   @Input() nextvalue: any;
   @Input() serviceChargeTotal: number = 0;
   @Input() commonServiceChargeTotal: number = 0;
@@ -91,8 +93,8 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     const resolvedSellingPrice = Number(item.lastsellingprice ?? item.sellingprice ?? item.itemprice ?? 0);
     const quantity = Number(item.availablequantity ?? item.quantity ?? 0);
     const totalLineDiscount = Number(item.discount ?? 0);
-    const discountOption = item.discountOption ?? item.itemDiscountOption;
-    const { discountPercentage, discountValue } = this.resolveDiscountDisplayFields(item, discountOption, totalLineDiscount);
+    const discountEntryType = this.getDiscountEntryTypeForItem(item);
+    const { discountPercentage, discountValue } = this.resolveDiscountDisplayFields(item, discountEntryType, totalLineDiscount);
     const newItem = this.fb.group({
       itemid: [item.itemid ?? item.id ?? null],
       itemcode: [item.code || item.itemcode || ''], // Match template
@@ -108,6 +110,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       discount: [totalLineDiscount], // discount is now always the total discount for the line
       discountpercentage: [discountPercentage],
       discountvalue: [discountValue],
+      discountEntryType: [discountEntryType ?? null],
       isNew: [item.isNew ?? false],
       sourceLineId: [item.lineid ?? null],
     });
@@ -143,6 +146,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       {
         discountvalue: null,
         discount: totalDiscount,
+        discountEntryType: 'percentage',
       },
       { emitEvent: false },
     );
@@ -157,6 +161,7 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       {
         discountpercentage: null,
         discount: discountValue,
+        discountEntryType: 'value',
       },
       { emitEvent: false },
     );
@@ -165,17 +170,20 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
 
   private resolveDiscountDisplayFields(
     item: any,
-    discountOption: string | undefined,
+    discountEntryType: 'percentage' | 'value' | undefined,
     totalLineDiscount: number,
   ): { discountPercentage: number | null; discountValue: number | null } {
-    if (discountOption === 'percentage') {
-      const pct = Number(item.itemDiscountValue ?? item.discountpercentage ?? item.discountPercentage ?? 0);
+    if (discountEntryType === 'percentage') {
+      let pct = Number(item.itemDiscountValue ?? item.discountpercentage ?? item.discountPercentage ?? 0);
+      if (pct <= 0) {
+        pct = this.percentageFromStoredLineDiscount(item, totalLineDiscount) ?? 0;
+      }
       return {
         discountPercentage: pct > 0 ? pct : null,
         discountValue: null,
       };
     }
-    if (discountOption === 'value') {
+    if (discountEntryType === 'value') {
       return {
         discountPercentage: null,
         discountValue: totalLineDiscount > 0 ? totalLineDiscount : null,
@@ -197,6 +205,18 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     };
   }
 
+  /** Reverse-calculates per-unit discount % from the total line discount stored in the DB. */
+  private percentageFromStoredLineDiscount(item: any, totalLineDiscount: number): number | null {
+    const quantity = Number(item.quantity ?? item.availablequantity ?? 0);
+    const sellingPrice = Number(item.sellingprice ?? item.lastsellingprice ?? item.itemprice ?? 0);
+    const lineBaseAmount = quantity * sellingPrice;
+    if (lineBaseAmount <= 0 || totalLineDiscount <= 0) {
+      return null;
+    }
+    const pct = (totalLineDiscount / lineBaseAmount) * 100;
+    return pct > 0 ? Number(pct.toFixed(4)) : null;
+  }
+
   private hasDiscountPercentage(formGroup: FormGroup): boolean {
     const pct = formGroup.get('discountpercentage')?.value;
     return pct !== null && pct !== undefined && pct !== '';
@@ -209,6 +229,125 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     if (!formGroup.get('discountvalue')) {
       formGroup.addControl('discountvalue', new FormControl(null));
     }
+    if (!formGroup.get('discountEntryType')) {
+      formGroup.addControl('discountEntryType', new FormControl(null));
+    }
+  }
+
+  private getDiscountEntryTypeForItem(item: any): 'percentage' | 'value' | undefined {
+    if (item.discountEntryType === 'percentage' || item.discountEntryType === 'value') {
+      return item.discountEntryType;
+    }
+    const fromDescription = this.parseDiscountEntryTypeFromDescription(item.description);
+    if (fromDescription) {
+      return fromDescription;
+    }
+    const fromStorage = this.lookupDiscountEntryTypeFromStorage(item);
+    if (fromStorage) {
+      return fromStorage;
+    }
+    if (item.discountOption === 'percentage' || item.itemDiscountOption === 'percentage') {
+      return 'percentage';
+    }
+    if (item.discountOption === 'value' || item.itemDiscountOption === 'value') {
+      return 'value';
+    }
+    return undefined;
+  }
+
+  private parseDiscountEntryTypeFromDescription(description: string | null | undefined): 'percentage' | 'value' | undefined {
+    if (!description) {
+      return undefined;
+    }
+    if (description.startsWith(SalesInvoiceLinesUpdateComponent.DISCOUNT_ENTRY_PCT_MARKER)) {
+      return 'percentage';
+    }
+    if (description.startsWith(SalesInvoiceLinesUpdateComponent.DISCOUNT_ENTRY_VAL_MARKER)) {
+      return 'value';
+    }
+    return undefined;
+  }
+
+  private lookupDiscountEntryTypeFromStorage(item: any): 'percentage' | 'value' | undefined {
+    if (this.sourceInvoiceId == null) {
+      return undefined;
+    }
+    const map = this.readDiscountEntryStorageMap();
+    const key = this.discountEntryStorageKey(item);
+    const entryType = map[key];
+    return entryType === 'percentage' || entryType === 'value' ? entryType : undefined;
+  }
+
+  private readDiscountEntryStorageMap(): Record<string, 'percentage' | 'value'> {
+    if (this.sourceInvoiceId == null) {
+      return {};
+    }
+    try {
+      const raw = localStorage.getItem(`salesInvoiceLineDiscountEntry-${this.sourceInvoiceId}`);
+      return raw ? (JSON.parse(raw) as Record<string, 'percentage' | 'value'>) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private persistDiscountEntryTypesToStorage(): void {
+    if (this.sourceInvoiceId == null) {
+      return;
+    }
+    const map = this.readDiscountEntryStorageMap();
+    this.salesInvoiceLinesArray.controls.forEach((control, index) => {
+      const formGroup = control as FormGroup;
+      const entryType = this.inferDiscountEntryTypeFromForm(formGroup);
+      if (!entryType) {
+        return;
+      }
+      map[this.discountEntryStorageKeyFromForm(formGroup, index)] = entryType;
+    });
+    localStorage.setItem(`salesInvoiceLineDiscountEntry-${this.sourceInvoiceId}`, JSON.stringify(map));
+  }
+
+  private discountEntryStorageKey(item: any): string {
+    const lineid = item.lineid ?? item.sourceLineId ?? '';
+    const itemid = item.itemid ?? '';
+    const itemcode = item.itemcode ?? item.code ?? '';
+    return `${lineid}|${itemid}|${itemcode}`;
+  }
+
+  private discountEntryStorageKeyFromForm(formGroup: FormGroup, index: number): string {
+    const lineid = formGroup.get('sourceLineId')?.value ?? formGroup.get('lineid')?.value ?? index;
+    const itemid = formGroup.get('itemid')?.value ?? '';
+    const itemcode = formGroup.get('itemcode')?.value ?? '';
+    return `${lineid}|${itemid}|${itemcode}`;
+  }
+
+  private inferDiscountEntryTypeFromForm(formGroup: FormGroup): 'percentage' | 'value' | null {
+    const explicit = formGroup.get('discountEntryType')?.value;
+    if (explicit === 'percentage' || explicit === 'value') {
+      return explicit;
+    }
+    const hasPct = this.hasDiscountPercentage(formGroup);
+    const val = formGroup.get('discountvalue')?.value;
+    const hasVal = val !== null && val !== undefined && val !== '';
+    if (hasPct && !hasVal) {
+      return 'percentage';
+    }
+    if (hasVal && !hasPct) {
+      return 'value';
+    }
+    return null;
+  }
+
+  private buildDescriptionWithDiscountEntry(line: any, entryType: 'percentage' | 'value' | null): string | null {
+    const base = String(line.description ?? line.itemname ?? '')
+      .replace(/^\[(?:PCT|VAL)\]/, '')
+      .trim();
+    if (entryType === 'percentage') {
+      return `${SalesInvoiceLinesUpdateComponent.DISCOUNT_ENTRY_PCT_MARKER}${base || line.itemname || ''}`;
+    }
+    if (entryType === 'value') {
+      return `${SalesInvoiceLinesUpdateComponent.DISCOUNT_ENTRY_VAL_MARKER}${base || line.itemname || ''}`;
+    }
+    return line.description ?? line.itemname ?? null;
   }
   updateLineTotal(formGroup: FormGroup): void {
     const quantity = Number(formGroup.get('quantity')?.value || 0);
@@ -453,15 +592,21 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
     // Get the invoice lines from the form (now it's a FormArray)
     let salesInvoiceLines = this.salesInvoiceLinesFormService.getSalesInvoiceLines(this.salesInvoiceLinesArray);
 
+    this.persistDiscountEntryTypesToStorage();
+
     // Assign invoiceid to all rows and ensure unique lineid across all aggregated lines
     // discount is already stored as (per-unit × qty) in the form field, so pass through directly
-    salesInvoiceLines = salesInvoiceLines.map((line, index) => ({
-      ...line,
-      invoiceid: inid, // Assign the provided invoice ID
-      lineid: index + 1, // Recalculate unique lineid for the current invoice
-      description: line.description ?? line.itemname ?? null,
-      // discount is already the total line discount (no need to multiply again)
-    }));
+    salesInvoiceLines = salesInvoiceLines.map((line, index) => {
+      const formGroup = this.salesInvoiceLinesArray.at(index) as FormGroup;
+      const entryType = formGroup ? this.inferDiscountEntryTypeFromForm(formGroup) : null;
+      const { discountpercentage: _dp, discountvalue: _dv, discountEntryType: _de, ...lineForApi } = line as any;
+      return {
+        ...lineForApi,
+        invoiceid: inid,
+        lineid: index + 1,
+        description: this.buildDescriptionWithDiscountEntry(line, entryType),
+      };
+    });
 
     console.log('Modified sales invoice lines:', salesInvoiceLines);
 
@@ -558,11 +703,14 @@ export class SalesInvoiceLinesUpdateComponent implements OnInit {
       const formGroup = this.salesInvoiceLinesFormService.createSalesInvoiceLinesFormGroup(line);
       this.ensureDiscountControls(formGroup);
 
-      const discountValue = Number(formGroup.get('discount')?.value || 0);
+      const totalLineDiscount = Number(formGroup.get('discount')?.value || 0);
+      const discountEntryType = this.getDiscountEntryTypeForItem(line);
+      const { discountPercentage, discountValue } = this.resolveDiscountDisplayFields(line, discountEntryType, totalLineDiscount);
       (formGroup as FormGroup).patchValue(
         {
-          discountvalue: discountValue > 0 ? discountValue : null,
-          discountpercentage: null,
+          discountpercentage: discountPercentage,
+          discountvalue: discountValue,
+          discountEntryType: discountEntryType ?? null,
         },
         { emitEvent: false },
       );
