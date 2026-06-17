@@ -134,7 +134,8 @@
     "wait-on": "7.2.0",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-merge": "5.10.0",
-    "webpack-notifier": "1.15.0"
+    "webpack-notifier": "1.15.0",
+    "prettier-plugin-bootstrap": "^0.3.1"
   },
   "engines": {
     "node": ">=20.12.2"
